@@ -1,22 +1,21 @@
-const fetchPOST = require('../utils/fetch')
 const config_token = require('../controllers/settings')
 const authSchemas = require('../controllers/authSchemas')
-const addFormats = require('ajv-formats');
 const fs = require('fs')
+
+const addFormats = require('ajv-formats');
 const {pipeline} = require('stream/promises')
+
+const helper = require('../utils/helper')
 
 
 const Ajv = require('ajv');
-const me = require('../utils/me');
 const ajv = new Ajv();
-
 addFormats(ajv)
 
 
 // proccess signup local
 async function postSignHandler(req , res)
 {
-
   req.body = Object.assign({}, req.body);
   console.log(req.body);
   // check valid schema body 
@@ -31,7 +30,7 @@ async function postSignHandler(req , res)
   req.session.email = req.body.email
 
   // send body to container user  for proccess data 
-  const result = await fetchPOST('http://user:4001/signup/local' , req.body);
+  const result = await helper.fetchPOST('http://user:4001/signup/local' , req.body);
 
   if(!result.check)
     return res.redirect('/signup')
@@ -53,7 +52,7 @@ async function postverificationHandler(req , res)
   data.email = email;
 
   // any fetchPOST i send request to another container  using method post send some data
-  const result = await fetchPOST('http://user:4001/verify' , data);
+  const result = await helper.fetchPOST('http://user:4001/verify' , data);
 
   if(!result.verify)
     return res.redirect('/verification')
@@ -69,7 +68,7 @@ async function postLoginHandler(req , res)
   if (!validate(req.body))
     return res.redirect('/login');
   
-  const token = await fetchPOST('http://user:4001/login' , req.body);
+  const token = await helper.fetchPOST('http://user:4001/login' , req.body);
   
   if(token.check == false)
   {
@@ -88,7 +87,7 @@ async function postUpdateHandler(req , res)
 {
   const body = {};
   
-  const whoami = await me(req);
+  const whoami = await helper.me(req);
   body.user_id = whoami.user_id;
   
   const parts = req.parts();
@@ -106,9 +105,7 @@ async function postUpdateHandler(req , res)
       
   }
 
-  const respond =  await fetchPOST('http://user:4001/update' , body);
-
-
+  const respond =  await helper.fetchPOST('http://user:4001/update' , body);
 
   return res.send({msg : "hello world"})
 }

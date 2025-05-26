@@ -1,8 +1,7 @@
-
-const app = require('../services/server').app
+const app = require('../server').app
 const config_token = require('../controllers/settings')
-const fetchPOST = require('../utils/fetch')
-const me = require('../utils/me')
+const helper = require('../utils/helper')
+
 
 
 
@@ -10,8 +9,6 @@ async function getRootHandler(req , res)
 {
     return res.type('text/html').sendFile('index.html')
 }
-
-
 
 async function getSignupHandler(req , res) 
 {
@@ -28,12 +25,15 @@ async function getLoginHandler(req , res)
     return res.type('text/html').sendFile('./pages/login.html')
 }
 
-
-
+async function getMeHandler(req , res) 
+{
+    const whoami = await helper.me(req);
+    return res.send(whoami);
+}
 
 async function getverificationpHandler(req , res) 
 {
-    const whoami = await me(req);
+    const whoami = await helper.me(req);
     
     console.log(whoami.email);
     if(whoami.email != undefined)
@@ -45,30 +45,18 @@ async function getverificationpHandler(req , res)
     return res.type('text/html').sendFile('./pages/verification.html')
 }
 
-
-
-async function getMeHandler(req , res) 
-{
-    const whoami = await me(req);
-    return res.send(whoami);
-}
-
-
 async function getCallbackhandler(req , res) 
 {
-
     // get token of user from google
-  const tokengoogle = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
-  const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });
-  const user = await result.json();
+    const tokengoogle = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
+    const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });
+    const user = await result.json();
 
-  console.log(user);
-  
     // create token jwt for user of google
-  const token = await fetchPOST('http://user:4001/signup/google' , user);
+    const token = await helper.fetchPOST('http://user:4001/signup/google' , user);
 
-//   if(token.check == false)
-//     return res.redirect('/signup');
+    // if(token.check == false)
+    //   return res.redirect('/signup');
 
   return res.setCookie('token', token.token, config_token).redirect('/me');
 }

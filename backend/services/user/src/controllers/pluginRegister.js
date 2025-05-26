@@ -1,7 +1,5 @@
+const fastify = require('../server')
 
-const fastify = require('../services/server')
-const formbody = require('@fastify/formbody')
-const multipart  = require('@fastify/multipart');
 
 
 const multipart_config = {
@@ -14,8 +12,7 @@ const multipart_config = {
 
 async function registerPlugins()
 {
-  fastify.app.register(multipart , multipart_config);
-  fastify.app.register(formbody);
+
 }
 
 module.exports = registerPlugins;

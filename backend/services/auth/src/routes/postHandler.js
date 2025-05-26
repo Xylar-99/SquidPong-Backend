@@ -1,6 +1,4 @@
-const  app = require('../services/server').app;
-
-
+const  app = require('../server').app;
 
 
 async function postVerifyToken(req , res) 

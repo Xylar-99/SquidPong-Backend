@@ -1,14 +1,6 @@
 const prisma = require('../db/db')
-const dataUser = require('../utils/fetchUser')
-const fetchPOST = require('../utils/fetch')
+const helper = require('../utils/helper')
 
-const path = require('path')
-const util = require('util');
-const pump = util.promisify(require('stream').pipeline);
-const fs = require('fs')
-
-
-const sendMail = require('../utils/mailer');
 
 const mailOptions = {
   from: 'abdoqoubai@gmail.com',
@@ -16,6 +8,7 @@ const mailOptions = {
   subject: 'hii',
   text: '455',
 };
+
 
 // handler local signup 
 async function postSignLocalHandler(req , res)
@@ -29,8 +22,6 @@ async function postSignLocalHandler(req , res)
   
   body_data.ver_code      = randomNumber;
   data = { data:body_data }
-  
-
   
   
   try
@@ -46,7 +37,7 @@ async function postSignLocalHandler(req , res)
     //  send code to email of user
     mailOptions.to = body_data.email;
     mailOptions.text = String(randomNumber);
-    sendMail(mailOptions)
+    helper.sendEmailMessage(mailOptions)
 
     return res.send({check:true});
   }
@@ -88,7 +79,7 @@ async function postSignGoogleHandler(req , res)
     console.log("An account with this email already exists.")
   }
 
-  const token = await fetchPOST('http://auth:4002/token/create' , body_data.email);  
+  const token = await helper.fetchPOST('http://auth:4002/token/create' , body_data.email);  
   return res.send(token);
 }
 
@@ -130,7 +121,7 @@ async function postLoginHandler(req , res)
     if(!user || user.password != req.body.password)
       throw new Error('false');
 
-    const token = await fetchPOST('http://auth:4002/token/create' , email);
+    const token = await helper.fetchPOST('http://auth:4002/token/create' , email);
     return res.send(token);
   } 
   catch (error) 

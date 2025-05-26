@@ -1,10 +1,11 @@
-const server = require('./services/server')
+const server = require('./server')
+
 const getHandlers = require('./routes/getHandler')
 const postHandlers = require('./routes/postHandler')
-const routeUtils = require('./utils/serverUtils')
+
+const helper = require('./utils/helper')
 
 require('./controllers/pluginRegister')(); 
-
 
 const app = server.app;
 
@@ -43,7 +44,7 @@ const routes = [
 
 
 
-routes.forEach(route => { app.route(routeUtils.handleDataChange(route)); })
+routes.forEach(route => { app.route(helper.initRoutesFromConfig(route)); })
 server.StartServer();
 
 

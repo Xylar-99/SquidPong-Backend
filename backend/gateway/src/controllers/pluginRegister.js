@@ -1,5 +1,4 @@
-
-const fastify = require('../services/server')
+const fastify = require('../server')
 const fastifyStatic = require('@fastify/static');
 const cookie = require('@fastify/cookie')
 const multipart  = require('@fastify/multipart');

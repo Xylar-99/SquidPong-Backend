@@ -1,5 +1,5 @@
 
-function handleDataChange(route)
+function initRoutesFromConfig(route)
 {
     const data = {
         method : route.method,
@@ -13,4 +13,4 @@ function handleDataChange(route)
 }
 
 
-module.exports = {handleDataChange}
+module.exports = {initRoutesFromConfig}
