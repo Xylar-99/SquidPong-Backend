@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Profile Card</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+  <div class="bg-white p-6 rounded-lg shadow-md flex items-center space-x-4 max-w-sm">
+    <img
+    id="avatar"
+      class="w-20 h-20 rounded-full object-cover"
+      src="https://randomuser.me/api/portraits/men/32.jpg"
+      alt="Profile Image"
+    />
+    <div>
+      <h2 class="text-xl font-semibold text-gray-900" id="name">John Doe</h2>
+      <p class="text-gray-500" id="displayName">@johndoe</p>
+    </div>
+  </div>
+  <script>
+
+  const img = document.getElementById('avatar');
+  const name = document.getElementById('name');
+  const displayName = document.getElementById('displayName');
+
+    fetch('http://localhost:4000/me')
+    .then(response => response.json())
+    .then(data => 
+      {
+        img.src = data.avatar_url;
+        name.textContent = data.name;
+        displayName.textContent = data.display_name;
+      }
+    )
+
+  </script>
+</body>
+</html>
