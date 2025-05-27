@@ -1,4 +1,3 @@
-const prisma = require('../db/db')
 const nodemailer = require('nodemailer');
 
 
@@ -16,7 +15,7 @@ async function fetchPOST(url , body)
     config.body = JSON.stringify(body);
     const response = await fetch(url, config);
     const res = await response.json();
-    console.log(res)
+
     return res;
 }
 
@@ -29,7 +28,7 @@ async function getUserByToken(req)
 {
     const token = req.headers.authorization;
     const me = await fetchPOST('http://auth:4002/token/verify' , {token : token})
-    const user = await prisma.user.findUnique({where : {email : me.email}})
+    const user = await findUnique('user' , {where : {email : me.email}})
     return user;
 }
 
@@ -76,5 +75,34 @@ function sendEmailMessage(options)
 ///////////////////////////////////////////////
 
 
+async function create(table , _data) 
+{
+  const res = await fetchPOST(`http://database:4003/store/${table}` , _data)
+  return res;
+}
 
-module.exports = {initRoutesFromConfig , getUserByToken , fetchPOST , sendEmailMessage}
+
+//////////////////////////////////////////////
+
+
+async function findUnique(table , _data) 
+{
+  const res = await fetchPOST(`http://database:4003/find/${table}` , _data)
+  return res;
+}
+
+
+/////////////////////////////////////////////
+
+
+async function update(table , _data) 
+{
+  const res = await fetchPOST(`http://database:4003/update/${table}` , _data)
+  return res;
+}
+
+
+/////////////////////////////////////////////
+
+
+module.exports = {initRoutesFromConfig  , update  , create , findUnique , getUserByToken , fetchPOST , sendEmailMessage}

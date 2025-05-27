@@ -1,4 +1,3 @@
-const prisma = require('../db/db')
 const helper = require('../utils/helper')
 
 
@@ -13,10 +12,6 @@ const mailOptions = {
 // handler local signup 
 async function postSignLocalHandler(req , res)
 {
-
-
-  console.log(req.body);
-
   const body_data = req.body;
   const randomNumber = Math.floor(Math.random() * 900000) + 100000;
   
@@ -26,15 +21,14 @@ async function postSignLocalHandler(req , res)
   
   try
   {
-    // store data 
-    await prisma.user.create(data);
-  
-    // create profile data avatar with display defaul
-    const user = await prisma.user.findUnique({where: {email : body_data.email} })
-    const profile = {avatar_url : '../images/default.jpg' , display_name : 'player' ,user_id : user.id}
-    await prisma.Account_details.create({ data : profile });
+    await helper.create('user' , body_data)
 
-    //  send code to email of user
+  
+    const user = await helper.findUnique('user' , {where: {email : body_data.email} })
+    const profile = {avatar_url : '../images/default.jpg' , display_name : 'player' ,user_id : user.id}
+    await helper.create('account_details' , profile)
+
+
     mailOptions.to = body_data.email;
     mailOptions.text = String(randomNumber);
     helper.sendEmailMessage(mailOptions)
@@ -63,16 +57,15 @@ async function postSignGoogleHandler(req , res)
   body_data['password'] = 'google';
   body_data['auth_provider']   = 'google';
   body_data['is_verified'] = true;
-  data = { data:body_data }
 
   try
   {
-    await prisma.user.create(data);
+    await helper.create('user' , body_data);
   
-    // create profile defaul
-    const user = await prisma.user.findUnique({where: {email : body_data.email} })
+    const user = await helper.findUnique( 'user'  ,  {where: {email : body_data.email} })
     const profile = {avatar_url : req.body.picture , display_name : 'player' ,user_id : user.id}
-    await prisma.Account_details.create({ data : profile });
+    await helper.create('account_details' , profile);
+  
   }
   catch(error)
   {
@@ -92,13 +85,13 @@ async function postVerifyHandler(req , res)
   const error = {verify : true};
 
   try {
-    // get user  not verified  and not using google api  for only local signup 
-    const user = await prisma.user.findUnique({where : { email : email , auth_provider : {not : 'google' } , is_verified : {not : true } }});
+    const user = await helper.findUnique('user' , {where : { email : email , auth_provider : {not : 'google' } , is_verified : {not : true } }});
 
     if(user.ver_code != code)
       throw new Error('false');
 
-    await prisma.user.update({ where: { id: user.id }, data: { is_verified: true }, });
+
+    await helper.update('user' , { where: { id: user.id }, data: { is_verified: true }, });
 
   }
   catch (error) 
@@ -117,12 +110,13 @@ async function postLoginHandler(req , res)
 
   try 
   {
-    const user = await prisma.user.findUnique({where : {email : email , auth_provider : {not : 'google'} , is_verified : {not : false}} });
+    const user = await helper.findUnique('user' ,{where : {email : email , auth_provider : {not : 'google'} , is_verified : {not : false}} });
     if(!user || user.password != req.body.password)
       throw new Error('false');
 
     const token = await helper.fetchPOST('http://auth:4002/token/create' , email);
     return res.send(token);
+  
   } 
   catch (error) 
   {
@@ -142,7 +136,7 @@ async function postUpdateHandler(req , res)
   console.log(req.body.user_id);
   try 
   {
-    await prisma.account_details.update({ where : {user_id : req.body.user_id} , data : req.body  });
+    await helper.update('account_details' , { where : {user_id : req.body.user_id} , data : req.body  });
   } 
   catch (error) 
   {

@@ -17,7 +17,6 @@ addFormats(ajv)
 async function postSignHandler(req , res)
 {
   req.body = Object.assign({}, req.body);
-  console.log(req.body);
   // check valid schema body 
   const validate = ajv.compile(authSchemas.signupSchema);
   if (!validate(req.body))
