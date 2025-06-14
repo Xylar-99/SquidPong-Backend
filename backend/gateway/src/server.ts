@@ -1,12 +1,14 @@
 import dotenv from 'dotenv';
+import path from 'path';
 import app from './app'
 
-console.log("hello world")
-dotenv.config({ path: '/gateway' });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
 
 const port = Number(process.env.PORT);
 const host = process.env.HOST;
 
+console.log(port , host)
 
 async function StartServer()
 {

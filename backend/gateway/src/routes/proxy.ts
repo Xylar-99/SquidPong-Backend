@@ -5,7 +5,7 @@ import {proxyToNotifyService , proxyToChatService , proxyToGameService , proxyTo
 
 
 type Route = {
-    method  : 'GET' | 'POST' | 'DELETE' | '*'; 
+    method  : 'GET' | 'POST' | 'DELETE'; 
     url     : string;
     handler : RouteHandlerMethod;
     schema? : FastifySchema;
@@ -15,10 +15,10 @@ type Route = {
 
 const gatewayRoutes: Route[] = [
 
-  { method: '*', url: '/api/users/*', handler: proxyToUserService },
-  { method: '*', url: '/api/chat/*', handler: proxyToChatService },
-  { method: '*', url: '/api/game/*', handler: proxyToGameService },
-  { method: '*', url: '/api/notify/*', handler: proxyToNotifyService },
+  { method: 'GET', url: '/api/users/*', handler: proxyToUserService },
+  { method: 'GET', url: '/api/chat/*', handler: proxyToChatService },
+  { method: 'GET', url: '/api/game/*', handler: proxyToGameService },
+  { method: 'GET', url: '/api/notify/*', handler: proxyToNotifyService },
 ];
 
 

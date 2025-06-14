@@ -1,25 +1,24 @@
-FROM node:20
+FROM --platform=linux/amd64 node:20-slim
 
-# RUN apt-get update && apt-get install -y openssl libssl-dev vim
+RUN apt-get update && apt-get install -y openssl libssl-dev vim
 
-# WORKDIR /gateway
+WORKDIR /gateway
 
-# COPY ./*.json .
+COPY ./*.json .
 
-# RUN npm install
+RUN npm install
 
-# COPY ./src ./src
+COPY ./src ./src
 
-# # COPY ./prisma ./prisma
+COPY ./prisma ./prisma
 
-# COPY ./.env .
+COPY ./.env .
 
-# # RUN npx prisma generate
+RUN npx prisma generate
 
-# RUN npm run build
+RUN npm run build
 
-# EXPOSE 4000
+EXPOSE 4000
 
-# CMD ["npm" , "run" , "start"]
-CMD ["tail" , "-f" , "/dev/null"]
+CMD ["npm" , "run" , "start"]
 
