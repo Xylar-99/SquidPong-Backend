@@ -7,5 +7,5 @@ import authplugin from './authPlugin'
 export default async function registerPlugins(app:FastifyInstance) 
 {
     staticplugin(app);
-    // authplugin(app);
+    authplugin(app);
 }

@@ -13,3 +13,6 @@ const routes = [...notifyRoutes]
 
 routes.forEach(route => {app.route(route)})
 app.setErrorHandler(errorHandler)
+
+
+console.log("say hello notify");

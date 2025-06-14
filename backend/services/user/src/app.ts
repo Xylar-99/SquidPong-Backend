@@ -12,4 +12,7 @@ registerPlugins(app);
 const routes = [...userRoutes]
 
 routes.forEach(route => {app.route(route)})
+
+console.log("say hello user");
+
 app.setErrorHandler(errorHandler)

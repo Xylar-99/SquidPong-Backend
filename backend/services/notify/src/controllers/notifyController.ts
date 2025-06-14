@@ -4,7 +4,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 // get method controllers
 async function postSendNotificationHandler(req:FastifyRequest , res:FastifyReply)
 {
-    return res.type('text/html').sendFile('index.html')
+    return res.send(req.body)
 }
 
 

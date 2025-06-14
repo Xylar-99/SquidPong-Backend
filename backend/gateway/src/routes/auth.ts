@@ -5,7 +5,7 @@ import { loginSchema, signupSchema } from '../validators/authSchemas';
 
 
 type Route = {
-    method  : 'GET' | 'POST' | 'DELETE' | '*'; 
+    method  : 'GET' | 'POST' | 'DELETE'; 
     url     : string;
     handler : RouteHandlerMethod;
     schema? : FastifySchema;

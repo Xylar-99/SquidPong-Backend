@@ -1,24 +1,23 @@
-FROM node:20
+FROM --platform=linux/amd64 node:20-slim
 
 RUN apt-get update && apt-get install -y openssl libssl-dev vim
 
-WORKDIR /gateway
-
-RUN mkdir -p /gateway/src
+WORKDIR /game
 
 COPY ./*.json .
 
 RUN npm install
 
+COPY ./src ./src
+
 COPY ./prisma ./prisma
+
+COPY ./.env .
 
 RUN npx prisma generate
 
-COPY ./src/ ./src/
-
 RUN npm run build
 
-EXPOSE 4000
+EXPOSE 4003
 
 CMD ["npm" , "run" , "start"]
-

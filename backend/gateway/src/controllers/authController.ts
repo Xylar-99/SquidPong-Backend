@@ -18,7 +18,6 @@ async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-
 async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 {
     return res.send(req.body)

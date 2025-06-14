@@ -3,22 +3,22 @@ version: "3.9"
 services:
   gateway:
     build: ./backend/gateway
-    # image: gateway-image
+    image: gateway-image
     container_name: gateway
-    platform: linux/amd64
+    command: sh -c "npx prisma migrate dev --name init && npm run start "
     ports:
       - "4000:4000"
-    networks:
-        - web
     volumes:
         - ./frontend:/var/www/html/frontend
-  # user:
-  #   build: ./backend/services/user
-  #   image: user-image
-  #   container_name: user
-  #   command: sh -c "npx prisma migrate dev --name init && npm run start "
-  #   networks: 
-  #       - web
+    networks:
+        - web
+  user:
+    build: ./backend/services/user
+    image: user-image
+    container_name: user
+    command: sh -c "npx prisma migrate dev --name init && npm run start "
+    networks: 
+        - web
   # chat:
   #   build: ./backend/services/chat
   #   image: chat-image
