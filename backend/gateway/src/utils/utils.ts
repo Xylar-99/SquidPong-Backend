@@ -1,13 +1,14 @@
 import amqp from 'amqplib';
 
-export async function sendmsg_to_rabbitmq(data: object) {
+async function sendDataToQueue(data: object , _queue:string) 
+{
   try {
     const connection = await amqp.connect('amqp://rabbitmq:5672');
     const channel = await connection.createChannel();
 
-    const queue = 'emailhub';
     const msgBuffer = Buffer.from(JSON.stringify(data));
-
+    const queue = _queue;
+    
     await channel.assertQueue(queue);
     channel.sendToQueue(queue, msgBuffer);
 
@@ -20,3 +21,11 @@ export async function sendmsg_to_rabbitmq(data: object) {
   }
 }
 
+
+
+export async function sendVerificationEmail(_email:string)
+{
+
+  const data:object = {email:_email , text:999}
+  await sendDataToQueue(data , 'emailhub');
+}

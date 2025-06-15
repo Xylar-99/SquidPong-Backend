@@ -1,18 +1,13 @@
   
-  import nodemailer from 'nodemailer';
-  import amqp from 'amqplib';
+import nodemailer from 'nodemailer';
         
 
-
-
 const mailOptions = {
-  from: 'abdoqoubai@gmail.com',
+  from: 'abdelbassat ',
   to: 'aquaoubai@gmail.com',
   subject: 'ft_trandandan',
   text: '455',
 };
-
-
 
 
 const transporter = nodemailer.createTransport({

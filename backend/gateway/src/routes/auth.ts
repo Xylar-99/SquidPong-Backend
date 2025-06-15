@@ -17,6 +17,9 @@ const authRoutes: Route[] = [
   { method: 'POST', url: '/api/signup', handler: authController.postSignupHandler, schema: { body: signupSchema } },
   { method: 'POST', url: '/api/login', handler: authController.postLoginHandler, schema: { body: loginSchema } },
   { method: 'POST', url: '/api/logout', handler: authController.postLogoutHandler },
+  
+  
+  { method: 'POST', url: '/refresh-token', handler: authController.postrefreshtokenHandler },
 
 ];
 

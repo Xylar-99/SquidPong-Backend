@@ -1,9 +1,9 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { hashPassword , VerifyPassword } from '../utils/hashedPassword';
 import prisma from '../db/database';
-import { sendmsg_to_rabbitmq } from '../utils/utils';
+import { sendVerificationEmail } from '../utils/utils';
 
-
+import app from '../app';
 
 
 
@@ -21,7 +21,6 @@ async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-    const msgemail = {email:body.email , text:"434"}
     try 
     {
         const user = await prisma.user.findUnique({ where: { email: body.email }})
@@ -30,7 +29,7 @@ async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 
         body.password = await hashPassword(body.password);
         await prisma.user.create({data: body});
-        await sendmsg_to_rabbitmq(msgemail);
+        await sendVerificationEmail(body.email);
     }
     catch (error) 
     {
@@ -45,8 +44,13 @@ async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
+    const accessToken = await app.jwt.sign({ userId: 4 } , { expiresIn: '1h' });
+    const refreshToken = await app.jwt.sign({ userId: 4 } , { expiresIn: '7d' });
+  
 
-    return res.send(body)
+    return res.setCookie('accessToken', accessToken, { httpOnly: true})
+                .setCookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 })
+                .send({body:accessToken})
 }
 
 
@@ -59,4 +63,13 @@ async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-export {postLoginHandler , postLogoutHandler , getRootHandler , postSignupHandler}
+
+
+
+async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyReply)
+{
+    return res.send(req.body)
+}
+
+
+export {postLoginHandler , postLogoutHandler , getRootHandler , postSignupHandler , postrefreshtokenHandler}

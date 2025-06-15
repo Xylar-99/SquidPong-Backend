@@ -31,7 +31,7 @@ import amqp from 'amqplib';
 import { sendEmailMessage } from './utils/utils';
 
 
-async function receiveRabbitMQ() {
+async function receiveFromQueue() {
 
   try {
     const connection = await amqp.connect('amqp://rabbitmq:5672');
@@ -51,5 +51,5 @@ async function receiveRabbitMQ() {
 }
 
 
-receiveRabbitMQ();
+receiveFromQueue();
 // StartServer();

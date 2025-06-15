@@ -51,8 +51,8 @@ const session_option = {
 
   
   
-  const jwt_config = {
-    secret: 'abquaoub' 
+const jwt_config:any = {
+    secret: process.env.JWTSECRET
   }
   
 
