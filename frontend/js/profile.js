@@ -32,7 +32,7 @@ const FormLogin = document.getElementById("FormLogin");
       });
 
 
-      fetch("http://localhost:4000/signup", { method: "POST", headers: {   "Content-Type": "application/json" }, body: JSON.stringify(jsonData) })
+      fetch("http://localhost:4000/api/signup", { method: "POST", headers: {   "Content-Type": "application/json" }, body: JSON.stringify(jsonData) })
       .then(async response => {
         if (!response.ok)
             translate_signup();
