@@ -66,8 +66,7 @@ async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
     } 
     catch (error) 
     {
-        console.log(error)
-        return res.status(400).send({msg : "user is not exist or not verify"})
+        return res.status(400).send({msg : error})
     }
     
     return res.send({msg:"done"})
@@ -116,7 +115,9 @@ async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyReply)
     const body = req.body as any;
     console.log(body.refreshToken);
 
-    const id = await app.jwt.verify(req.body.refreshToken , process.env.JWTSECRET).userId;
+    const payload: any = await app.jwt.verify(body.refreshToken);
+    const id: string = payload.userId;
+
     const newAccessToken = await app.jwt.sign({ userId: id } , { expiresIn: '1h' });
 
     res.send({ accessToken: newAccessToken });

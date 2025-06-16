@@ -44,9 +44,9 @@ const verifyEmailSchema = {
     type : "object" ,
     properties : {
         email : {type: "string" , format : 'email'},
-        password : {type: "string" ,  minLength : 2 },
+        code : {type: "string" ,  minLength : 2 },
     },
-    required : ['email' , 'password'],
+    required : ['email' , 'code'],
     additionalProperties: false
 
     

@@ -19,7 +19,7 @@ const authRoutes: Route[] = [
   { method: 'POST', url: '/api/logout', handler: authController.postLogoutHandler },
   
   // verify email
-  { method: 'POST', url: '/api/verify-email', handler: authController.verifyEmailHandler, schema: {   body: verifyEmailSchema } }
+  { method: 'POST', url: '/api/verify-email', handler: authController.verifyEmailHandler, schema: {   body: verifyEmailSchema } },
 
   
   { method: 'POST', url: '/refresh-token', handler: authController.postrefreshtokenHandler },

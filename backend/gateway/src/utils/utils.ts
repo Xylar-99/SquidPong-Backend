@@ -27,7 +27,7 @@ async function sendDataToQueue(data: object , _queue:string)
 export async function sendVerificationEmail(_email:string)
 {
   const code:string = await generate6DigitCode()
-  await redis.set(_email , code , '60')
+  await redis.set(_email, code,'EX', '60')
 
   const data:object = {email:_email , text:code}
   await sendDataToQueue(data , 'emailhub');
