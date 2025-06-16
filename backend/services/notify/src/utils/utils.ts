@@ -28,8 +28,7 @@ export async function sendEmailMessage(info:any)
   mailOptions.to = data.email;
   mailOptions.text = data.text;
 
-  const test = await redis.get(`user:123`);
-  console.log("redisss"  , test)
+
 
   transporter.sendMail(mailOptions)
   console.log("done send message to email");

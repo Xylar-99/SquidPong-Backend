@@ -9,10 +9,9 @@ import app from '../app';
 
 async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 {
-
+    console.log(req.headers)
     return res.type('text/html').sendFile('index.html')
 }
-
 
 
 
@@ -29,33 +28,52 @@ async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 
         body.password = await hashPassword(body.password);
         await prisma.user.create({data: body});
-        await redis.set('user:123', 'rediiiiiiiiis work', 'EX', 120);
-        
+
         await sendVerificationEmail(body.email);
-
-
     }
     catch (error) 
     {
-        console.log("msg : " , error);
-        return res.status(400).send({success:false})
+        return res.status(400).send({success:error})
     }
-    return res.send({success:true})
+    return res.send({msg:"done"})
 }
+
+
+
 
 
 
 async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-    const accessToken = await app.jwt.sign({ userId: 4 } , { expiresIn: '1h' });
-    const refreshToken = await app.jwt.sign({ userId: 4 } , { expiresIn: '7d' });
-  
 
-    return res.setCookie('accessToken', accessToken, { httpOnly: true})
-                .setCookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 })
-                .send({body:accessToken})
+    try 
+    {
+        const user = await prisma.user.findUnique({ where: { email: body.email , is_verified: true }})
+        if(!user)
+            throw new Error("user is exist or not verify")
+
+        if(await VerifyPassword(body.password , user.password) == false)
+            throw new Error("password incorrect")
+
+        const accessToken = await app.jwt.sign({ userId: user.id } , { expiresIn: '1h' });
+        const refreshToken = await app.jwt.sign({ userId: user.id } , { expiresIn: '7d' });
+
+
+        res.setCookie('accessToken', accessToken, { httpOnly: true });
+        res.setCookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60,});
+
+    } 
+    catch (error) 
+    {
+        console.log(error)
+        return res.status(400).send({msg : "user is not exist or not verify"})
+    }
+    
+    return res.send({msg:"done"})
 }
+
+
 
 
 
@@ -66,14 +84,43 @@ async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
+async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
+{
+    const body = req.body as any;
+
+    try 
+    {
+        const user = await prisma.user.findUnique({ where: { email: body.email}})
+        if(!user)
+            throw new Error("user is not exist")
+
+        const code = await redis.get(body.email);
+        if(code != body.code)
+            throw new Error("Code is incorrect")
+
+        await prisma.user.update({where : {email : body.email} , data:{is_verified : true}})
+    } 
+    catch (error) 
+    {
+        return res.status(400).send({msg : error})
+    }
+    
+    return res.send({msg:"done"})
+}
 
 
 
 
 async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyReply)
 {
-    return res.send(req.body)
+    const body = req.body as any;
+    console.log(body.refreshToken);
+
+    const id = await app.jwt.verify(req.body.refreshToken , process.env.JWTSECRET).userId;
+    const newAccessToken = await app.jwt.sign({ userId: id } , { expiresIn: '1h' });
+
+    res.send({ accessToken: newAccessToken });
 }
 
 
-export {postLoginHandler , postLogoutHandler , getRootHandler , postSignupHandler , postrefreshtokenHandler}
+export {postLoginHandler   , verifyEmailHandler , postLogoutHandler , getRootHandler , postSignupHandler , postrefreshtokenHandler}

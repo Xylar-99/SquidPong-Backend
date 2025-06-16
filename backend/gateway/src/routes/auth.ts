@@ -1,6 +1,6 @@
 import { RouteHandlerMethod , FastifySchema } from 'fastify';
 import * as authController from '../controllers/authController';
-import { loginSchema, signupSchema } from '../validators/authSchemas';
+import { loginSchema, signupSchema , verifyEmailSchema } from '../validators/authSchemas';
 
 
 
@@ -18,6 +18,9 @@ const authRoutes: Route[] = [
   { method: 'POST', url: '/api/login', handler: authController.postLoginHandler, schema: { body: loginSchema } },
   { method: 'POST', url: '/api/logout', handler: authController.postLogoutHandler },
   
+  // verify email
+  { method: 'POST', url: '/api/verify-email', handler: authController.verifyEmailHandler, schema: {   body: verifyEmailSchema } }
+
   
   { method: 'POST', url: '/refresh-token', handler: authController.postrefreshtokenHandler },
 

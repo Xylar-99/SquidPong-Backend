@@ -39,4 +39,17 @@ const detailsSchema = {
 }
 
 
-export { loginSchema, signupSchema, detailsSchema };
+
+const verifyEmailSchema = {
+    type : "object" ,
+    properties : {
+        email : {type: "string" , format : 'email'},
+        password : {type: "string" ,  minLength : 2 },
+    },
+    required : ['email' , 'password'],
+    additionalProperties: false
+
+    
+}
+
+export { loginSchema  , verifyEmailSchema , signupSchema, detailsSchema };

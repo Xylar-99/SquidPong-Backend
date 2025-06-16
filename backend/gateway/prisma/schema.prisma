@@ -15,7 +15,6 @@ model User {
   name          String  @unique
   email         String  @unique
   auth_provider String  @default("local")
-  ver_code      String  @default("999")
   is_verified   Boolean @default(false)  
   password      String  
 
