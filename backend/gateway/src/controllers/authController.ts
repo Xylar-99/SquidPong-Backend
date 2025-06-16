@@ -2,7 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { hashPassword , VerifyPassword } from '../utils/hashedPassword';
 import prisma from '../db/database';
 import { sendVerificationEmail } from '../utils/utils';
-
+import redis from '../utils/redis';
 import app from '../app';
 
 
@@ -29,7 +29,11 @@ async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 
         body.password = await hashPassword(body.password);
         await prisma.user.create({data: body});
+        await redis.set('user:123', 'rediiiiiiiiis work', 'EX', 120);
+        
         await sendVerificationEmail(body.email);
+
+
     }
     catch (error) 
     {

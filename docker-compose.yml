@@ -1,6 +1,13 @@
 version: "3.9"
 
 services:
+  redis:
+    image: redis:7
+    container_name: redis
+    expose:
+      - 6379
+    networks:
+        - web
   rabbitmq:
     image: rabbitmq
     container_name: rabbitmq
@@ -44,7 +51,7 @@ services:
     build: ./backend/services/notify
     image: notify-image
     container_name: notify
-    command: sh -c "sleep 10 && npm run start "
+    command: sh -c "sleep 20 && npm run start "
     networks: 
         - web
   

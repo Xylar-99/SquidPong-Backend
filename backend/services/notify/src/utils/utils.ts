@@ -1,9 +1,9 @@
   
 import nodemailer from 'nodemailer';
-        
+import redis from './redis'; 
 
 const mailOptions = {
-  from: 'abdelbassat ',
+  from: 'abdoqoubai@gmail.com',
   to: 'aquaoubai@gmail.com',
   subject: 'ft_trandandan',
   text: '455',
@@ -27,7 +27,10 @@ export async function sendEmailMessage(info:any)
   const data = JSON.parse(info.content.toString());
   mailOptions.to = data.email;
   mailOptions.text = data.text;
-        
+
+  const test = await redis.get(`user:123`);
+  console.log("redisss"  , test)
+
   transporter.sendMail(mailOptions)
   console.log("done send message to email");
     

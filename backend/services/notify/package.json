@@ -18,9 +18,9 @@
     "@fastify/cookie": "^11.0.2",
     "@prisma/client": "^6.8.2",
     "nodemailer": "^6.9.4",
-    "resend": "^2.0.0",
     "sqlite3": "^5.1.7",
     "dotenv": "^16.3.1",
+    "ioredis": "^5.3.2",
     "amqplib": "^0.10.3"
   },
   "devDependencies": {
@@ -28,6 +28,8 @@
     "nodemon": "^3.1.10",
     "typescript": "^5.4.5",
     "ts-node-dev": "^2.0.0",
-    "@types/node": "^20.11.0"
+    "@types/node": "^20.11.0",
+    "@types/ioredis": "^4.28.3"
+
   }
 }

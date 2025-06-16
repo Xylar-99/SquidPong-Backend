@@ -26,6 +26,6 @@ async function sendDataToQueue(data: object , _queue:string)
 export async function sendVerificationEmail(_email:string)
 {
 
-  const data:object = {email:_email , text:999}
+  const data:object = {email:_email , text:"999"}
   await sendDataToQueue(data , 'emailhub');
 }
