@@ -26,13 +26,13 @@ services:
         - ./frontend:/var/www/html/frontend
     networks:
         - web
-  # user:
-  #   build: ./backend/services/user
-  #   image: user-image
-  #   container_name: user
-  #   command: sh -c "npx prisma migrate dev --name init && npm run start "
-  #   networks: 
-  #       - web
+  user:
+    build: ./backend/services/user
+    image: user-image
+    container_name: user
+    command: sh -c "npx prisma migrate dev --name init && npm run start "
+    networks: 
+        - web
   # chat:
   #   build: ./backend/services/chat
   #   image: chat-image

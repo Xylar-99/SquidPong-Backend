@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { hashPassword , VerifyPassword } from '../utils/hashedPassword';
 import prisma from '../db/database';
-import { sendVerificationEmail } from '../utils/utils';
+import { sendVerificationEmail , sendToService } from '../utils/utils';
 import redis from '../utils/redis';
 import app from '../app';
 
@@ -87,6 +87,7 @@ async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
 
+    console.log("hello")
     try 
     {
         const user = await prisma.user.findUnique({ where: { email: body.email}})
@@ -98,12 +99,14 @@ async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
             throw new Error("Code is incorrect")
 
         await prisma.user.update({where : {email : body.email} , data:{is_verified : true}})
+        await sendToService('http://user:4001/api/users/profile' , 'POST' , {userID : user.id})
     } 
     catch (error) 
     {
+        console.log("error" , error)
         return res.status(400).send({msg : error})
     }
-    
+
     return res.send({msg:"done"})
 }
 

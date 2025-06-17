@@ -41,3 +41,15 @@ async function generate6DigitCode(): Promise<string>
   const value:string = Math.floor(100000 + Math.random() * 900000).toString();
   return value
 }
+
+export async function sendToService(_url:string , _method:string , _data:object): Promise<object>
+{
+
+  let res:any ;
+  if(_method === 'GET')
+    res = await fetch(_url); 
+  else
+    res = await fetch(_url, {method: _method,headers: { 'Content-Type': 'application/json' },body: JSON.stringify(_data), });
+
+  return await res.json();
+}
