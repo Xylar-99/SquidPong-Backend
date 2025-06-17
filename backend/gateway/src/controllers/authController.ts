@@ -6,21 +6,26 @@ import redis from '../utils/redis';
 import app from '../app';
 
 
+import { OAuth2Namespace } from '@fastify/oauth2';
 
-async function getRootHandler(req:FastifyRequest , res:FastifyReply)
+declare module 'fastify' {
+  interface FastifyInstance {
+    googleOAuth2: OAuth2Namespace;
+  }
+}
+
+
+export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 {
     console.log(req.headers)
     return res.type('text/html').sendFile('index.html')
 }
 
 
-
-
-
-async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
+export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-    try 
+    try
     {
         const user = await prisma.user.findUnique({ where: { email: body.email }})
         if(user)
@@ -41,9 +46,7 @@ async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-
-
-async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
+export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
 
@@ -76,18 +79,17 @@ async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
+export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 {
     return res.send(req.body)
 }
 
 
 
-async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
+export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
 
-    console.log("hello")
     try 
     {
         const user = await prisma.user.findUnique({ where: { email: body.email}})
@@ -103,7 +105,6 @@ async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
     } 
     catch (error) 
     {
-        console.log("error" , error)
         return res.status(400).send({msg : error})
     }
 
@@ -113,10 +114,9 @@ async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyReply)
+export async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-    console.log(body.refreshToken);
 
     const payload: any = await app.jwt.verify(body.refreshToken);
     const id: string = payload.userId;
@@ -127,4 +127,12 @@ async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyReply)
 }
 
 
-export {postLoginHandler   , verifyEmailHandler , postLogoutHandler , getRootHandler , postSignupHandler , postrefreshtokenHandler}
+
+export async function getCallbackhandler(req:FastifyRequest , res:FastifyReply) 
+{
+    const tokengoogle:any = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
+    const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });
+    const user = await result.json();
+
+  return res.send({msg : user});
+}

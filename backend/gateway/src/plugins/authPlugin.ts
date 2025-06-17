@@ -5,25 +5,25 @@ import session from '@fastify/session';
 import jwt from '@fastify/jwt';
 
 
-const multipart_config = {
-  attachFieldsToBody: false,
-  addToBody: false,
-}
+// const multipart_config = {
+//   attachFieldsToBody: false,
+//   addToBody: false,
+// }
 
 
-const fastifyStatic_config = {
-    root: '/var/www/html/frontend',
-    prefix: '/',
-}
+// const fastifyStatic_config = {
+//     root: '/var/www/html/frontend',
+//     prefix: '/',
+// }
 
 
-const auth2_config = {
+const auth2_config:any = {
   name: 'googleOAuth2',
   scope: ['profile', 'email'],
   credentials: {
     client: {
-      id: '676952011207-ejdkepng7ovdfqmb109ingsgda5oncgb.apps.googleusercontent.com',
-      secret: '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'
+      id: process.env.ID,
+      secret: process.env.SECRET
     },
     auth: {
       authorizeHost: 'https://accounts.google.com',
@@ -35,6 +35,7 @@ const auth2_config = {
   startRedirectPath: '/auth/google',
   callbackUri: 'http://localhost:4000/auth/google/callback'
 }
+
 
 
 const session_option = {
