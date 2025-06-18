@@ -159,3 +159,27 @@ export async function getCallbackhandler(req:FastifyRequest , res:FastifyReply)
     
   return res.send({msg : "sss"});
 }
+
+
+
+export async function getIntraCallbackhandler(req:FastifyRequest , res:FastifyReply) 
+{
+    try 
+    {
+
+    const tokengoogle:any = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
+    const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });
+    const data = await result.json();
+
+
+    const user = await prisma.user.upsert({ where: { email: data.email }, update: {}, create: { email: data.email} });
+    await sendToService('http://user:4001/api/users/profile' , 'POST' , user)
+    
+    } 
+    catch (error) 
+    {
+        
+    }
+    
+  return res.send({msg : "sss"});
+}

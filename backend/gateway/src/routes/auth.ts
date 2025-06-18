@@ -22,6 +22,7 @@ const authRoutes: Route[] = [
   { method: 'POST', url: '/api/verify-email', handler: authController.verifyEmailHandler, schema: {   body: verifyEmailSchema } },
 
   { method: 'GET', url: '/auth/google/callback', handler: authController.getCallbackhandler },
+  { method: 'GET', url: '/callback', handler: authController.getIntraCallbackhandler },
   
   { method: 'POST', url: '/refresh-token', handler: authController.postrefreshtokenHandler },
 
