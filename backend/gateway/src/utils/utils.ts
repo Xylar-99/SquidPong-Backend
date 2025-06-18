@@ -1,5 +1,7 @@
 import redis from './redis';
 import amqp from 'amqplib';
+import { hashPassword } from './hashedPassword';
+
 
 async function sendDataToQueue(data: object , _queue:string) 
 {
@@ -24,13 +26,20 @@ async function sendDataToQueue(data: object , _queue:string)
 
 
 
-export async function sendVerificationEmail(_email:string)
+export async function sendVerificationEmail(data:any)
 {
   const code:string = await generate6DigitCode()
-  await redis.set(_email, code,'EX', '60')
 
-  const data:object = {email:_email , text:code}
-  await sendDataToQueue(data , 'emailhub');
+  data.password = await hashPassword(data.password);
+  data['code'] = code;
+
+  console.log(data);
+
+  
+  await redis.set(data.email, JSON.stringify(data),'EX', '60')
+
+  const info:object = {email:data.email , text:code}
+  await sendDataToQueue(info , 'emailhub');
 }
 
 
@@ -42,7 +51,7 @@ async function generate6DigitCode(): Promise<string>
   return value
 }
 
-export async function sendToService(_url:string , _method:string , _data:object): Promise<object>
+export async function sendToService(_url:string , _method:string , _data:any): Promise<object>
 {
 
   let res:any ;

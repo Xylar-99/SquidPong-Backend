@@ -9,7 +9,7 @@ export async function hashPassword(password: string): Promise<string>
 }
 
 
-export async function VerifyPassword(password: string , hashedPassword:string): Promise<boolean>
+export async function VerifyPassword(password: string , hashedPassword:any): Promise<boolean>
 {
     const isMatch = await bcrypt.compare(password, hashedPassword);
 

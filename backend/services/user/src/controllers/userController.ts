@@ -8,12 +8,13 @@ import prisma from '../db/database';
 export async function createProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-    const profile = {userId : body.userID  , name : "abdelbassat" , bio : "full stack" , avatarUrl:"../images/profile.png"}
+
+    const profile = {userId : body.id  , name : `player${body.id}` , bio : `full stack ${body.id}` , avatarUrl:`../images/profile${body.id}.png`}
     
     console.log(profile);
     try 
     {
-        await prisma.profile.create({data : profile})    
+        await prisma.profile.upsert({where : {userId : body.id} , update:{} , create:profile})    
     } 
     catch (error)
     {

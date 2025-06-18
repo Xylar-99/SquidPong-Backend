@@ -28,13 +28,14 @@ export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
     try
     {
         const user = await prisma.user.findUnique({ where: { email: body.email }})
-        if(user)
+        if(user && user.password)
             throw new Error("User ready exist");
 
-        body.password = await hashPassword(body.password);
-        await prisma.user.create({data: body});
+        const key = await redis.get(body.email); // later  generate new name of variable
+        if(key != null)
+            console.log("We already sent you a code.")
 
-        await sendVerificationEmail(body.email);
+        await sendVerificationEmail(body);
     }
     catch (error) 
     {
@@ -52,9 +53,16 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 
     try 
     {
-        const user = await prisma.user.findUnique({ where: { email: body.email , is_verified: true }})
+        const user = await prisma.user.findUnique({ where: { email: body.email}})
         if(!user)
-            throw new Error("user is exist or not verify")
+            throw new Error("user is not exist")
+
+        if(!user.password)
+        {
+            console.log("user signup using api google but u can link account or login via google")
+            return res.send({msg:"redirect to /signup"})
+
+        }
 
         if(await VerifyPassword(body.password , user.password) == false)
             throw new Error("password incorrect")
@@ -92,17 +100,19 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
 
     try 
     {
-        const user = await prisma.user.findUnique({ where: { email: body.email}})
-        if(!user)
-            throw new Error("user is not exist")
+        const data = await redis.get(body.email);
+        if(data == null)
+            throw new Error("user is not exist or expire verified so signup again")
 
-        const code = await redis.get(body.email);
-        if(code != body.code)
+        const parsed = JSON.parse(data);
+        if(parsed.code != body.code)
             throw new Error("Code is incorrect")
+        delete parsed.code;
 
-        await prisma.user.update({where : {email : body.email} , data:{is_verified : true}})
-        await sendToService('http://user:4001/api/users/profile' , 'POST' , {userID : user.id})
-    } 
+        const user = await prisma.user.upsert({ where: { email: parsed.email }, update: {password:parsed.password}, create: parsed });
+        await sendToService('http://user:4001/api/users/profile' , 'POST' , user)
+
+    }
     catch (error) 
     {
         return res.status(400).send({msg : error})
@@ -130,9 +140,22 @@ export async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyRe
 
 export async function getCallbackhandler(req:FastifyRequest , res:FastifyReply) 
 {
+    try 
+    {
+
     const tokengoogle:any = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
     const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });
-    const user = await result.json();
+    const data = await result.json();
 
-  return res.send({msg : user});
+
+    const user = await prisma.user.upsert({ where: { email: data.email }, update: {}, create: { email: data.email} });
+    await sendToService('http://user:4001/api/users/profile' , 'POST' , user)
+    
+    } 
+    catch (error) 
+    {
+        
+    }
+    
+  return res.send({msg : "sss"});
 }

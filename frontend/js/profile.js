@@ -58,7 +58,7 @@ const FormLogin = document.getElementById("FormLogin");
       });
 
 
-      fetch("http://localhost:4000/verification", { method: "POST", headers: {   "Content-Type": "application/json" }, body: JSON.stringify(jsonData) })
+      fetch("http://localhost:4000/api/verify-email", { method: "POST", headers: {   "Content-Type": "application/json" }, body: JSON.stringify(jsonData) })
       .then(async response => {
         if (!response.ok)
             translate_verify();
@@ -84,7 +84,7 @@ const FormLogin = document.getElementById("FormLogin");
       });
 
 
-      fetch("http://localhost:4000/login", { method: "POST", headers: {   "Content-Type": "application/json" }, body: JSON.stringify(jsonData) })
+      fetch("http://localhost:4000/api/login", { method: "POST", headers: {   "Content-Type": "application/json" }, body: JSON.stringify(jsonData) })
       .then(async response => {
         if (!response.ok)
             translate_login();
