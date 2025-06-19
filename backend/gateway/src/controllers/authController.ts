@@ -164,22 +164,36 @@ export async function getCallbackhandler(req:FastifyRequest , res:FastifyReply)
 
 export async function getIntraCallbackhandler(req:FastifyRequest , res:FastifyReply) 
 {
-    try 
-    {
 
-    const tokengoogle:any = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
-    const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });
-    const data = await result.json();
+  const {code} = req.query as any;
 
+  console.log(code);
+  const tokenRes = await fetch('https://api.intra.42.fr/oauth/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      grant_type: 'authorization_code',
+      client_id: process.env.IDINTRA,
+      client_secret: process.env.SECRETINTRA,
+      code: code,
+      redirect_uri: 'http://localhost:4000/callback',
+    }),
+  });
 
-    const user = await prisma.user.upsert({ where: { email: data.email }, update: {}, create: { email: data.email} });
-    await sendToService('http://user:4001/api/users/profile' , 'POST' , user)
-    
-    } 
-    catch (error) 
-    {
-        
-    }
-    
-  return res.send({msg : "sss"});
+  const data = await tokenRes.json();
+  const access_token = data.access_token;
+
+  const userRes = await fetch('https://api.intra.42.fr/v2/me', {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+    },
+  });
+
+  const user = await userRes.json();
+  console.log(user.login);
+
+//   const userCreated = await prisma.user.upsert({ where: { email: user.email }, update: {}, create: { email: user.email} });
+//     await sendToService('http://user:4001/api/users/profile' , 'POST' , userCreated)
+
+  return res.send({msg : true})
 }
