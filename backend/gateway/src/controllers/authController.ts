@@ -3,6 +3,7 @@ import { hashPassword , VerifyPassword } from '../utils/hashedPassword';
 import prisma from '../db/database';
 import { sendVerificationEmail , sendToService } from '../utils/utils';
 import redis from '../utils/redis';
+// import { subscribe , publish } from '../utils/redis';
 import app from '../app';
 import { authenticator2FA } from '../utils/2fa';
 
@@ -23,8 +24,9 @@ export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 
 export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 {
+    console.log("hello3")
     const body = req.body as any;
-    authenticator2FA();
+    // authenticator2FA();
     try
     {
         const user = await prisma.user.findUnique({ where: { email: body.email }})
@@ -34,6 +36,14 @@ export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
         const key = await redis.get(body.email); // later  generate new name of variable
         if(key != null)
             console.log("We already sent you a code.")
+    
+        console.log("hello1")
+        const sent = await redis.publish('user', 'You have a new message!');
+
+        if (sent === 0) {
+          console.warn('No subscribers for this channel!');
+        }
+        
         // await sendVerificationEmail(body);
         
     }
@@ -142,6 +152,7 @@ export async function getCallbackhandler(req:FastifyRequest , res:FastifyReply)
 {
     try 
     {
+    await redis.publish('test', JSON.stringify({message : "hello redis"}));
 
     const tokengoogle:any = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
     const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });

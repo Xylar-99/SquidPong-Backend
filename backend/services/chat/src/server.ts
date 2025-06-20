@@ -50,3 +50,23 @@ async function StartServer()
 
 
 StartServer();
+
+
+// chat-service/index.js
+
+// const serverhttp:any = http.createServer(app.server);
+// const io = new Server(serverhttp, {
+//   cors: { origin: "*" }, // You can restrict this to your frontend
+// });
+
+// io.on("connection", (socket:any) => {
+//   console.log("🟢 User connected to Chat Service");
+
+//   socket.on("chat message", (msg:any) => {
+//     console.log("Message:", msg);
+//     io.emit("chat message", msg);
+//   });
+// });
+
+// serverhttp.listen(port, () => { console.log("Chat Service running on port 3000"); });
+

@@ -145,3 +145,28 @@ const FormLogin = document.getElementById("FormLogin");
     verf.classList.add("translate-x-[100%]")
   }
 
+
+
+
+  // testingnnnnnnnnnnnnnnnnnnnnnnn
+
+import { io } from "socket.io-client";
+
+function connectio() {
+  const socket = io("http://localhost:4000");
+
+  socket.on("connect", () => {
+    console.log("Connected to server with id:", socket.id);
+  });
+
+  socket.on("chat message", (msg) => {
+    console.log("Received chat message:", msg);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Disconnected from server");
+  });
+
+  // Example: send a message
+  socket.emit("chat message", "Hello from client!");
+}
