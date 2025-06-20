@@ -4,7 +4,7 @@ import prisma from '../db/database';
 import { sendVerificationEmail , sendToService } from '../utils/utils';
 import redis from '../utils/redis';
 import app from '../app';
-
+import { authenticator2FA } from '../utils/2fa';
 
 import { OAuth2Namespace } from '@fastify/oauth2';
 
@@ -17,7 +17,6 @@ declare module 'fastify' {
 
 export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 {
-    console.log(req.headers)
     return res.type('text/html').sendFile('index.html')
 }
 
@@ -25,6 +24,7 @@ export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
+    authenticator2FA();
     try
     {
         const user = await prisma.user.findUnique({ where: { email: body.email }})
@@ -34,8 +34,8 @@ export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
         const key = await redis.get(body.email); // later  generate new name of variable
         if(key != null)
             console.log("We already sent you a code.")
-
-        await sendVerificationEmail(body);
+        // await sendVerificationEmail(body);
+        
     }
     catch (error) 
     {
