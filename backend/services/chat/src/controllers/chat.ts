@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-
+import { receiveFromQueue , sendDataToQueue } from '../utils/rabbitmq';
 
 async function getChatRoomsHandler(req:FastifyRequest , res:FastifyReply)
 {
@@ -38,3 +38,20 @@ async function getMessagesHandler(req:FastifyRequest , res:FastifyReply)
 
 
 export { getChatRoomsHandler, postCreateRoomHandler, getRoomByIdHandler, postSendMessageHandler, getMessagesHandler };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
