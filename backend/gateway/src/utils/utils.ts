@@ -33,10 +33,9 @@ export async function sendVerificationEmail(data:any)
   data.password = await hashPassword(data.password);
   data['code'] = code;
 
-  console.log(data);
+  console.log(code);
 
-  
-  await redis.set(data.email, JSON.stringify(data),'EX', '60')
+  await redis.set(data.email, JSON.stringify(data),'EX', '260')
 
   const info:object = {email:data.email , text:code}
   await sendDataToQueue(info , 'emailhub');

@@ -3,6 +3,7 @@ import { hashPassword , VerifyPassword } from '../utils/hashedPassword';
 import prisma from '../db/database';
 import { sendVerificationEmail , sendToService } from '../utils/utils';
 import redis from '../utils/redis';
+import { setJWT } from '../utils/2fa';
 // import { subscribe , publish } from '../utils/redis';
 import app from '../app';
 import { authenticator2FA } from '../utils/2fa';
@@ -16,6 +17,14 @@ declare module 'fastify' {
 }
 
 
+
+
+
+
+
+
+
+
 export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 {
     return res.type('text/html').sendFile('index.html')
@@ -24,82 +33,24 @@ export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 
 export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 {
-    console.log("hello3")
     const body = req.body as any;
-    // authenticator2FA();
     try
     {
         const user = await prisma.user.findUnique({ where: { email: body.email }})
         if(user && user.password)
             throw new Error("User ready exist");
 
-        const key = await redis.get(body.email); // later  generate new name of variable
-        if(key != null)
+        const getEmail = await redis.get(body.email);
+        if(getEmail != null)
             console.log("We already sent you a code.")
     
-        console.log("hello1")
-        const sent = await redis.publish('user', 'You have a new message!');
-
-        if (sent === 0) {
-          console.warn('No subscribers for this channel!');
-        }
-        
-        // await sendVerificationEmail(body);
-        
+        await sendVerificationEmail(body);
     }
     catch (error) 
     {
-        return res.status(400).send({success:error})
+      return res.type('text/html').sendFile('./pages/signup.html')
     }
-    return res.send({msg:"done"})
-}
-
-
-
-
-export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
-{
-    const body = req.body as any;
-
-    try 
-    {
-        const user = await prisma.user.findUnique({ where: { email: body.email}})
-        if(!user)
-            throw new Error("user is not exist")
-
-        if(!user.password)
-        {
-            console.log("user signup using api google but u can link account or login via google")
-            return res.send({msg:"redirect to /signup"})
-
-        }
-
-        if(await VerifyPassword(body.password , user.password) == false)
-            throw new Error("password incorrect")
-
-        const accessToken = await app.jwt.sign({ userId: user.id } , { expiresIn: '1h' });
-        const refreshToken = await app.jwt.sign({ userId: user.id } , { expiresIn: '7d' });
-
-
-        res.setCookie('accessToken', accessToken, { httpOnly: true });
-        res.setCookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60,});
-
-    } 
-    catch (error) 
-    {
-        return res.status(400).send({msg : error})
-    }
-    
-    return res.send({msg:"done"})
-}
-
-
-
-
-
-export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
-{
-    return res.send(req.body)
+    return res.type('text/html').sendFile('./pages/verification.html')
 }
 
 
@@ -111,7 +62,7 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
     try 
     {
         const data = await redis.get(body.email);
-        if(data == null)
+        if(!data)
             throw new Error("user is not exist or expire verified so signup again")
 
         const parsed = JSON.parse(data);
@@ -125,26 +76,59 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
     }
     catch (error) 
     {
-        return res.status(400).send({msg : error})
+      return res.type('text/html').sendFile('./pages/verification.html')
     }
 
-    return res.send({msg:"done"})
+    return res.type('text/html').sendFile('./pages/login.html')
 }
 
 
 
 
-export async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyReply)
+
+
+export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
 
-    const payload: any = await app.jwt.verify(body.refreshToken);
-    const id: string = payload.userId;
+    try 
+    {
+        const user = await prisma.user.findUnique({ where: { email: body.email}})
+        if(!user)
+          throw new Error("user is not exist")
 
-    const newAccessToken = await app.jwt.sign({ userId: id } , { expiresIn: '1h' });
+        if(!user.password)
+            throw new Error("this is user is signup using local so set new password for link user with local login")
 
-    res.send({ accessToken: newAccessToken });
+        if(await VerifyPassword(body.password , user.password) ==  false)
+          throw new Error("password incorrect")
+
+        await setJWT(res , user.id);
+    }
+    catch (error) 
+    {
+      return res.status(400).sendFile('./pages/login.html')
+    }
+
+  return res.send({msg : true})
 }
+
+
+
+
+
+export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
+{
+
+  res.clearCookie('accessToken', { path : '/' , httpOnly: false });
+  res.clearCookie('refreshToken', { path : '/' , httpOnly: false });
+
+  return res.send({msg : true})
+}
+
+
+
+
 
 
 
@@ -152,8 +136,6 @@ export async function getCallbackhandler(req:FastifyRequest , res:FastifyReply)
 {
     try 
     {
-    await redis.publish('test', JSON.stringify({message : "hello redis"}));
-
     const tokengoogle:any = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
     const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });
     const data = await result.json();
@@ -161,14 +143,15 @@ export async function getCallbackhandler(req:FastifyRequest , res:FastifyReply)
 
     const user = await prisma.user.upsert({ where: { email: data.email }, update: {}, create: { email: data.email} });
     await sendToService('http://user:4001/api/users/profile' , 'POST' , user)
+    await setJWT(res , user.id);
     
-    } 
+    }
     catch (error) 
     {
         
     }
     
-  return res.send({msg : "sss"});
+  return res.redirect('/profile')
 }
 
 
@@ -191,20 +174,49 @@ export async function getIntraCallbackhandler(req:FastifyRequest , res:FastifyRe
     }),
   });
 
+
   const data = await tokenRes.json();
   const access_token = data.access_token;
 
-  const userRes = await fetch('https://api.intra.42.fr/v2/me', {
-    headers: {
-      Authorization: `Bearer ${access_token}`,
-    },
-  });
+  const userRes = await fetch('https://api.intra.42.fr/v2/me', {headers: {  Authorization: `Bearer ${access_token}`,}, });
 
   const user = await userRes.json();
-  console.log(user.login);
+
+
+  // console.log(user.login);
 
 //   const userCreated = await prisma.user.upsert({ where: { email: user.email }, update: {}, create: { email: user.email} });
 //     await sendToService('http://user:4001/api/users/profile' , 'POST' , userCreated)
 
   return res.send({msg : true})
+}
+
+
+
+
+
+
+export async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyReply)
+{
+    const body = req.body as any;
+
+    const payload: any = await app.jwt.verify(body.refreshToken);
+    const id: string = payload.userId;
+
+    const newAccessToken = await app.jwt.sign({ userId: id } , { expiresIn: '1h' });
+
+    res.send({ accessToken: newAccessToken });
+}
+
+
+
+
+export async function getProfileCallbackhandler(req:FastifyRequest , res:FastifyReply) 
+{
+
+  console.log('-----------------------------------------')
+  console.log(req.user);
+  console.log('-----------------------------------------')
+  
+  return res.type('text/html').sendFile('/pages/profile.html')
 }

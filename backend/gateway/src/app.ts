@@ -1,4 +1,5 @@
 import {fastify , FastifyInstance} from 'fastify';
+import { authenticateUser } from './utils/middleware';
 import {authRoutes } from './routes/auth';
 import {gatewayRoutes} from './routes/proxy'
 import { errorHandler } from './utils/errorHandler';
@@ -13,7 +14,8 @@ registerPlugins(app);
 
 const routes = [...gatewayRoutes ,  ...authRoutes]
 
+app.addHook('preHandler', authenticateUser);
+app.addHook('onError', errorHandler);
 
 routes.forEach(route => {app.route(route)})
-app.setErrorHandler(errorHandler)
 

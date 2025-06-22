@@ -1,7 +1,6 @@
-import { RouteHandlerMethod , FastifySchema } from 'fastify';
+import { RouteHandlerMethod , preValidationHookHandler , FastifySchema } from 'fastify';
 import * as authController from '../controllers/authController';
 import { loginSchema, signupSchema , verifyEmailSchema } from '../validators/authSchemas';
-
 
 
 type Route = {
@@ -16,15 +15,20 @@ const authRoutes: Route[] = [
   // Auth routes
   { method: 'POST', url: '/api/signup', handler: authController.postSignupHandler, schema: { body: signupSchema } },
   { method: 'POST', url: '/api/login', handler: authController.postLoginHandler, schema: { body: loginSchema } },
-  { method: 'POST', url: '/api/logout', handler: authController.postLogoutHandler },
+  { method: 'POST', url: '/api/logout', handler: authController.postLogoutHandler  },
   
   // verify email
   { method: 'POST', url: '/api/verify-email', handler: authController.verifyEmailHandler, schema: {   body: verifyEmailSchema } },
-
+  
+  // oauth2
   { method: 'GET', url: '/auth/google/callback', handler: authController.getCallbackhandler },
   { method: 'GET', url: '/callback', handler: authController.getIntraCallbackhandler },
   
+  // refresh token
   { method: 'POST', url: '/refresh-token', handler: authController.postrefreshtokenHandler },
+  
+  // testing only
+  { method: 'GET', url: '/profile', handler: authController.getProfileCallbackhandler },
 
 ];
 

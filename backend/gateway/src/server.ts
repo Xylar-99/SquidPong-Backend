@@ -24,10 +24,20 @@ async function StartServer()
     }
 }
 
+
 const ws = new WebSocket.Server({ noServer: true });
 
-ws.on('connection', (ws:any, request:any) => {
+ws.on('connection', async (ws:any, req:any) => {
+
+  const token:string = req.headers.cookie.split('=')[1].split(';')[0];
+
+  console.log(token);
+  const payload:any = await app.jwt.verify(token);
+  console.log(payload);
   console.log('WebSocket client connected');
+
+
+
 
   ws.on('message', (message:any) => {
 

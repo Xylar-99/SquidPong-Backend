@@ -6,42 +6,51 @@
   <title>Signup Form</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f2f2f2;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
     }
 
-    form {
+    .container {
       background-color: #ffffff;
       padding: 30px 40px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      width: 300px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
     }
 
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
+    h2 {
+      margin-bottom: 25px;
       color: #333;
     }
 
-    input[type="text"],
-    input[type="email"],
-    input[type="password"] {
-      width: 100%;
-      padding: 8px 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-      transition: border-color 0.3s ease;
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
 
-    input[type="text"]:focus,
+    label {
+      text-align: left;
+      font-weight: 600;
+      color: #555;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border 0.3s ease;
+    }
+
     input[type="email"]:focus,
     input[type="password"]:focus {
       border-color: #007bff;
@@ -52,10 +61,10 @@
       background-color: #007bff;
       color: white;
       border: none;
-      padding: 10px 15px;
-      width: 100%;
+      padding: 10px;
       font-size: 16px;
-      border-radius: 4px;
+      font-weight: bold;
+      border-radius: 6px;
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
@@ -63,22 +72,40 @@
     input[type="submit"]:hover {
       background-color: #0056b3;
     }
+
+    .google-signup {
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+      background-color: #db4437;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: background-color 0.3s ease;
+    }
+
+    .google-signup:hover {
+      background-color: #c1351d;
+    }
   </style>
 </head>
 <body>
-  <form action="/signup" method="post"  >
-    <label for="name">name:</label>
-    <input type="text" id="name" name="name">
 
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email">
+  <div class="container">
+    <h2>Create Your Account</h2>
+    <form action="/api/signup" method="post">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required />
 
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required />
 
-    <input type="submit" value="Sign Up">
-  </form>
-  <a href="http://localhost:4000/auth/google" >Signup with Google</a>
+      <input type="submit" value="Sign Up" />
+    </form>
+
+    <a class="google-signup" href="http://localhost:4000/auth/google">Sign up with Google</a>
+  </div>
 
 </body>
 </html>

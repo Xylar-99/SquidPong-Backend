@@ -7,15 +7,8 @@ import redis from '../utils/redis';
 export async function createProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-
-    console.log("hello")
-
-    
-
-
     const profile = {userId : body.id  , name : `player${body.id}` , bio : `full stack ${body.id}` , avatarUrl:`../images/profile${body.id}.png`}
     
-    console.log(profile);
     try 
     {
         await prisma.profile.upsert({where : {userId : body.id} , update:{} , create:profile})    

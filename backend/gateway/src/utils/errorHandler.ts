@@ -1,11 +1,14 @@
 
 import { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 
-export function errorHandler( error: FastifyError, request: FastifyRequest, reply: FastifyReply) {
+export function errorHandler( request: FastifyRequest, reply: FastifyReply ,  error: FastifyError,done:any) {
   
-    if (error.validation) {
+    if (error.validation) 
+      {
     reply.status(400).send({ message: 'Validation failed', errors: error.validation, });
-  } else {
+    } 
+    else {
     reply.status(500).send({ message: 'Internal Server Error' });
-  }
+    }
+    done()
 }
