@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Real Chat</title>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
@@ -35,6 +35,7 @@
       padding: 10px 15px;
       border-radius: 20px;
       max-width: 70%;
+      word-wrap: break-word;
     }
 
     .sent {
@@ -85,26 +86,61 @@
   <div class="messages" id="messages"></div>
   <div class="input-area">
     <input type="text" id="messageInput" placeholder="Type your message..." />
-    <input type="hidden" id="userId" value="123" />
+    <input type="hidden" id="userId" value="1" />
+    <input type="hidden" id="recipientId" value="2" />
     <button onclick="sendMessage()">Send</button>
   </div>
 </div>
 
-  <script>
+<script>
   const ws = new WebSocket('ws://localhost:4000/ws');
 
   ws.onopen = () => {
-    const data = {type : "chat" , message : 'Hello Server!'}
-    ws.send(JSON.stringify(data));
+    console.log("WebSocket connected.");
   };
 
   ws.onmessage = (event) => {
-    alert(event.data);
-    console.log('Message from server:', event.data);
+    const data = JSON.parse(event.data);
+
+    if (data.type === 'chat') 
+    {
+      const userId = document.getElementById("userId").value;
+      addMessage(data.content, data.from === userId ? 'sent' : 'received');
+    }
   };
 
-</script>
+  function sendMessage() 
+  {
+    const input = document.getElementById("messageInput");
+    const content = input.value.trim();
+    const from = document.getElementById("userId").value;
+    const to = document.getElementById("recipientId").value;
 
+    if (content === '') return;
+
+    const data = { type: "chat", from, to, content };
+    ws.send(JSON.stringify(data));
+    addMessage(content, 'sent');
+    input.value = '';
+  }
+
+  function addMessage(text, type) 
+  {
+    const container = document.getElementById("messages");
+    const div = document.createElement("div");
+    div.classList.add("message", type);
+    div.textContent = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // Send message on Enter key
+  document.getElementById("messageInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      sendMessage();
+    }
+  });
+</script>
 
 </body>
 </html>

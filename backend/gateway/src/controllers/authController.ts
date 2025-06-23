@@ -48,9 +48,10 @@ export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
     }
     catch (error) 
     {
-      return res.type('text/html').sendFile('./pages/signup.html')
+        return res.status(400).send({msg : false})
+
     }
-    return res.type('text/html').sendFile('./pages/verification.html')
+  return res.send({msg : true})
 }
 
 
@@ -76,10 +77,10 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
     }
     catch (error) 
     {
-      return res.type('text/html').sendFile('./pages/verification.html')
+        return res.status(400).send({msg : false})
     }
 
-    return res.type('text/html').sendFile('./pages/login.html')
+  return res.send({msg : true})
 }
 
 
@@ -93,21 +94,21 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 
     try 
     {
-        const user = await prisma.user.findUnique({ where: { email: body.email}})
-        if(!user)
-          throw new Error("user is not exist")
+      const user = await prisma.user.findUnique({ where: { email: body.email}})
+      if(!user)
+        throw new Error("user is not exist")
 
-        if(!user.password)
-            throw new Error("this is user is signup using local so set new password for link user with local login")
+      if(!user.password)
+          throw new Error("this is user is signup using local so set new password for link user with local login")
+      
+      if(await VerifyPassword(body.password , user.password) ==  false)
+        throw new Error("password incorrect")
 
-        if(await VerifyPassword(body.password , user.password) ==  false)
-          throw new Error("password incorrect")
-
-        await setJWT(res , user.id);
+      await setJWT(res , user.id);
     }
     catch (error) 
     {
-      return res.status(400).sendFile('./pages/login.html')
+      return res.status(400).send({msg : false})
     }
 
   return res.send({msg : true})
@@ -132,7 +133,7 @@ export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-export async function getCallbackhandler(req:FastifyRequest , res:FastifyReply) 
+export async function getGooglehandler(req:FastifyRequest , res:FastifyReply) 
 {
     try 
     {
@@ -144,55 +145,52 @@ export async function getCallbackhandler(req:FastifyRequest , res:FastifyReply)
     const user = await prisma.user.upsert({ where: { email: data.email }, update: {}, create: { email: data.email} });
     await sendToService('http://user:4001/api/users/profile' , 'POST' , user)
     await setJWT(res , user.id);
-    
+
     }
     catch (error) 
     {
-        
+      return res.status(400).send({msg : false})
     }
-    
+
   return res.redirect('/profile')
 }
 
 
 
-export async function getIntraCallbackhandler(req:FastifyRequest , res:FastifyReply) 
+
+export async function getIntraUserhandler(req:FastifyRequest , res:FastifyReply) 
 {
 
   const {code} = req.query as any;
 
-  console.log(code);
-  const tokenRes = await fetch('https://api.intra.42.fr/oauth/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+  const body:object = {
       grant_type: 'authorization_code',
       client_id: process.env.IDINTRA,
       client_secret: process.env.SECRETINTRA,
       code: code,
-      redirect_uri: 'http://localhost:4000/callback',
-    }),
+      redirect_uri: 'http://localhost:4000/auth/intra/callback',
+    }
+
+  const tokens = await fetch('https://api.intra.42.fr/oauth/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
   });
 
 
-  const data = await tokenRes.json();
-  const access_token = data.access_token;
+  const tokensJSON = await tokens.json();
+  const access_token = tokensJSON.access_token;
 
-  const userRes = await fetch('https://api.intra.42.fr/v2/me', {headers: {  Authorization: `Bearer ${access_token}`,}, });
+  const user = await fetch('https://api.intra.42.fr/v2/me', {headers: {  Authorization: `Bearer ${access_token}`,}, });
+  const userJSON = await user.json();
 
-  const user = await userRes.json();
 
+  const userCreated = await prisma.user.upsert({ where: { email: userJSON.email }, update: {}, create: { email: userJSON.email} });
+  await sendToService('http://user:4001/api/users/profile' , 'POST' , userCreated)
+  await setJWT(res , userCreated.id);
 
-  // console.log(user.login);
-
-//   const userCreated = await prisma.user.upsert({ where: { email: user.email }, update: {}, create: { email: user.email} });
-//     await sendToService('http://user:4001/api/users/profile' , 'POST' , userCreated)
-
-  return res.send({msg : true})
+  return res.redirect('/profile')
 }
-
-
-
 
 
 

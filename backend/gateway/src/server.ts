@@ -2,6 +2,9 @@ import app from './app'
 import path from 'path';
 import WebSocket from 'ws'
 import dotenv from 'dotenv';
+
+import { sendDataToQueue , receiveFromQueue , initRabbitMQ } from './utils/utils';
+
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 
@@ -25,31 +28,31 @@ async function StartServer()
 }
 
 
-const ws = new WebSocket.Server({ noServer: true });
+export const ws = new WebSocket.Server({ noServer: true });
 
 ws.on('connection', async (ws:any, req:any) => {
-
-  const token:string = req.headers.cookie.split('=')[1].split(';')[0];
-
-  console.log(token);
-  const payload:any = await app.jwt.verify(token);
-  console.log(payload);
+  
   console.log('WebSocket client connected');
 
+  ws.on('message', async (message:any) => {
 
+    const dataString: string = Buffer.from(message).toString('utf8');
+    const dataJson = JSON.parse(dataString);
+  
+    if(dataJson.type == 'chat')
+      await sendDataToQueue(dataJson , 'chat')
 
-
-  ws.on('message', (message:any) => {
-
-    const msgString: string = Buffer.from(message).toString('utf8');
-    const msgJson = JSON.parse(msgString);  
-    console.log('Received:', msgJson);     
-    ws.send(`hello ${msgJson.type}`);
+    console.log('chat Received:', dataJson);
+    // ws.send(JSON.stringify({type:"test"}));
   });
+
+
 
   ws.on('close', () => {
     console.log('Client disconnected');
   });
+
+
 });
 
 
@@ -57,19 +60,25 @@ ws.on('connection', async (ws:any, req:any) => {
 app.server.on('upgrade', (request:any, socket:any, head:any) => {
   if (request.url === '/ws')
     {
-    ws.handleUpgrade(request, socket, head, (client:any) => {
-      ws.emit('connection', client, request);
-    });
-  } 
-  else 
+      ws.handleUpgrade(request, socket, head, (client:any) => {
+        ws.emit('connection', client, request);
+      });
+    } 
+    else 
     socket.destroy();
 });
 
 
-StartServer();
+async function start()
+{
+  
+  StartServer();
+  await initRabbitMQ();
+  await receiveFromQueue('chatservice');
 
+}
 
-
+start();
 
 
 

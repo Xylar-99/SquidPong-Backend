@@ -34,10 +34,10 @@
       display: flex;
       flex-direction: column;
       gap: 15px;
+      text-align: left;
     }
 
     label {
-      text-align: left;
       font-weight: 600;
       color: #555;
     }
@@ -88,13 +88,29 @@
     .google-signup:hover {
       background-color: #c1351d;
     }
+    .intra-signup {
+  display: inline-block;
+  margin-top: 15px;
+  text-decoration: none;
+  background-color: #00aaff; /* 42 Blue */
+  color: white;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.intra-signup:hover {
+  background-color: #008ecc;
+}
+
   </style>
 </head>
 <body>
 
   <div class="container">
     <h2>Create Your Account</h2>
-    <form action="/api/signup" method="post">
+    <form id="signupForm">
       <label for="email">Email</label>
       <input type="email" id="email" name="email" required />
 
@@ -105,7 +121,39 @@
     </form>
 
     <a class="google-signup" href="http://localhost:4000/auth/google">Sign up with Google</a>
+    <a class="intra-signup" href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-9008211f5458b9ba5e1ca85aae1ca6f72edbd5342bab10dd788cf73145454b7a&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fauth%2Fintra%2Fcallback&response_type=code">Sign up with 42 Intra</a>
   </div>
+
+
+  <script src="../js/usermanagment.js" ></script>
+  <script>
+  document.getElementById('signupForm').addEventListener('submit', signup);
+
+async function signup(e) 
+ {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  try 
+  {
+    const res = await fetch('/api/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+    
+    if (res.ok) 
+      window.location.href = '/pages/verification.html';
+    else 
+    {
+      const errorData = await res.json();
+      alert('Signup failed: ' + (errorData.message || res.statusText));
+    }
+
+  } 
+  catch (err) 
+  {
+    alert('Network error: ' + err.message);
+  }
+};
+
+  </script>
 
 </body>
 </html>

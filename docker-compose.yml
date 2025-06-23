@@ -15,7 +15,7 @@ services:
     build: ./backend/gateway
     image: gateway-image
     container_name: gateway
-    command: sh -c "npx prisma migrate dev --name init && npm run start "
+    command: sh -c "sleep 10 && npx prisma migrate dev --name init && npm run start "
     ports:
       - "4000:4000"
     volumes:
@@ -26,14 +26,14 @@ services:
     build: ./backend/services/user
     image: user-image
     container_name: user
-    command: sh -c "npx prisma migrate dev --name init && npm run start "
+    command: sh -c "sleep 10 && npx prisma migrate dev --name init && npm run start "
     networks:
         - web
   chat:
     build: ./backend/services/chat
     image: chat-image
     container_name: chat
-    command: sh -c "npx prisma migrate dev --name init && npm run start "
+    command: sh -c "sleep 15 && npx prisma migrate dev --name init && npm run start "
     networks: 
         - web
   # game:

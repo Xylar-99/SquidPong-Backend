@@ -1,27 +1,58 @@
 import redis from './redis';
 import amqp from 'amqplib';
 import { hashPassword } from './hashedPassword';
+import { ws } from '../server';
 
+// rabbitmq.js
 
-async function sendDataToQueue(data: object , _queue:string) 
+let connection:any;
+let channel:any;
+
+export async function initRabbitMQ() 
 {
-  try {
-    const connection = await amqp.connect('amqp://rabbitmq:5672');
-    const channel = await connection.createChannel();
 
+  connection = await amqp.connect('amqp://rabbitmq:5672');
+  channel = await connection.createChannel();
+  await channel.assertQueue('chat');
+  await channel.assertQueue('emailhub');
+  await channel.assertQueue('chatservice');
+
+  console.log("Connected to RabbitMQ");
+
+}
+
+
+
+export async function sendDataToQueue(data: any  , queue:string) 
+{
+  try 
+  {
     const msgBuffer = Buffer.from(JSON.stringify(data));
-    const queue = _queue;
-    
-    await channel.assertQueue(queue);
     channel.sendToQueue(queue, msgBuffer);
-
-    await channel.close();
-    await connection.close();
   } 
   catch (error) 
   {
     console.log("Error in rabbit connection:", error);
   }
+}
+
+
+
+export async function receiveFromQueue(queue:string ) 
+{
+  
+    channel.consume(queue, (msg:any) =>{ 
+    if (msg !== null) 
+      {
+        const data = JSON.parse(msg.content.toString());
+        ws.clients.forEach((client: any) => {
+        client.send(JSON.stringify(data));
+        });
+
+        channel.ack(msg);
+        console.log("Message received:", data);
+      }
+      });
 }
 
 
@@ -61,3 +92,5 @@ export async function sendToService(_url:string , _method:string , _data:any): P
 
   return await res.json();
 }
+
+

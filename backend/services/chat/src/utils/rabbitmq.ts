@@ -1,19 +1,29 @@
 import amqp from 'amqplib';
+import prisma from '../db/database';
 
-export async function sendDataToQueue(data: object , _queue:string) 
+let connection:any;
+let channel:any;
+
+export async function initRabbitMQ() 
+{
+  connection = await amqp.connect('amqp://rabbitmq:5672');
+  channel = await connection.createChannel();
+  await channel.assertQueue('chat');
+  await channel.assertQueue('chatservice');
+
+  console.log("Connected to RabbitMQ");
+ 
+}
+
+
+
+export async function sendDataToQueue(data: any , queue:string) 
 {
   try {
-    const connection = await amqp.connect('amqp://rabbitmq:5672');
-    const channel = await connection.createChannel();
+
 
     const msgBuffer = Buffer.from(JSON.stringify(data));
-    const queue = _queue;
-    
-    await channel.assertQueue(queue);
     channel.sendToQueue(queue, msgBuffer);
-
-    await channel.close();
-    await connection.close();
   } 
   catch (error) 
   {
@@ -23,18 +33,31 @@ export async function sendDataToQueue(data: object , _queue:string)
 
 
 
+export async function receiveFromQueue()
+{
+  const queue:string = 'chat';
 
-export async function receiveFromQueue() {
+  try 
+  {
 
-  try {
-    const connection = await amqp.connect('amqp://rabbitmq:5672');
-    const channel = await connection.createChannel();
+      channel.consume(queue, async (msg:any) =>{
 
-    const queue = 'chat';
-    await channel.assertQueue(queue);
+      if (msg !== null) 
+        {
 
-    console.log('Waiting for messages in %s. To exit press CTRL+C', queue);
-    channel.consume(queue, (data:any , err:any) =>{
+          const data = JSON.parse(msg.content.toString());
+          delete data.type;
+      
+          await prisma.message.create({data : data});
+          console.log("Message received:", data);
+          
+          const from = data.from;
+          data.from = data.to;
+          data.to = from;
+          
+          await sendDataToQueue(data , 'chatservice')
+          channel.ack(msg);
+        }
 
     });
 
