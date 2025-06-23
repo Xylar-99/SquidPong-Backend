@@ -1,84 +1,60 @@
 import app from './app'
-import path from 'path';
+import path from 'path'
 import WebSocket from 'ws'
-import dotenv from 'dotenv';
+import dotenv from 'dotenv'
 
-import { sendDataToQueue , receiveFromQueue , initRabbitMQ } from './utils/utils';
+import {sendDataToQueue, receiveFromQueue, initRabbitMQ} from './utils/utils'
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({path: path.resolve(__dirname, '../.env')})
 
+const port = Number(process.env.PORT)
+const host = process.env.HOST
 
-const port = Number(process.env.PORT);
-const host = process.env.HOST;
+console.log(port, host)
 
-console.log(port , host)
-
-async function StartServer()
-{
-
-    try 
-    {
-        app.listen({port : port , host : host} , () => {console.log(`server listen on http://${host}:${port} ...`)})
-    } 
-    catch (error) 
-    {
-        console.log("error in server")
-        process.exit(1);
-    }
+async function StartServer() {
+	try {
+		app.listen({port: port, host: host}, () => {
+			console.log(`server listen on http://${host}:${port} ...`)
+		})
+	} catch (error) {
+		console.log('error in server')
+		process.exit(1)
+	}
 }
 
+export const ws = new WebSocket.Server({noServer: true})
 
-export const ws = new WebSocket.Server({ noServer: true });
+ws.on('connection', async (ws: any, req: any) => {
+	console.log('WebSocket client connected')
 
-ws.on('connection', async (ws:any, req:any) => {
-  
-  console.log('WebSocket client connected');
+	ws.on('message', async (message: any) => {
+		const dataString: string = Buffer.from(message).toString('utf8')
+		const dataJson = JSON.parse(dataString)
 
-  ws.on('message', async (message:any) => {
+		if (dataJson.type == 'chat') await sendDataToQueue(dataJson, 'chat')
 
-    const dataString: string = Buffer.from(message).toString('utf8');
-    const dataJson = JSON.parse(dataString);
-  
-    if(dataJson.type == 'chat')
-      await sendDataToQueue(dataJson , 'chat')
+		console.log('chat Received:', dataJson)
+		// ws.send(JSON.stringify({type:"test"}));
+	})
 
-    console.log('chat Received:', dataJson);
-    // ws.send(JSON.stringify({type:"test"}));
-  });
+	ws.on('close', () => {
+		console.log('Client disconnected')
+	})
+})
 
+app.server.on('upgrade', (request: any, socket: any, head: any) => {
+	if (request.url === '/ws') {
+		ws.handleUpgrade(request, socket, head, (client: any) => {
+			ws.emit('connection', client, request)
+		})
+	} else socket.destroy()
+})
 
-
-  ws.on('close', () => {
-    console.log('Client disconnected');
-  });
-
-
-});
-
-
-
-app.server.on('upgrade', (request:any, socket:any, head:any) => {
-  if (request.url === '/ws')
-    {
-      ws.handleUpgrade(request, socket, head, (client:any) => {
-        ws.emit('connection', client, request);
-      });
-    } 
-    else 
-    socket.destroy();
-});
-
-
-async function start()
-{
-  
-  StartServer();
-  await initRabbitMQ();
-  await receiveFromQueue('chatservice');
-
+async function start() {
+	StartServer()
+	await initRabbitMQ()
+	await receiveFromQueue('chatservice')
 }
 
-start();
-
-
-
+start()

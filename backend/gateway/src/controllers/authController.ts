@@ -209,8 +209,7 @@ export async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyRe
 
 
 
-export async function getProfileCallbackhandler(req:FastifyRequest , res:FastifyReply) 
-{
+export async function getProfileCallbackhandler(req:FastifyRequest , res:FastifyReply) {
 
   console.log('-----------------------------------------')
   console.log(req.user);
