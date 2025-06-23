@@ -1,6 +1,3 @@
-pkg update && pkg upgrade
-pkg install wget unzip
-wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-arm64.zip
-unzip ngrok-stable-linux-arm64.zip
-chmod +x ngrok
-./ngrok config add-authtoken 2yuvPNbpLMclFZvt4fM5iD872YZ_3nEiw65Tc69CSfQQgouxL
+curl -X POST http://10.32.132.225:8082/send \
+  -H "Content-Type: application/json" \
+  -d '{"phone": "+2126XXXXXXX", "message": "Hi from PC"}'
