@@ -93,32 +93,44 @@
 </div>
 
 <script>
-  const ws = new WebSocket('ws://localhost:4000/ws');
+  
+  let from  = document.getElementById("userId").value;
+  let to    = document.getElementById("recipientId").value;
 
-  ws.onopen = () => {
-    console.log("WebSocket connected.");
-  };
+fetch('http://localhost:4000/user')
+    .then(res => res.json())
+    .then((data) => {
+
+      from = data.userId;
+      to = (data.userId == "2" ? "1" : "2");
+    
+    });
+
+
+
+
+
+  const ws = new WebSocket('ws://localhost:4000/ws');
+  ws.onopen = async () => {};
+
 
   ws.onmessage = (event) => {
+  
     const data = JSON.parse(event.data);
-
-    if (data.type === 'chat') 
-    {
-      const userId = document.getElementById("userId").value;
-      addMessage(data.content, data.from === userId ? 'sent' : 'received');
-    }
+    addMessage(data.content,'received');
+  
   };
 
-  function sendMessage() 
+  async function sendMessage() 
   {
     const input = document.getElementById("messageInput");
     const content = input.value.trim();
-    const from = document.getElementById("userId").value;
-    const to = document.getElementById("recipientId").value;
+
 
     if (content === '') return;
 
     const data = { type: "chat", from, to, content };
+
     ws.send(JSON.stringify(data));
     addMessage(content, 'sent');
     input.value = '';
@@ -134,12 +146,15 @@
     container.scrollTop = container.scrollHeight;
   }
 
+  
   // Send message on Enter key
   document.getElementById("messageInput").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
+    if (e.key === "Enter")
       sendMessage();
-    }
-  });
+
+
+
+});
 </script>
 
 </body>

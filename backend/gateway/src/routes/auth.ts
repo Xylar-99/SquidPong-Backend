@@ -13,23 +13,62 @@ type Route = {
 
 const authRoutes: Route[] = [
   // Auth routes
-  { method: 'POST', url: '/api/signup', handler: authController.postSignupHandler, schema: { body: signupSchema } },
-  { method: 'POST', url: '/api/login', handler: authController.postLoginHandler, schema: { body: loginSchema } },
-  { method: 'POST', url: '/api/logout', handler: authController.postLogoutHandler  },
-  
-  // verify email
-  { method: 'POST', url: '/api/verify-email', handler: authController.verifyEmailHandler, schema: {   body: verifyEmailSchema } },
-  
-  // oauth2
-  { method: 'GET', url: '/auth/google/callback', handler: authController.getGooglehandler },
-  { method: 'GET', url: '/auth/intra/callback', handler: authController.getIntraUserhandler },
-  
-  // refresh token
-  { method: 'POST', url: '/refresh-token', handler: authController.postrefreshtokenHandler },
-  
-  // testing only
-  { method: 'GET', url: '/profile', handler: authController.getProfileCallbackhandler },
+  {
+    method: "POST",
+    url: "/api/signup",
+    handler: authController.postSignupHandler,
+    schema: { body: signupSchema },
+  },
+  {
+    method: "POST",
+    url: "/api/login",
+    handler: authController.postLoginHandler,
+    schema: { body: loginSchema },
+  },
+  {
+    method: "POST",
+    url: "/api/logout",
+    handler: authController.postLogoutHandler,
+  },
 
+  // verify email
+  {
+    method: "POST",
+    url: "/api/verify-email",
+    handler: authController.verifyEmailHandler,
+    schema: { body: verifyEmailSchema },
+  },
+
+  // oauth2
+  {
+    method: "GET",
+    url: "/auth/google/callback",
+    handler: authController.getGooglehandler,
+  },
+  {
+    method: "GET",
+    url: "/auth/intra/callback",
+    handler: authController.getIntraUserhandler,
+  },
+
+  // refresh token
+  {
+    method: "POST",
+    url: "/refresh-token",
+    handler: authController.postrefreshtokenHandler,
+  },
+
+  // testing only
+  {
+    method: "GET",
+    url: "/profile",
+    handler: authController.getProfileCallbackhandler,
+  },
+  {
+    method: "GET",
+    url: "/user",
+    handler: authController.getUserCallbackhandler,
+  },
 ];
 
 

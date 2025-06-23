@@ -38,19 +38,22 @@ export async function sendDataToQueue(data: any  , queue:string)
 
 
 
-export async function receiveFromQueue(queue:string ) 
+export async function receiveFromQueue(queue:string) 
 {
   
     channel.consume(queue, (msg:any) =>{ 
     if (msg !== null) 
       {
         const data = JSON.parse(msg.content.toString());
+        console.log("recived " ,  data)
+        
         ws.clients.forEach((client: any) => {
-        client.send(JSON.stringify(data));
+
+          if (client.userId == data.to)
+            client.send(JSON.stringify(data));
         });
 
         channel.ack(msg);
-        console.log("Message received:", data);
       }
       });
 }

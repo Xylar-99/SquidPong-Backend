@@ -12,7 +12,7 @@ export async function initRabbitMQ()
   await channel.assertQueue('chatservice');
 
   console.log("Connected to RabbitMQ");
- 
+
 }
 
 
@@ -39,7 +39,6 @@ export async function receiveFromQueue()
 
   try 
   {
-
       channel.consume(queue, async (msg:any) =>{
 
       if (msg !== null) 
@@ -47,14 +46,10 @@ export async function receiveFromQueue()
 
           const data = JSON.parse(msg.content.toString());
           delete data.type;
-      
-          await prisma.message.create({data : data});
+          
+          // await prisma.message.create({data : data});
           console.log("Message received:", data);
-          
-          const from = data.from;
-          data.from = data.to;
-          data.to = from;
-          
+
           await sendDataToQueue(data , 'chatservice')
           channel.ack(msg);
         }

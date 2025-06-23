@@ -217,3 +217,16 @@ export async function getProfileCallbackhandler(req:FastifyRequest , res:Fastify
   
   return res.type('text/html').sendFile('/pages/profile.html')
 }
+;
+
+
+
+export async function getUserCallbackhandler(req: FastifyRequest, res: FastifyReply) {
+  
+  console.log("hello user")
+  // console.log("-----------------------------------------");
+  // console.log(req.user);
+  // console.log("-----------------------------------------");
+
+  return res.send(req.user);
+}

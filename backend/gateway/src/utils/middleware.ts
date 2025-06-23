@@ -8,7 +8,7 @@ export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
 
   if (uri.includes(req.url) == true || req.url.startsWith('/auth/') == true)
     return ;
-
+  
   try 
   {
     const token:string = req.cookies['accessToken'] as string;
