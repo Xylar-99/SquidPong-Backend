@@ -15,10 +15,11 @@ const loginSchema = {
 const signupSchema = {
     type : "object" ,
     properties : {
+        username : {type: "string"},
         email : {type: "string" , format : 'email'},
         password : {type: "string"  ,  minLength : 2},
     },
-    required : ['email' , 'password'],
+    required : ['email' , 'username' , 'password'],
     additionalProperties: false
 
 }

@@ -5,6 +5,7 @@ import { VerifyPassword } from "../utils/hashedPassword";
 
 export const AuthErrors = {
     // Signup errors
+    USERNAME_DUP : 'Username is already in use. Try another one.',
     EMAIL_REQUIRED: 'Email is required',
     PASSWORD_REQUIRED: 'Password is required',
     USER_EXISTS: 'User already exists',
@@ -37,7 +38,7 @@ export const AuthErrors = {
 export async function isUserVerified(body:any)
 {
     const userdb = await prisma.user.findUnique({ where: { email: body.email }})
-    if(userdb)
+    if(userdb && userdb.password)
       throw new Error(AuthErrors.EMAIL_ALREADY_VERIFIED);
 
     const data = await redis.get(body.email);
@@ -74,11 +75,14 @@ export async function isUserAllowedToLogin(body:any , user:any | null)
 
 export async function isUserAlreadyRegistered(body:any)
 {
-    const user = await prisma.user.findUnique({ where: { email: body.email }})
-    if(user && user.password)
-      throw new Error(AuthErrors.USER_EXISTS);
+    const user = await prisma.user.findUnique({ where: { email: body.email}})
 
-    const getEmail = await redis.get(body.email);
-    if(getEmail != null)
-      console.log(AuthErrors.EMAIL_NOT_VERIFIED)
+    if(!user)
+        return;
+
+    if(user.password)
+      throw new Error(AuthErrors.USER_EXISTS);
+    
+    if(user.username == body.username)
+      throw new Error(AuthErrors.USERNAME_DUP);
 }

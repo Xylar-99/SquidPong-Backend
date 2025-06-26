@@ -43,6 +43,7 @@
     }
 
     input[type="email"],
+    input[type="username"],
     input[type="password"] {
       padding: 10px 12px;
       border: 1px solid #ccc;
@@ -52,6 +53,7 @@
     }
 
     input[type="email"]:focus,
+    input[type="username"]:focus,
     input[type="password"]:focus {
       border-color: #007bff;
       outline: none;
@@ -111,6 +113,10 @@
   <div class="container">
     <h2>Create Your Account</h2>
     <form id="signupForm">
+
+      <label for="username">username</label>
+      <input type="username" id="username" name="username" required />
+
       <label for="email">Email</label>
       <input type="email" id="email" name="email" required />
 
@@ -133,10 +139,11 @@ async function signup(e)
  {
   e.preventDefault();
   const email    = document.getElementById('email').value.trim();
+  const username    = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
   try 
   {
-    const res = await fetch('/api/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+    const res = await fetch('/api/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password , username }) });
     
     if (res.ok) 
       window.location.href = '/pages/verification.html';

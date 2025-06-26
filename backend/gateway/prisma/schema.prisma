@@ -20,7 +20,7 @@ enum TwoFAMethod {
 
 model User {
   id              Int     @id @default(autoincrement())
-  // username        String  @unique
+  username        String  @unique
   email           String  @unique
   password        String?
   is_2fa_enabled  Boolean @default(false) 

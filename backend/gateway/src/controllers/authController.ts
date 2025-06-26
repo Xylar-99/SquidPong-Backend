@@ -34,6 +34,7 @@ export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
+    console.log(body)
     try
     {
       await isUserAlreadyRegistered(body);
@@ -129,6 +130,9 @@ export async function getGooglehandler(req:FastifyRequest , res:FastifyReply)
     const data = await result.json();
 
 
+    data['avatar'] = data.picture
+    data['username'] = data.email.split('@')[0];
+    // console.log(data);
     const user = await createAccount(data);
     await setJwtTokens(res , user);
 
@@ -169,6 +173,9 @@ export async function getIntraUserhandler(req:FastifyRequest , res:FastifyReply)
   const user = await fetch('https://api.intra.42.fr/v2/me', {headers: {  Authorization: `Bearer ${access_token}`,}, });
   const userJSON = await user.json();
 
+
+  userJSON['avatar'] = userJSON.image.link;
+  userJSON['username'] = userJSON.login
 
   const account = await createAccount(userJSON);
   await setJwtTokens(res , account);

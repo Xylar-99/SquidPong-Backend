@@ -15,11 +15,11 @@ export async function sendVerificationEmail(data: any)
 {
   const code: string = await generate6DigitCode();
 
-  if(data.password)
-    data.password = await hashPassword(data.password);
-
+  // if(data.password)
+  data.password = await hashPassword(data.password);
   data["code"] = code;
 
+  console.log("email" , data)
   await redis.set(data.email, JSON.stringify(data), "EX", "260");
 
   const info: object = { email: data.email, text: code };
