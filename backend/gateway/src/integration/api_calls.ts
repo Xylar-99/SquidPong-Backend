@@ -20,7 +20,7 @@ export async function sendToService( _url: string, _method: string, _data: any):
           body: JSON.stringify(_data),
         });
     }
-   
+
   return await res.json();
 }
 

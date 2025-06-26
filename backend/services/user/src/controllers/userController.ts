@@ -7,9 +7,8 @@ import redis from '../utils/redis';
 export async function createProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-    console.log(body);
     const profile = {userId : body.id  , username : body?.username ?? `player${body.id}` , bio : body?.bio ?? 'Ready to play. Ready to win.'  , avatarUrl: body?.avatar ?? 'default.png'}
-    
+    console.log(profile)
     try 
     {
         await prisma.profile.upsert({where : {userId : body.id} , update:profile , create:profile})
@@ -38,6 +37,7 @@ export async function deleteProfileHandler(req:FastifyRequest , res:FastifyReply
 
 export async function getCurrentUserHandler(req:FastifyRequest , res:FastifyReply)
 {
+    // console.log(req.user)
     return res.send(req.body)
 }
 
@@ -46,5 +46,9 @@ export async function getCurrentUserHandler(req:FastifyRequest , res:FastifyRepl
 
 export async function getUserByIdHandler(req:FastifyRequest , res:FastifyReply)
 {
-    return res.send(req.body)
+    const { id } = req.params as any;
+
+    const profile = await prisma.profile.findUnique({where : {userId : Number(id)}})
+    console.log(profile)
+    return res.send(profile)
 }

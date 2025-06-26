@@ -13,7 +13,7 @@ model Profile {
   id        Int   @id @default(autoincrement())
 
   userId    Int   @unique
-  username      String?
+  username  String?
   bio       String?
   avatarUrl String?
 

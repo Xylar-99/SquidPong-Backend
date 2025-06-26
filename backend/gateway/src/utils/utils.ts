@@ -13,6 +13,7 @@ export async function createAccount(data:any): Promise<any>
     const user = await prisma.user.upsert({ where: { email: data.email }, update: {username : dataUser.username}, create: dataUser });
     
     const profile  = {...user , avatar : data.avatar }
+    console.log(profile);
     await sendToService('http://user:4001/api/users/profile' , 'POST' , profile)
     
     return user;
