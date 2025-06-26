@@ -1,5 +1,5 @@
 import {fastify , FastifyInstance} from 'fastify';
-import { authenticateUser } from './utils/middleware';
+import { authenticateUser } from './validators/middleware';
 import {authRoutes } from './routes/auth';
 import {gatewayRoutes} from './routes/proxy'
 import { errorHandler } from './utils/errorHandler';

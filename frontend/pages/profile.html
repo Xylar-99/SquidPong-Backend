@@ -7,14 +7,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
-  <div class="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
-    <h2 class="text-2xl font-semibold mb-6 text-center text-gray-900">Logout</h2>
+  <div class="bg-white p-6 rounded-lg shadow-md max-w-sm w-full grid  ">
 
+    <a href="./pages/chat.html" class="bg-green-600 text-white py-3 rounded hover:bg-green-700 transition w-full h-full">chat</a>
     <form id="logoutForm" class="flex flex-col gap-4">
-      <button
-        type="submit"
-        class="bg-red-600 text-white py-3 rounded hover:bg-red-700 transition"
-      >
+      <button type="submit" class="bg-red-600 text-white py-3 rounded hover:bg-red-700 transition">
         Logout
       </button>
     </form>
@@ -31,7 +28,7 @@ async function  logout(e)
   try 
   {
     const res = await fetch('/api/logout', { method: 'POST'});
-    if (res.ok) 
+    if (res.ok)
       window.location.href = '/';
   } 
   catch (error) 
