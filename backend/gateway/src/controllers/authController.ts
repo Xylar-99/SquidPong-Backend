@@ -214,6 +214,5 @@ export async function getUserCallbackhandler(req: FastifyRequest, res: FastifyRe
   const user = await fetch(`http://user:4001/api/users/${String(body.userId)}`);
   
   const data = await user.json();
-  console.log(data)
   return res.send(data);
 }

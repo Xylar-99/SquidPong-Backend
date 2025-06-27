@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signup Form</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #ffffff;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      text-align: left;
+    }
+
+    label {
+      font-weight: 600;
+      color: #555;
+    }
+
+    input[type="email"],
+    input[type="username"],
+    input[type="password"] {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border 0.3s ease;
+    }
+
+    input[type="email"]:focus,
+    input[type="username"]:focus,
+    input[type="password"]:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    input[type="submit"] {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+
+    .google-signup {
+      display: inline-block;
+      margin-top: 20px;
+      text-decoration: none;
+      background-color: #db4437;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: background-color 0.3s ease;
+    }
+
+    .google-signup:hover {
+      background-color: #c1351d;
+    }
+    .intra-signup {
+  display: inline-block;
+  margin-top: 15px;
+  text-decoration: none;
+  background-color: #00aaff; /* 42 Blue */
+  color: white;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.intra-signup:hover {
+  background-color: #008ecc;
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Create Your Account</h2>
+    <form id="signupForm">
+
+      <label for="username">username</label>
+      <input type="username" id="username" name="username" required />
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required />
+
+      <input type="submit" value="Sign Up" />
+    </form>
+
+    <a class="google-signup" href="http://localhost:4000/auth/google">Sign up with Google</a>
+    <a class="intra-signup" href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-9008211f5458b9ba5e1ca85aae1ca6f72edbd5342bab10dd788cf73145454b7a&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fauth%2Fintra%2Fcallback&response_type=code">Sign up with 42 Intra</a>
+  </div>
+
+
+  <script src="../js/usermanagment.js" ></script>
+  <script>
+  document.getElementById('signupForm').addEventListener('submit', signup);
+
+async function signup(e) 
+ {
+  e.preventDefault();
+  const email    = document.getElementById('email').value.trim();
+  const username    = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  try 
+  {
+    const res = await fetch('/api/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password , username }) });
+    
+    if (res.ok) 
+      window.location.href = '/pages/verification.html';
+    else
+    {
+      const errorData = await res.json();
+      alert(`Signup failed: ${errorData.message}`);
+    }
+
+  } 
+  catch (err) 
+  {
+    alert('Network error: ' + err.message);
+  }
+};
+
+  </script>
+
+</body>
+</html>

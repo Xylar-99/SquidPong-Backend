@@ -1,5 +1,5 @@
 import {fastify , FastifyInstance} from 'fastify';
-import userRoutes from './routes/user';
+import {userRoutes , friendRoutes} from './routes/user';
 import { errorHandler } from './utils/errorHandler';
 import registerPlugins from './plugins/plugins'
 import prisma from './db/database'
@@ -9,7 +9,7 @@ export default app;
 
 registerPlugins(app);
 
-const routes = [...userRoutes]
+const routes = [...userRoutes , ...friendRoutes]
 
 routes.forEach(route => {app.route(route)})
 

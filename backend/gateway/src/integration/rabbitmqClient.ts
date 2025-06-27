@@ -10,6 +10,7 @@ export async function initRabbitMQ()
   connection = await amqp.connect("amqp://rabbitmq:5672");
   channel = await connection.createChannel();
   
+  await channel.assertQueue("friend");
   await channel.assertQueue("chat");
   await channel.assertQueue("emailhub");
   await channel.assertQueue("chatservice");
@@ -47,7 +48,7 @@ function receiveAndDeliver(msg: any)
 
   if (msg !== null) 
     {
-    sendWsMessage(msg);
+    sendWsMessage(msg); 
     channel.ack(msg);
     }
 }

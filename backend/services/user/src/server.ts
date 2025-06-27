@@ -1,14 +1,13 @@
 import dotenv from 'dotenv';
 import app from './app'
-import redis from './utils/redis';
-
+import { initRabbitMQ , receiveFromQueue } from './integration/rabbitmqClient';
 dotenv.config();
 
 const port = Number(process.env.PORT);
 const host = process.env.HOST;
 
 
-async function StartServer()
+async function fastifyserver()
 {
 
     try 
@@ -21,20 +20,14 @@ async function StartServer()
         process.exit(1);
     }
 }
-async function subscriberedis() 
+
+
+async function start() 
 {
     
-    await redis.subscribe('user');
-    
-    redis.on('message', (channel:any, message:any) => {
-        console.log("hello from redis on");
-        console.log(channel)
-        if (channel == 'user') 
-            console.log('News:', message);
-        
-    });
-    
+    fastifyserver();
+    await initRabbitMQ();
+    await receiveFromQueue("friend");
 }
 
-StartServer();
-subscriberedis();
+start();

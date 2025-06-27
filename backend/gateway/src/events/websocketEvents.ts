@@ -14,7 +14,6 @@ export async function handleWsConnect(ws: any, req: FastifyRequest)
 
     const token = cookieHeader.split(" ")[0].split("=")[1].slice(0, -1);
     const payload: any = await app.jwt.verify(token);
-    console.log(payload);
     
     (ws as any).userId = payload.userId;
     
@@ -32,8 +31,12 @@ async function onClientMessage(message: any)
     const dataString: string = Buffer.from(message).toString("utf8");
     const dataJson = JSON.parse(dataString);
 
-    if (dataJson.type == "chat") 
+    console.log(dataJson);
+
+    if (dataJson.type == "chat")
         await sendDataToQueue(dataJson, "chat");
+    else if (dataJson.type == "friend")
+        await sendDataToQueue(dataJson, "friend");
 
 }
 
