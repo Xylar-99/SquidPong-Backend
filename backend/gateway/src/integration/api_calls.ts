@@ -1,27 +1,23 @@
 
 
-
-
-
-
-export async function sendToService( _url: string, _method: string, _data: any): Promise<object> 
+export async function sendToService( url: string, method: string , id:any = null , body: any = null): Promise<object> 
 {
 
-  let res: any;
+  const options:any = {
+    method: method,
+    headers: {
+      'id': (!id ? '' : id),
+    },
+  };
 
-  if (_method === "GET") 
-    res = await fetch(_url);
-  else
+  if (body != null && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase()))
   {
+    options.headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(body);
+  }
 
-      res = await fetch(_url, {
-          method: _method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(_data),
-        });
-    }
-
-  return await res.json();
+  const res = await fetch(url, options);
+  return (await res.json());
 }
 
 

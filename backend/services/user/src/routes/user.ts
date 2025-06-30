@@ -21,6 +21,7 @@ const userRoutes: Route[] = [
   
   { method: 'GET', url: '/api/users/me', handler: userController.getCurrentUserHandler,},
   { method: 'GET', url: '/api/users/:id', handler: userController.getUserByIdHandler },
+  { method: 'GET', url: '/api/users/', handler: userController.getAllUserHandler },
 
 ];
 
@@ -29,23 +30,22 @@ const userRoutes: Route[] = [
 const friendRoutes: Route[] = [
 
   // Friend requests
-  { method: 'POST', url: '/api/friends/request/:toUserId', handler: friendController.sendFriendRequestHandler },
-  { method: 'POST', url: '/api/friends/accept/:requestId', handler: friendController.acceptFriendRequestHandler },
-  { method: 'POST', url: '/api/friends/reject/:requestId', handler: friendController.rejectFriendRequestHandler },
-  { method: 'DELETE', url: '/api/friends/cancel/:requestId', handler: friendController.cancelFriendRequestHandler },
+  { method: 'POST', url: '/api/friends/request', handler: friendController.sendFriendRequestHandler },
+  { method: 'POST', url: '/api/friends/accept', handler: friendController.acceptFriendRequestHandler },
+  { method: 'POST', url: '/api/friends/reject', handler: friendController.rejectFriendRequestHandler },
 
   // Friend list
-  { method: 'GET', url: '/api/friends', handler: friendController.getFriendsListHandler },
+  { method: 'GET', url: '/api/friends/', handler: friendController.getFriendsListHandler },
   { method: 'DELETE', url: '/api/friends/:friendId', handler: friendController.removeFriendHandler },
+  
+  // get frineds lists
+  { method: 'GET', url: '/api/friends/pending', handler: friendController.getPendingRequestsHandler },
+  
 
   // Block users
-  { method: 'POST', url: '/api/blocked/:userId', handler: blockController.blockUserHandler },
-  { method: 'DELETE', url: '/api/blocked/:userId', handler: blockController.unblockUserHandler },
-  { method: 'GET', url: '/api/blocked', handler: blockController.getBlockedUsersHandler },
-
-  // Optional: pending requests
-  { method: 'GET', url: '/api/friends/pending/sent', handler: friendController.getSentRequestsHandler },
-  { method: 'GET', url: '/api/friends/pending/received', handler: friendController.getReceivedRequestsHandler },
+  { method: 'POST', url: '/api/friends/blocked/', handler: blockController.blockUserHandler },
+  { method: 'DELETE', url: '/api/friends/blocked/:blockId', handler: blockController.unblockUserHandler },
+  { method: 'GET', url: '/api/friends/blocked/', handler: blockController.getBlockedUsersHandler },
 
 ];
 

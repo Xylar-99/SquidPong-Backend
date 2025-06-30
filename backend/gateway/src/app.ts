@@ -12,10 +12,11 @@ export default app;
 registerPlugins(app);
 
 
-const routes = [...gatewayRoutes ,  ...authRoutes]
+// const routes = [...gatewayRoutes ,  ...authRoutes]
 
 app.addHook('preHandler', authenticateUser);
 app.addHook('onError', errorHandler);
 
-routes.forEach(route => {app.route(route)})
+authRoutes.forEach(route => {app.route(route)})
+gatewayRoutes.forEach(route => {app.all(route.url , route.handler)})
 

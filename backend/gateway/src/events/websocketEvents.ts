@@ -35,8 +35,6 @@ async function onClientMessage(message: any)
 
     if (dataJson.type == "chat")
         await sendDataToQueue(dataJson, "chat");
-    else if (dataJson.type == "friend")
-        await sendDataToQueue(dataJson, "friend");
 
 }
 

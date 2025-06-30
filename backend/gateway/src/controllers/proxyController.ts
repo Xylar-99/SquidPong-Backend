@@ -1,12 +1,16 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-
-
+import { sendToService } from '../integration/api_calls';
 
 
 
 async function proxyToUserService(req:FastifyRequest , res:FastifyReply)
 {
-    return res.type('text/html').sendFile('index.html')
+
+    const data:any =  await sendToService(`http://user:4001${req.url}` , req.method , req.id , req.body)
+    
+    console.log("method : ",req.method)
+    console.log(data);
+    return res.send(data)
 }
 
 
@@ -14,14 +18,22 @@ async function proxyToUserService(req:FastifyRequest , res:FastifyReply)
 
 async function proxyToChatService(req:FastifyRequest , res:FastifyReply)
 {
-    return res.type('text/html').sendFile('index.html')
+    const method = req.method;
+    const url = req.url;
+
+    const data:any =  await sendToService(`http://chat:4002${url}` , method , req.body)
+    return res.send(data)
 }
 
 
 
 async function proxyToGameService(req:FastifyRequest , res:FastifyReply)
 {
-    return res.type('text/html').sendFile('index.html')
+    const method = req.method;
+    const url = req.url;
+
+    const data:any =  await sendToService(`http://user:4001${url}` , method , req.body)
+    return res.send(data)
 }
 
 
@@ -29,7 +41,11 @@ async function proxyToGameService(req:FastifyRequest , res:FastifyReply)
 
 async function proxyToNotifyService(req:FastifyRequest , res:FastifyReply)
 {
-    return res.type('text/html').sendFile('index.html')
+    const method = req.method;
+    const url = req.url;
+
+    const data:any =  await sendToService(`http://notify:4004${url}` , method , req.body)
+    return res.send(data)
 }
 
 

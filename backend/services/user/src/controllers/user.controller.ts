@@ -27,6 +27,15 @@ export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply
 }
 
 
+export async function getAllUserHandler(req:FastifyRequest , res:FastifyReply)
+{
+    const headers = req.headers as any;
+
+    const profile = await prisma.profile.findMany({where : {NOT : {userId : Number(headers.id)}}});
+    return res.send(profile)
+}
+
+
 export async function deleteProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
     return res.send(req.body)
@@ -36,7 +45,9 @@ export async function deleteProfileHandler(req:FastifyRequest , res:FastifyReply
 
 export async function getCurrentUserHandler(req:FastifyRequest , res:FastifyReply)
 {
-    return res.send(req.body)
+    const headers = req.headers as any;
+    const profile = await prisma.profile.findUnique({where : {userId : Number(headers.id)}})
+    return res.send(profile)
 }
 
 

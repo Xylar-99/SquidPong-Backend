@@ -34,7 +34,6 @@ export async function sendDataToQueue(data: any, queue: string)
 
 export async function receiveFromQueue(queue: string)
 {
-
   try 
   {
       channel.consume(queue, async (msg:any) =>{
@@ -45,12 +44,12 @@ export async function receiveFromQueue(queue: string)
           channel.ack(msg);
           
           if(data.status == 'pending')
-            sendFriendInvite(data);
+           await sendFriendInvite(data);
         }
 
     });
 
-  } 
+  }
   catch (err:any) 
   {
     console.error('RabbitMQ error:', err.message);

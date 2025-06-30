@@ -64,11 +64,6 @@ const authRoutes: Route[] = [
     url: "/profile",
     handler: authController.getProfileCallbackhandler,
   },
-  {
-    method: "GET",
-    url: "/user",
-    handler: authController.getUserCallbackhandler,
-  },
 ];
 
 

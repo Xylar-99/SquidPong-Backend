@@ -201,7 +201,8 @@ export async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyRe
 
 export async function getProfileCallbackhandler(req:FastifyRequest , res:FastifyReply) 
 {
-  console.log(req.user)
+  // const test = await fetch('/api/users/')
+  // console.log(await test.json())
   return res.type('text/html').sendFile('/pages/profile.html')
 }
 
@@ -210,8 +211,8 @@ export async function getProfileCallbackhandler(req:FastifyRequest , res:Fastify
 export async function getUserCallbackhandler(req: FastifyRequest, res: FastifyReply) 
 {
   
-  const body = req.user as any;
-  const user = await fetch(`http://user:4001/api/users/${String(body.userId)}`);
+  const id = req.id as any;
+  const user = await fetch(`http://user:4001/api/users/${String(id)}`);
   
   const data = await user.json();
   return res.send(data);
