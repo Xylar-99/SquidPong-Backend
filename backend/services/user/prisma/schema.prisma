@@ -23,10 +23,10 @@ model Profile {
 
 
 model Friendship {
-  id        Int    @id @default(autoincrement())
-  userId    Int
-  friendId  Int
-  status    String   // e.g., "pending", "accepted", "blocked"
-  createdAt DateTime @default(now())
+  id              Int    @id @default(autoincrement())
+  userId          Int
+  friendId        Int
+  status          String   // e.g., "pending", "accepted", "blocked"
+  createdAt       DateTime @default(now())
 
 }

@@ -23,6 +23,7 @@ export async function createProfileHandler(req:FastifyRequest , res:FastifyReply
 
 export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
+    
     return res.send(req.body)
 }
 
@@ -31,7 +32,12 @@ export async function getAllUserHandler(req:FastifyRequest , res:FastifyReply)
 {
     const headers = req.headers as any;
 
-    const profile = await prisma.profile.findMany({where : {NOT : {userId : Number(headers.id)}}});
+    const friendships = await prisma.friendship.findMany();
+    const friendIds =  [...new Set(friendships.flatMap((f:any) => {return [f.userId, f.friendId]}))] as any;
+    if (!friendIds.includes(Number(headers.id)))
+        friendIds.push(Number(headers.id));
+
+    const profile = await prisma.profile.findMany({where : {userId : {notIn: friendIds}}});
     return res.send(profile)
 }
 

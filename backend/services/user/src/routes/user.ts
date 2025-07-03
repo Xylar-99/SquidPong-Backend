@@ -43,7 +43,7 @@ const friendRoutes: Route[] = [
   
 
   // Block users
-  { method: 'POST', url: '/api/friends/blocked/', handler: blockController.blockUserHandler },
+  { method: 'POST', url: '/api/friends/blocked/:blockId', handler: blockController.blockUserHandler },
   { method: 'DELETE', url: '/api/friends/blocked/:blockId', handler: blockController.unblockUserHandler },
   { method: 'GET', url: '/api/friends/blocked/', handler: blockController.getBlockedUsersHandler },
 

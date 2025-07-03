@@ -5,11 +5,7 @@ import { sendToService } from '../integration/api_calls';
 
 async function proxyToUserService(req:FastifyRequest , res:FastifyReply)
 {
-
     const data:any =  await sendToService(`http://user:4001${req.url}` , req.method , req.id , req.body)
-    
-    console.log("method : ",req.method)
-    console.log(data);
     return res.send(data)
 }
 

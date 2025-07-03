@@ -7,74 +7,90 @@ import { isFriendRequestExists } from '../utils/utils';
 
 export async function blockUserHandler(req:FastifyRequest , res:FastifyReply)
 {
-    const body = req.body as any;
-    const headers = req.headers as any;
+  const {blockId} = req.params as any;
+  const headers = req.headers as any;
 
-    const friendata:any = {};
-    friendata['userId'] = Number(headers.id);
-    friendata['friendId'] = body.friendId;
-    friendata['status'] = 'accept';
-    
+  let friendata:any = {};
+  friendata['userId'] = Number(headers.id);
+  friendata['friendId'] = Number(blockId);
+  friendata['status'] = 'accepted';
+  
 
-    try 
-    {
-      if(await isFriendRequestExists(friendata))
-        throw new Error("ready exist friends")
+  try 
+  {
+
+    friendata = await isFriendRequestExists(friendata);
+    if(!friendata)
+      throw new Error("ready unblocked")
     
-      await prisma.friendship.updateMany({
-        where: {
-          OR: [
-            { userId: friendata.userId, friendId: friendata.friendId },
-            { userId: friendata.friendId, friendId: friendata.userId }
-          ]
-        },
-        data: { status: 'blocked' }
-      });
-      
-    }
-    catch
+    const userId = friendata.userId;
+    if(friendata.friendId == headers.id)
     {
-      return res.status(400).send({msg : false})
+      friendata.userId = friendata.friendId;
+      friendata.friendId = userId;
+      friendata.status = 'blocked'
     }
     
-    return res.send({msg : true})
+
+    await prisma.friendship.updateMany({
+      where: {
+        OR: [
+          { userId: friendata.userId, friendId: friendata.friendId },
+          { userId: friendata.friendId, friendId: friendata.userId }
+        ]
+      },
+      data: friendata
+    });
+    
+  }
+  catch
+  {
+    return res.status(400).send({msg : false})
+  }
+  
+  return res.send({msg : true})
 }
 
 
 
 export async function unblockUserHandler(req:FastifyRequest , res:FastifyReply)
 {
-    const {blockId} = req.query as any;
-    const headers = req.headers as any;
+  const {blockId} = req.params as any;
+  const headers = req.headers as any;
 
-    const friendata:any = {};
-    friendata['userId'] = Number(headers.id);
-    friendata['friendId'] = blockId;
-    friendata['status'] = 'blocked';
-    
+  let friendata:any = {};
+  friendata['userId'] = Number(headers.id);
+  friendata['friendId'] = Number(blockId);
+  friendata['status'] = 'blocked';
+  
 
-    try 
-    {
-      if(await isFriendRequestExists(friendata))
-        throw new Error("ready unblocked")
+  try 
+  {
+
+    friendata = await isFriendRequestExists(friendata);
+    if(!friendata)
+      throw new Error("ready unblocked")
     
-      await prisma.friendship.updateMany({
-        where: {
-          OR: [
-            { userId: friendata.userId, friendId: friendata.friendId },
-            { userId: friendata.friendId, friendId: friendata.userId }
-          ]
-        },
-        data: { status: 'accept' }
-      });
-      
-    }
-    catch
-    {
-      return res.status(400).send({msg : false})
-    }
+    if(friendata.userId != headers.id)
+      throw new Error("not have pers for unblocked user not block him")
+
+    await prisma.friendship.updateMany({
+      where: {
+        OR: [
+          { userId: friendata.userId, friendId: friendata.friendId },
+          { userId: friendata.friendId, friendId: friendata.userId }
+        ]
+      },
+      data: {status : 'accepted'}
+    });
     
-    return res.send({msg : true})
+  }
+  catch
+  {
+    return res.status(400).send({msg : false})
+  }
+  
+  return res.send({msg : true})
 }
 
 
@@ -82,9 +98,7 @@ export async function getBlockedUsersHandler(req:FastifyRequest , res:FastifyRep
 {
     
   const headers = req.headers as any;
-  const blockedusers = await prisma.friendship.findMany({
-    where: {userId : Number(headers.id) , status: 'blocked'}
-  });
+  const blockedusers = await prisma.friendship.findMany({where: {userId : Number(headers.id) , status: 'blocked'}});
 
   const friendIds = blockedusers.map((f:any) => f.friendId);
 

@@ -24,17 +24,20 @@ export async function getFriendsListHandler(req:FastifyRequest , res:FastifyRepl
 
   const headers = req.headers as any;
   const friendships = await prisma.friendship.findMany({
-    where: {userId : Number(headers.id) , status: 'accepted'}
+    where: 
+    {
+      status: 'accepted',
+      OR: [
+        { userId: Number(headers.id)},
+        { friendId: Number(headers.id) }
+        ]
+    }
   });
   
+  
  
-  const friendIds = friendships.map((f:any) => f.friendId);
-
-  const profiles = await prisma.profile.findMany({
-    where: {
-      id: { in: friendIds }
-    }
-  })
+  const friendIds = friendships.map((f:any) => {return (Number(headers.id) != f.userId) ? f.userId : f.friendId });
+  const profiles = await prisma.profile.findMany({ where: { id: { in: friendIds } } })
   
   return res.send(profiles);
 }
@@ -163,39 +166,34 @@ export async function rejectFriendRequestHandler(req:FastifyRequest , res:Fastif
 export async function removeFriendHandler(req:FastifyRequest , res:FastifyReply)
 {
 
+  const {friendId} = req.params as any;
+  const headers = req.headers as any;
 
-  console.log("testiiiiiiiiiiiing")
-  console.log("testiiiiiiiiiiiing")
-
-  // const {friendId} = req.params as any;
-  // console.log(friendId)
-  // const headers = req.headers as any;
-
-  // const friendata:any = {};
-  // friendata['userId'] = Number(headers.id);
-  // friendata['friendId'] = friendId;
-  // friendata['status'] = 'accepted';
+  const friendata:any = {};
+  friendata['userId'] = Number(headers.id);
+  friendata['friendId'] = friendId;
+  friendata['status'] = 'accepted';
   
 
-  // try 
-  // {
-  //   if(!await isFriendRequestExists(friendata))
-  //     throw new Error("ready is not friends")
+  try 
+  {
+    if(!await isFriendRequestExists(friendata))
+      throw new Error("ready is not friends")
   
-  //   await prisma.friendship.deleteMany({
-  //     where: {
-  //       OR: [
-  //         { userId: friendata.userId, friendId: friendata.friendId },
-  //         { userId: friendata.friendId, friendId: friendata.userId }
-  //       ]
-  //     }
-  //   });
+    await prisma.friendship.deleteMany({
+      where: {
+        OR: [
+          { userId: friendata.userId, friendId: friendata.friendId },
+          { userId: friendata.friendId, friendId: friendata.userId }
+        ]
+      }
+    });
     
-  // } 
-  // catch
-  // {
-  //   return res.status(400).send({msg : false})
-  // }
+  } 
+  catch
+  {
+    return res.status(400).send({msg : false})
+  }
   
   return res.send({msg : true})
 }

@@ -1,6 +1,6 @@
 import prisma from "../db/database";
 
-export async function isFriendRequestExists(friendata:any) : Promise<boolean>
+export async function isFriendRequestExists(friendata:any) : Promise<any>
 {
     const existing = await prisma.friendship.findFirst({
         where: {
@@ -12,6 +12,6 @@ export async function isFriendRequestExists(friendata:any) : Promise<boolean>
         }
       });
 
-    return (existing ? true : false);
+    return (existing);
 }
 
