@@ -36,6 +36,13 @@ services:
     command: sh -c "sleep 15 && npx prisma migrate dev --name init && npm run start "
     networks: 
         - web
+  notify:
+    build: ./backend/services/notify
+    image: notify-image
+    container_name: notify
+    command: sh -c "sleep 20 && npm run start "
+    networks: 
+        - web
   # game:
   #   build: ./backend/services/game
   #   image: game-image
@@ -43,14 +50,6 @@ services:
   #   command: sh -c "npx prisma migrate dev --name init && npm run start "
   #   networks: 
   #       - web
-  # notify:
-  #   build: ./backend/services/notify
-  #   image: notify-image
-  #   container_name: notify
-  #   command: sh -c "sleep 20 && npm run start "
-  #   networks: 
-  #       - web
-
 
 networks:
   web:

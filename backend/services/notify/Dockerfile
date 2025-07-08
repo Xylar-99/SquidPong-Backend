@@ -8,6 +8,8 @@ COPY ./*.json .
 
 RUN npm install
 
+RUN npm install resend
+
 COPY ./src ./src
 
 COPY ./prisma ./prisma

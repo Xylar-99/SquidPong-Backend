@@ -11,18 +11,21 @@ datasource db {
 
 
 
-enum TwoFAMethod {
-  email
-  authenticator
-  sms
-}
-
-
 model User {
   id              Int     @id @default(autoincrement())
   username        String  @unique
   email           String  @unique
   password        String?
-  is_2fa_enabled  Boolean @default(false) 
-  two_fa_method   TwoFAMethod?
+}
+
+
+model Twofactorauth {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @unique
+  secret       String?    
+  method       String   
+  enabled      Boolean   @default(false)
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }

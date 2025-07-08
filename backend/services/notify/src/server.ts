@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path'
 // import app from './app'
+import { initRabbitMQ , receiveFromQueue } from './integration/rabbitmqClient';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
@@ -23,57 +24,9 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 
 
-
-import { sendEmailMessage } from './utils/utils';
-import amqp from 'amqplib';
-
-let connection:any;
-let channel:any;
-
-export async function initRabbitMQ() 
+async function start() 
 {
-  connection = await amqp.connect('amqp://rabbitmq:5672');
-  channel = await connection.createChannel();
-  await channel.assertQueue('emailhub');
-
-  console.log("Connected to RabbitMQ");
-  
-  return { connection, channel };
+  await  initRabbitMQ();
+  await receiveFromQueue("emailhub") 
 }
-
-
-
-export async function sendDataToQueue(data: any) 
-{
-  try {
-
-    const queue = 'chat';
-
-    const msgBuffer = Buffer.from(JSON.stringify(data));
-    channel.sendToQueue(queue, msgBuffer);
-  } 
-  catch (error) 
-  {
-    console.log("Error in rabbit connection:", error);
-  }
-}
-
-
-
-export async function receiveFromQueue() 
-{
-  const queue:string = 'chat';
-
-  try 
-  {
-    channel.consume(queue, sendEmailMessage); // problem remove message from queue
-
-  } 
-  catch (err:any) 
-  {
-    console.error('RabbitMQ error:', err.message);
-  }
-}
-
-initRabbitMQ();
-receiveFromQueue();
+start();

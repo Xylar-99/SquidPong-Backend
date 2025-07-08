@@ -1,5 +1,6 @@
 import { RouteHandlerMethod , preValidationHookHandler , FastifySchema } from 'fastify';
-import * as authController from '../controllers/authController';
+import * as authController from '../controllers/auth.controller';
+import * as twofaController from '../controllers/2fa.controller';
 import { loginSchema, signupSchema , verifyEmailSchema } from '../validators/authSchemas';
 
 
@@ -64,6 +65,36 @@ const authRoutes: Route[] = [
     url: "/profile",
     handler: authController.getProfileCallbackhandler,
   },
+
+  // 2fa 
+
+  {
+    method: "POST",
+    url: "/api/2fa/email/send",
+    handler: twofaController.sendEmailVerificationHandler,
+  },
+  {
+    method: "POST",
+    url: "/api/2fa/email/verify",
+    handler: twofaController.verifyEmailCodeHandler,
+  },
+  {
+    method: "GET",
+    url: "/api/2fa/authenticator/setup",
+    handler: twofaController.setupAuthenticatorHandler,
+  },
+  {
+    method: "POST",
+    url: "/api/2fa/authenticator/verify",
+    handler: twofaController.verifyAuthenticatorCodeHandler,
+  },
+  {
+    method: "POST",
+    url: "/api/2fa/disable",
+    handler: twofaController.disable2FAHandler,
+  }
+  
+
 ];
 
 

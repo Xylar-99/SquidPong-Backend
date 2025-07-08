@@ -26,15 +26,19 @@ export async function handleWsConnect(ws: any, req: FastifyRequest)
 }
 
 
-async function onClientMessage(message: any) 
+async function onClientMessage(this:WebSocket , message: any) 
 {
     const dataString: string = Buffer.from(message).toString("utf8");
     const dataJson = JSON.parse(dataString);
 
-    console.log(dataJson);
+    const id = (this as any).userId; 
+
+    console.log(dataJson , id);
 
     if (dataJson.type == "chat")
         await sendDataToQueue(dataJson, "chat");
+    if (dataJson.type == "email")
+        await sendDataToQueue(dataJson, "emailhub");
 
 }
 

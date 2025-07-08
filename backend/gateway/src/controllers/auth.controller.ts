@@ -217,3 +217,5 @@ export async function getUserCallbackhandler(req: FastifyRequest, res: FastifyRe
   const data = await user.json();
   return res.send(data);
 }
+
+

@@ -1,5 +1,5 @@
 import { RouteHandlerMethod , FastifySchema } from 'fastify';
-import {proxyToNotifyService , proxyToChatService , proxyToGameService , proxyToUserService} from '../controllers/proxyController'
+import {proxyToNotifyService , proxyToChatService , proxyToGameService , proxyToUserService} from '../controllers/proxy.controller'
 
 
 
