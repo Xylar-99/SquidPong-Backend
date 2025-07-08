@@ -8,8 +8,8 @@ import html from './code'
 let transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'abdoqoubai@gmail.com' ,
-    pass: 'zuhe fyst rlzr tjfc',
+    user: process.env.USER  ,
+    pass: process.env.PASS ,
   },
 });
 
