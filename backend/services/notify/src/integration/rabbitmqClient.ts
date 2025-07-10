@@ -34,6 +34,7 @@ export async function sendDataToQueue(data: any, queue: string)
 
 export async function receiveFromQueue(queue: string)
 {
+
   try 
   {
       channel.consume(queue, async (msg:any) =>{
@@ -41,7 +42,6 @@ export async function receiveFromQueue(queue: string)
       if (msg !== null)
         {
           const data = JSON.parse(msg.content.toString());
-          console.log(`i get data : ${data.email}`)
           channel.ack(msg);
           if(queue == "emailhub")
             sendEmailMessage(data)
