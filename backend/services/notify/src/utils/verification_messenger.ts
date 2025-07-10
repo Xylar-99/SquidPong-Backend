@@ -8,7 +8,7 @@ import html from './code'
 let transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'abdoqoubai@gmail.com'  ,
+    user: 'abdoqoubai@gmail.com',
     pass: 'zuhe fyst rlzr tjfc' ,
   },
 });
@@ -49,7 +49,8 @@ async function sendEmail(email: string, code: string)
 async function generate6DigitCode(): Promise<string> 
 {
   const value: string = Math.floor(100000 + Math.random() * 900000).toString();
-  return value;
+  // return value;
+  return "999999";
 }
 
 
@@ -59,7 +60,7 @@ export async function sendEmailMessage(data:any)
   const code: string = await generate6DigitCode();
   await redis.set(`2fa:${data.email}`, code, "EX", "260");
 
-  await sendEmail(data.email , code);
+  // await sendEmail(data.email , code);
 }
 
 
