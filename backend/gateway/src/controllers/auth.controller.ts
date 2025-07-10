@@ -144,8 +144,8 @@ export async function getGooglehandler(req:FastifyRequest , res:FastifyReply)
     {
       return res.status(400).send({msg : false})
     }
-
-  return res.redirect('/profile')
+    
+  return res.send({msg : true})
 }
 
 
@@ -182,7 +182,7 @@ export async function getIntraUserhandler(req:FastifyRequest , res:FastifyReply)
 
   const account = await createAccount(userJSON);
   await setJwtTokens(res , account);
-  return res.redirect('/profile')
+  return res.send({msg : true})
 }
 
 
