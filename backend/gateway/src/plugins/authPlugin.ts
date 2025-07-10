@@ -33,7 +33,7 @@ const auth2_config:any = {
     }
   },
   startRedirectPath: '/auth/google',
-  callbackUri: 'http://localhost:4000/auth/google/callback'
+  callbackUri: 'http://backend.abquaoub.me:4000/auth/google/callback'
 }
 
 
