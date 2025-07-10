@@ -15,6 +15,11 @@ type Route = {
 const authRoutes: Route[] = [
   // Auth routes
   {
+    method: "GET",
+    url: "/",
+    handler: authController.getRootHandler,
+  },
+  {
     method: "POST",
     url: "/api/signup",
     handler: authController.postSignupHandler,
@@ -57,13 +62,6 @@ const authRoutes: Route[] = [
     method: "POST",
     url: "/refresh-token",
     handler: authController.postrefreshtokenHandler,
-  },
-
-  // testing only
-  {
-    method: "GET",
-    url: "/profile",
-    handler: authController.getProfileCallbackhandler,
   },
 
   // 2fa 

@@ -27,7 +27,7 @@ declare module 'fastify' {
 
 export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 {
-    return res.type('text/html').sendFile('index.html')
+    return res.send({msg : "hello ft_trandandan"})
 }
 
 
@@ -197,14 +197,6 @@ export async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyRe
 }
 
 
-
-
-export async function getProfileCallbackhandler(req:FastifyRequest , res:FastifyReply) 
-{
-  // const test = await fetch('/api/users/')
-  // console.log(await test.json())
-  return res.type('text/html').sendFile('/pages/profile.html')
-}
 
 
 
