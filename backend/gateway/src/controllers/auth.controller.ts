@@ -7,6 +7,7 @@ import { setJwtTokens } from '../validators/2faValidator';
 import { isUserVerified , isUserAlreadyRegistered  , isUserAllowedToLogin} from '../validators/userStatusCheck';
 import { createAccount } from '../utils/utils';
 
+import { sendDataToQueue } from '../integration/rabbitmqClient';
 import redis from '../integration/redisClient';
 import prisma from '../db/database';
 
@@ -38,7 +39,9 @@ export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
     try
     {
       await isUserAlreadyRegistered(body);
-      await sendVerificationEmail(body);
+      await sendDataToQueue({email : body.email}, "emailhub");
+      
+      // await sendVerificationEmail(body);
     }
     catch (error) 
     {
