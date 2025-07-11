@@ -64,10 +64,10 @@ const jwt_config:any = {
   
   export default async function registerPlugins(app:FastifyInstance)
   {
+    app.register(cors, { origin: 'http://abquaoub.me' });  
     app.register(cookie);
     app.register(session, session_option );
     app.register(auth2 , auth2_config);
     app.register(jwt, jwt_config);
-    app.register(cors, { origin: '*' });
 
 }
