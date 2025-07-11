@@ -10,20 +10,14 @@ import { createAccount } from '../utils/utils';
 import { sendDataToQueue } from '../integration/rabbitmqClient';
 import redis from '../integration/redisClient';
 import prisma from '../db/database';
-
-
 import app from '../app';
-import { authRoutes } from '../routes/auth';
-import { errorHandler } from '../utils/errorHandler';
+
 
 declare module 'fastify' {
   interface FastifyInstance {
     googleOAuth2: OAuth2Namespace;
   }
 }
-
-
-
 
 
 export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
