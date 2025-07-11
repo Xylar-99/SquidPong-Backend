@@ -1,0 +1,3 @@
+backend.abquaoub.me{
+  reverse_proxy gateway:4000
+}

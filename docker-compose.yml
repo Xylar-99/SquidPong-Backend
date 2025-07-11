@@ -1,6 +1,15 @@
 version: "3.9"
 
 services:
+  caddy:
+    image: caddy:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+        - web
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
   redis:
     image: redis:7
     container_name: redis
