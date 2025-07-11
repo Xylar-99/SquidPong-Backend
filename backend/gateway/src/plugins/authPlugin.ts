@@ -68,6 +68,6 @@ const jwt_config:any = {
     app.register(session, session_option );
     app.register(auth2 , auth2_config);
     app.register(jwt, jwt_config);
-    // app.register(cors, { origin: ['http://abquaoub.me'],}) 
+    app.register(cors, { origin: '*' });
 
 }
