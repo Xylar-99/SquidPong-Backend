@@ -8,7 +8,7 @@ COPY ./*.json .
 
 RUN npm install
 
-RUN npm install @vonage/auth
+RUN npm install @fastify/cors
 
 COPY ./src ./src
 
