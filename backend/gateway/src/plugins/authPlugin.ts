@@ -42,7 +42,8 @@ const auth2_config:any = {
 const session_option = {
     secret: 'this_is_a_very_long_secret_key_that_is_secure',
     cookie: {
-    secure: false, 
+    secure: false,
+    sameSite: 'lax',
     maxAge: 1000 * 60 * 10,
     },
     saveUninitialized: false,
