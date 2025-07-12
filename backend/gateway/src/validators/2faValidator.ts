@@ -1,7 +1,7 @@
 import {FastifyReply } from "fastify";
 import app from "../app";
-
-
+import prisma from "../db/database";
+import { sendDataToQueue } from "../integration/rabbitmqClient";
 
 export async function setJwtTokens(res: FastifyReply, user: any | null) 
 {
@@ -15,13 +15,25 @@ export async function setJwtTokens(res: FastifyReply, user: any | null)
     httpOnly: true,
     path: "/",
     maxAge: 7 * 24 * 60 * 60,
-  });
+  }); 
 }
 
 
 
 
 
+
+export async function is_2fa_enabled(res: FastifyReply, user: any | null)
+{
+  const data = await prisma.twofactorauth.findUnique({ where: { userId: user.id}})
+
+  if(!data || !data.enabled)
+  {
+    await setJwtTokens(res , user);
+    return ;
+  }
+
+}
 
 
 

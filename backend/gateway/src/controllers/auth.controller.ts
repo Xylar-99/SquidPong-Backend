@@ -4,6 +4,7 @@ import { OAuth2Namespace } from '@fastify/oauth2';
 import { setJwtTokens } from '../validators/2faValidator';
 import { isUserVerified , isUserAlreadyRegistered  , isUserAllowedToLogin} from '../validators/userStatusCheck';
 import { createAccount } from '../utils/utils';
+import { is_2fa_enabled } from '../validators/2faValidator';
 
 import redis from '../integration/redisClient';
 import prisma from '../db/database';
@@ -77,13 +78,19 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
 export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
+    const resdata = {msg : true , two2fa : true};
 
     try 
     {
       const user = await prisma.user.findUnique({ where: { email: body.email}})
       await isUserAllowedToLogin(body , user);
-      await setJwtTokens(res , user);
-  
+      
+      const  data = await prisma.twofactorauth.findFirst({ where: { userId: user.id , enabled : true}})
+      if(!data)
+      {
+        await setJwtTokens(res , user);
+        resdata.two2fa = false;
+      }
     }
     catch (error) 
     {

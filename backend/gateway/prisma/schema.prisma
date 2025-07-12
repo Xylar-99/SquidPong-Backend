@@ -22,8 +22,7 @@ model User {
 model Twofactorauth {
   id           Int       @id @default(autoincrement())
   userId       Int       @unique
-  secret       String?    
-  method       String   
+  secret       String
   enabled      Boolean   @default(false)
 
   createdAt    DateTime  @default(now())

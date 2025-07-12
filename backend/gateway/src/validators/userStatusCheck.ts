@@ -64,8 +64,8 @@ export async function isUserAllowedToLogin(body:any , user:any | null)
     if(await VerifyPassword(body.password , user.password) ==  false)
       throw new Error(AuthErrors.INVALID_CREDENTIALS)
 
-    if(user.is_2fa_enabled)
-        return;
+    // if(user.is_2fa_enabled)
+    //     return;
 }
 
 

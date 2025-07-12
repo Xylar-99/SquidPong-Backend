@@ -67,31 +67,25 @@ const authRoutes: Route[] = [
   // 2fa 
 
   {
-    method: "POST",
-    url: "/api/2fa/email/send",
-    handler: twofaController.sendEmailVerificationHandler,
-  },
-  {
-    method: "POST",
-    url: "/api/2fa/email/verify",
-    handler: twofaController.verifyEmailCodeHandler,
-  },
-  {
     method: "GET",
-    url: "/api/2fa/authenticator/setup",
+    url: "/api/2fa/setup",
     handler: twofaController.setupAuthenticatorHandler,
   },
   {
     method: "POST",
-    url: "/api/2fa/authenticator/verify",
-    handler: twofaController.verifyAuthenticatorCodeHandler,
+    url: "/api/2fa/verify",
+    handler: twofaController.verifyTwofaHandler,
   },
   {
     method: "POST",
     url: "/api/2fa/disable",
     handler: twofaController.disable2FAHandler,
-  }
-  
+  },
+  {
+    method: "POST",
+    url: "/api/2fa/enable",
+    handler: twofaController.enableTwoFAHandler,
+  },
 
 ];
 
