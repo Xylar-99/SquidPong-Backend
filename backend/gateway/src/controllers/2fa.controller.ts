@@ -104,8 +104,8 @@ export async function enableTwoFAHandler(req: FastifyRequest, res: FastifyReply)
 
   try 
   {
-    const twoFA = await prisma.twofactorauth.findFirst({ where: { userId: Number(id)  , enabled : false} });
-    if (!twoFA) 
+    const twoFA = await prisma.twofactorauth.findFirst({ where: { userId: Number(id)  , enabled : true} });
+    if (!twoFA)
       throw new Error('2FA ready enabled');
 
     const isValid = authenticator.check(body.code, twoFA.secret);
