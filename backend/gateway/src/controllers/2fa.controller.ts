@@ -27,7 +27,7 @@ export async function setupAuthenticatorHandler(req: FastifyRequest, res: Fastif
 
     await prisma.twofactorauth.upsert({ where: { userId: user.id }, 
       update: { secret: secret,},
-      create: { userId: user.id ,  secret: secret, enabled: true,},
+      create: { userId: user.id ,  secret: secret},
     });
     
     
@@ -104,7 +104,7 @@ export async function enableTwoFAHandler(req: FastifyRequest, res: FastifyReply)
 
   try 
   {
-    const twoFA = await prisma.twofactorauth.findFirst({ where: { userId: Number(id)  , enabled : true} });
+    const twoFA = await prisma.twofactorauth.findFirst({ where: { userId: Number(id)  , enabled : false} });
     if (!twoFA)
       throw new Error('2FA ready enabled');
 
