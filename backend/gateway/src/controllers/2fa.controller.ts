@@ -11,6 +11,8 @@ import { authenticator } from "otplib";
 
 export async function setupAuthenticatorHandler(req: FastifyRequest, res: FastifyReply) 
 {
+
+  // change later  for check is enabled and not generate new secret !!!!!!!!!!
   try 
   {
     const user = await prisma.user.findFirst({where : {id : Number(req.id)}})
@@ -51,12 +53,10 @@ export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply)
   try 
   {
     const twoFA = await prisma.twofactorauth.findFirst({ where: { userId: Number(id) , enabled : true } });
-
     if (!twoFA) 
-      throw new Error('2FA secret not found');
+      throw new Error('2FA is not enabled yet');
 
     const isValid = authenticator.check(body.code, twoFA.secret);
-
     if (!isValid)
       throw new Error('Invalid code');
 

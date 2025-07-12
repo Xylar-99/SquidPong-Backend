@@ -101,7 +101,7 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
         return res.status(400).send({message : error.message})
     }
 
-  return res.send(resdata)
+  return res.send(resdata )
 }
 
 
