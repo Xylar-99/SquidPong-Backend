@@ -49,7 +49,7 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
     try 
     {
       await isUserVerified(body);
-      const data = await redis.get(`2fa:${body.email}`);
+      const data = await redis.get(body.email);
 
       { // change him later
 
