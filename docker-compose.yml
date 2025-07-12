@@ -9,6 +9,8 @@ services:
         - web
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
 
   redis:
     image: redis:7
@@ -60,4 +62,6 @@ networks:
   web:
     driver: bridge
 
-  
+volumes:
+  caddy_data:
+  caddy_config:
