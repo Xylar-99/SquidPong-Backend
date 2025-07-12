@@ -11,9 +11,10 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
-      - /etc/letsencrypt:/certs:ro         # ← mount real certs into container
+      - ./certbot/etc:/certs:ro   # Mount only `etc/` part to match `/certs/live/...`
     networks:
       - web
+
   redis:
     image: redis:7
     container_name: redis
