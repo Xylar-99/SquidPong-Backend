@@ -1,13 +1,10 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { hashPassword , VerifyPassword } from '../utils/hashedPassword';
 import { sendVerificationEmail } from '../utils/verification_messenger';
-import { sendToService } from '../integration/api_calls';
 import { OAuth2Namespace } from '@fastify/oauth2';
 import { setJwtTokens } from '../validators/2faValidator';
 import { isUserVerified , isUserAlreadyRegistered  , isUserAllowedToLogin} from '../validators/userStatusCheck';
 import { createAccount } from '../utils/utils';
 
-import { sendDataToQueue } from '../integration/rabbitmqClient';
 import redis from '../integration/redisClient';
 import prisma from '../db/database';
 import app from '../app';
@@ -33,9 +30,7 @@ export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
     try
     {
       await isUserAlreadyRegistered(body);
-      await sendDataToQueue({email : body.email}, "emailhub");
-      
-      // await sendVerificationEmail(body);
+      await sendVerificationEmail(body);
     }
     catch (error) 
     {
