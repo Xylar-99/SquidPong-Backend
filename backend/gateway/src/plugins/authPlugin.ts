@@ -56,10 +56,8 @@ const session_option = {
 const jwt_config:any = {
     secret: process.env.JWTSECRET
   }
-  
 
 
-  
   
   
   export default async function registerPlugins(app:FastifyInstance)
