@@ -1,4 +1,4 @@
 backend.abquaoub.me {
-    reverse_proxy gateway:4000
-  }
-  
+  tls /certs/live/backend.abquaoub.me/fullchain.pem /certs/live/backend.abquaoub.me/privkey.pem
+  reverse_proxy gateway:4000
+}

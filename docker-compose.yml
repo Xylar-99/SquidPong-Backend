@@ -5,14 +5,15 @@ services:
     image: caddy:latest
     container_name: caddy
     ports:
+      - "80:80"
       - "443:443"
-    networks:
-        - web
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
-
+      - /etc/letsencrypt:/certs:ro         # ← mount real certs into container
+    networks:
+      - web
   redis:
     image: redis:7
     container_name: redis
