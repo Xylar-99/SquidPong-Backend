@@ -49,8 +49,9 @@ async function sendEmail(email: string, code: string)
 async function generate6DigitCode(): Promise<string> 
 {
   const value: string = Math.floor(100000 + Math.random() * 900000).toString();
-  console.log(`verify code : ${value}`)
-  return value;
+  // console.log(`verify code : ${value}`)
+  // return value;
+  return '999999';
 }
 
 
