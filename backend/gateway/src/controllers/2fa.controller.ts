@@ -57,6 +57,7 @@ export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply)
       throw new Error('2FA is not enabled yet');
 
     const isValid = authenticator.check(body.code, twoFA.secret);
+    console.log(isValid , body.code)
     if (!isValid)
       throw new Error('Invalid code');
 
