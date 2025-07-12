@@ -27,7 +27,7 @@ export async function setupAuthenticatorHandler(req: FastifyRequest, res: Fastif
 
     await prisma.twofactorauth.upsert({ where: { userId: user.id }, 
       update: { secret: secret,},
-      create: { userId: user.id, method: 'totp', secret: secret, enabled: true,},
+      create: { userId: user.id ,  secret: secret, enabled: true,},
     });
     
     
