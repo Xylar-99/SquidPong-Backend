@@ -3,19 +3,9 @@ import cookie from '@fastify/cookie';
 import auth2 from '@fastify/oauth2';
 import session from '@fastify/session';
 import jwt from '@fastify/jwt';
-
 import cors from '@fastify/cors' 
 
-// const multipart_config = {
-//   attachFieldsToBody: false,
-//   addToBody: false,
-// }
 
-
-// const fastifyStatic_config = {
-//     root: '/var/www/html/frontend',
-//     prefix: '/',
-// }
 
 
 const auth2_config:any = {
@@ -62,7 +52,7 @@ const jwt_config:any = {
   
   export default async function registerPlugins(app:FastifyInstance)
   {
-    app.register(cors, { origin: 'https://abquaoub.me' , credentials: true });  
+    app.register(cors, { origin: 'https://frontend.abquaoub.me' , credentials: true });  
     app.register(cookie);
     app.register(session, session_option );
     app.register(auth2 , auth2_config);
