@@ -1,5 +1,5 @@
 backend.abquaoub.me {
     tls internal
-    reverse_proxy localhost:4000
+    reverse_proxy gateway:4000
   }
   
