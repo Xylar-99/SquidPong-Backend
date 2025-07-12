@@ -24,7 +24,7 @@ const auth2_config:any = {
     }
   },
   startRedirectPath: '/auth/google',
-  callbackUri: 'https://backend.abquaoub.me:/auth/google/callback'
+  callbackUri: 'https://backend.abquaoub.me/auth/google/callback'
 }
 
 

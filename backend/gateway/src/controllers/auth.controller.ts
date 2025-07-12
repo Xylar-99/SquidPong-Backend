@@ -54,7 +54,7 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
     try 
     {
       await isUserVerified(body);
-      const data = await redis.get(body.email);
+      const data = await redis.get(`2fa:${body.email}`);
 
       { // change him later
 
@@ -154,7 +154,7 @@ export async function getIntraUserhandler(req:FastifyRequest , res:FastifyReply)
       client_id: process.env.IDINTRA,
       client_secret: process.env.SECRETINTRA,
       code: code,
-      redirect_uri: 'http://backend.abquaoub.me:4000/auth/intra/callback',
+      redirect_uri: 'https://backend.abquaoub.me/auth/intra/callback',
     }
 
   const tokens = await fetch('https://api.intra.42.fr/oauth/token', {
