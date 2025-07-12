@@ -83,6 +83,9 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
     try 
     {
       const user = await prisma.user.findUnique({ where: { email: body.email}})
+      if(!user) // for syntax  i ready check inside isuserallowed... ?
+        throw new Error("user not found")
+
       await isUserAllowedToLogin(body , user);
       
       const  data = await prisma.twofactorauth.findFirst({ where: { userId: user.id , enabled : true}})
