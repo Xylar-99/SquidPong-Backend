@@ -50,6 +50,7 @@ export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply)
   const body = req.body as any;
   const id = req.id as any;
 
+  console.log("hiiiiiiiiiiiiii")
   console.log('verify : ' ,  body);
 
   try 
