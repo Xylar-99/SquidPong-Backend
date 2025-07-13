@@ -64,8 +64,8 @@ const authRoutes: Route[] = [
     handler: authController.postrefreshtokenHandler,
   },
 
+  
   // 2fa 
-
   {
     method: "GET",
     url: "/api/2fa/setup",
