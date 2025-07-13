@@ -48,11 +48,12 @@ export async function setupAuthenticatorHandler(req: FastifyRequest, res: Fastif
 export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply) 
 {
   const body = req.body as any;
-  const id = req.id as any;
-
+  const id = await redis.get(body.tmp);
+  
   console.log("hiiiiiiiiiiiiii")
   console.log('verify : ' ,  body);
 
+  
   try
   {
     const twoFA = await prisma.twofactorauth.findFirst({ where: { userId: Number(id) , enabled : true } });

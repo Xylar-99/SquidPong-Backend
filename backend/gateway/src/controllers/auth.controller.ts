@@ -78,7 +78,7 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
 export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-    const resdata = {msg : true , two2fa : true};
+    const resdata = {msg : true , two2fa : true , tmp : ''};
 
     try 
     {
@@ -94,6 +94,9 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
         await setJwtTokens(res , user);
         resdata.two2fa = false;
       }
+      resdata.tmp = 'abc';
+      await redis.set(resdata.tmp, user.id, "EX", "260");
+
     }
     catch (error) 
     {

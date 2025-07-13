@@ -3,7 +3,7 @@ import { sendToService } from '../integration/api_calls';
 
 
 
-export async function createAccount(data:any): Promise<any>
+export async function   createAccount(data:any): Promise<any>
 {
     const dataUser = {email : data.email , password : data?.password ?? null , username : data.username }
     const user = await prisma.user.upsert({ where: { email: data.email }, update: {username : dataUser.username}, create: dataUser });
