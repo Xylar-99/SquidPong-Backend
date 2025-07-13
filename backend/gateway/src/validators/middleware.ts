@@ -9,7 +9,7 @@ interface JwtPayload {
 
 export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
 {
-  const uri:string[] = ['/pages/signup.html' , '/ws' , '/auth/intra/callback' , '/pages/verification.html' , '/pages/login.html' , '/api/signup' , '/api/login' , '/api/verify-email' , '/' , '/favicon.ico']
+  const uri:string[] = ['/pages/signup.html' , '/pages/2faEnable.html' , '/ws' , '/auth/intra/callback' , '/pages/verification.html' , '/pages/login.html' , '/api/signup' , '/api/login' , '/api/verify-email' , '/' , '/favicon.ico']
 
   if (uri.includes(req.url) == true || req.url.startsWith('/auth/') == true)
     return ;
