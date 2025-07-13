@@ -53,7 +53,7 @@ export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply)
   console.log("hiiiiiiiiiiiiii")
   console.log('verify : ' ,  body);
 
-  try 
+  try
   {
     const twoFA = await prisma.twofactorauth.findFirst({ where: { userId: Number(id) , enabled : true } });
     if (!twoFA)
