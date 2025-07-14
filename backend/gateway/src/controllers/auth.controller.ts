@@ -4,7 +4,8 @@ import { OAuth2Namespace } from '@fastify/oauth2';
 import { setJwtTokens } from '../validators/2faValidator';
 import { isUserVerified , isUserAlreadyRegistered  , isUserAllowedToLogin} from '../validators/userStatusCheck';
 import { createAccount } from '../utils/utils';
-import { is_2fa_enabled } from '../validators/2faValidator';
+import { isTwoFactorEnabled } from '../validators/2faValidator';
+import { ApiError } from '../utils/errorHandler';
 
 import redis from '../integration/redisClient';
 import prisma from '../db/database';
@@ -16,6 +17,8 @@ declare module 'fastify' {
     googleOAuth2: OAuth2Namespace;
   }
 }
+
+
 
 
 export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
@@ -74,11 +77,10 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-
 export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-    const resdata = {msg : true , two2fa : true , tmp : ''};
+    const errorResponse : ApiError = {error : true , message : '' , info : {}};
 
     try 
     {
@@ -87,24 +89,18 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
         throw new Error("user not found")
 
       await isUserAllowedToLogin(body , user);
-      
-      const  data = await prisma.twofactorauth.findFirst({ where: { userId: user.id , enabled : true}})
-      if(!data)
-      {
-        await setJwtTokens(res , user);
-        resdata.two2fa = false;
-      }
-      resdata.tmp = 'abc';
-      await redis.set(resdata.tmp, user.id, "EX", "260");
-
+      await isTwoFactorEnabled(res , user , errorResponse);
     }
     catch (error) 
     {
       if (error instanceof Error)
-        return res.status(400).send({message : error.message})
-    }
-
-  return res.send(resdata )
+        {
+          errorResponse.message = error.message;
+          return res.status(400).send(errorResponse)
+        }
+      }
+      
+    return res.send(errorResponse)
 }
 
 
@@ -128,29 +124,30 @@ export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 
 export async function getGooglehandler(req:FastifyRequest , res:FastifyReply) 
 {
-    try 
-    {
+  const errorResponse : ApiError = {error : true , message : '' , info : {}};
+
+  try 
+  {
     const tokengoogle:any = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
     const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });
     const data = await result.json();
 
-
     data['avatar'] = data.picture
     data['username'] = data.email.split('@')[0];
-    // console.log(data);
+    data['fname'] = data.given_name;
+    data['fname'] = data.family_name;
+
     const user = await createAccount(data);
-    await setJwtTokens(res , user);
+    await isTwoFactorEnabled(res , user , errorResponse);
 
-    }
-    catch (error) 
-    {
+  }
+  catch (error) 
+  {
       return res.status(400).send({msg : false})
-    }
-    
-  return res.send({msg : true})
+  }
+
+  return res.send(errorResponse)
 }
-
-
 
 
 
@@ -169,6 +166,7 @@ export async function getIntrahandler(req:FastifyRequest , res:FastifyReply)
 
 export async function getIntraUserhandler(req:FastifyRequest , res:FastifyReply) 
 {
+  const errorResponse : ApiError = {error : true , message : '' , info : {}};
   const {code} = req.query as any;
 
   const body:object = {
@@ -192,14 +190,18 @@ export async function getIntraUserhandler(req:FastifyRequest , res:FastifyReply)
   const user = await fetch('https://api.intra.42.fr/v2/me', {headers: {  Authorization: `Bearer ${access_token}`,}, });
   const userJSON = await user.json();
 
-
+  userJSON['fname'] = userJSON.first_name;
+  userJSON['lname'] = userJSON.last_name;
   userJSON['avatar'] = userJSON.image.link;
   userJSON['username'] = userJSON.login
 
   const account = await createAccount(userJSON);
-  await setJwtTokens(res , account);
-  return res.send({msg : true})
+  await isTwoFactorEnabled(res , account , errorResponse);
+
+  return res.send(errorResponse)
 }
+
+
 
 
 
