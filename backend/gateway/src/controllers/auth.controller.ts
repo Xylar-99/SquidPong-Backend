@@ -132,12 +132,12 @@ export async function getGooglehandler(req:FastifyRequest , res:FastifyReply)
     const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });
     const data = await result.json();
 
-    console.log(data);
     data['avatar'] = data.picture
     data['username'] = data.email.split('@')[0];
     data['fname'] = data.given_name;
     data['fname'] = data.family_name;
-
+    
+    console.log(data);
     const user = await createAccount(data);
     await isTwoFactorEnabled(res , user , errorResponse);
 
@@ -156,9 +156,9 @@ export async function getIntrahandler(req:FastifyRequest , res:FastifyReply)
 {
 
   const client_id = process.env.IDINTRA;
-  await fetch(`https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=https%3A%2F%2Fbackend.abquaoub.me%2Fauth%2Fintra%2Fcallback&response_type=code`)
+  const data = await fetch(`https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=https%3A%2F%2Fbackend.abquaoub.me%2Fauth%2Fintra%2Fcallback&response_type=code`)
 
-  return res.send({msg : true})
+  return res.send(data)
 }
 
 
