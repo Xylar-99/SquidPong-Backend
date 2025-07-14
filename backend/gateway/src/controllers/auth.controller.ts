@@ -118,11 +118,20 @@ export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-export async function getGooglehandler(req:FastifyRequest , res:FastifyReply) 
+export async function getoauthhandler(req:FastifyRequest , res:FastifyReply) 
 {
-  console.log('google api ')
-  const data = await fetch(`/auth/google`)
-  
+  const {oauth} = req.params as any;
+  let data;
+
+  if(oauth == 'google')
+    data = await fetch(`https://backend.abquaoub.me/auth/google`)
+  else
+  {
+    const client_id = process.env.IDINTRA;
+    data = await fetch(`https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=https%3A%2F%2Fbackend.abquaoub.me%2Fauth%2Fintra%2Fcallback&response_type=code`)
+  }
+
+
   return res.send(data)
 }
 
@@ -155,20 +164,6 @@ export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyR
 
   return res.send(errorResponse)
 }
-
-
-
-export async function getIntrahandler(req:FastifyRequest , res:FastifyReply) 
-{
-
-  const client_id = process.env.IDINTRA;
-  const data = await fetch(`https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=https%3A%2F%2Fbackend.abquaoub.me%2Fauth%2Fintra%2Fcallback&response_type=code`)
-
-  return res.send(data)
-}
-
-
-
 
 
 export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyReply) 

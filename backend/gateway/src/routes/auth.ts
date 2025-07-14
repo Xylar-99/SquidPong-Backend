@@ -52,13 +52,8 @@ const authRoutes: Route[] = [
   // oauth2
   {
     method: "GET",
-    url: "/api/google",
-    handler: authController.getGooglehandler,
-  },
-  {
-    method: "GET",
-    url: "/api/intra",
-    handler: authController.getIntrahandler,
+    url: "/api/signup/:oauth",
+    handler: authController.getoauthhandler,
   },
 
   {
