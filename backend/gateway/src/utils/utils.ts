@@ -5,11 +5,25 @@ import { sendToService } from '../integration/api_calls';
 
 export async function   createAccount(data:any): Promise<any>
 {
-    const dataUser = {email : data.email , password : data?.password ?? null , username : data.username }
-    const user = await prisma.user.upsert({ where: { email: data.email }, update: {username : dataUser.username}, create: dataUser });
-    const profile  = {...user , avatar : data.avatar }
+    let password:string = data?.password ?? null;
+    let isExist = false;
+    {
+        const user = await prisma.user.findUnique({where : {email : data.email}})
+        if(!user)
+            return;
+        if(user.password)
+            password = user.password;
+        isExist = true;
+    }
 
-    await sendToService('http://user:4001/api/users/profile' , 'POST'  , null , profile)
-    
-    return user;
+    const dataUser = {email : data.email , password : password , username : data.username }
+    const Created = await prisma.user.upsert({ where: { email: data.email }, update: {password : dataUser.password}, create: dataUser });
+
+    if(!isExist)
+    {
+        const profile  = {...Created , ...data }
+        await sendToService('http://user:4001/api/users/profile' , 'POST'  , null , profile)
+    }
+
+    return Created;
 }

@@ -1,9 +1,10 @@
 
+
 const loginSchema = {
     type : "object" ,
     properties : {
         email : {type: "string" , format : 'email'},
-        password : {type: "string" ,  minLength : 2 },
+        password : {type: "string" ,  minLength : 6 },
     },
     required : ['email' , 'password'],
     additionalProperties: false
@@ -15,11 +16,13 @@ const loginSchema = {
 const signupSchema = {
     type : "object" ,
     properties : {
+        fname : {type: "string"},
+        lname : {type: "string"},
         username : {type: "string"},
         email : {type: "string" , format : 'email'},
-        password : {type: "string"  ,  minLength : 2},
+        password : {type: "string"  ,  minLength : 6},
     },
-    required : ['email' , 'username' , 'password'],
+    required : ['email' , 'username' , 'fname' , 'lname' , 'password'],
     additionalProperties: false
 
 }

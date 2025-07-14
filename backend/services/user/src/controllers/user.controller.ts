@@ -1,16 +1,15 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../db/database';
-import redis from '../utils/redis';
-
 
 
 export async function createProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-    const profile = {userId : body.id  , username : body?.username ?? `player${body.id}` , bio : body?.bio ?? 'Ready to play. Ready to win.'  , avatarUrl: body?.avatar ?? 'default.png'}
+    const profile = {userId : body.id , fname : body.fname , lname : body.lname  , username : body.username  , bio : body?.bio ?? 'Ready to play. Ready to win.'  , avatar: body.avatar }
+    
     try 
     {
-        await prisma.profile.upsert({where : {userId : body.id} , update:profile , create:profile})
+        await prisma.profile.create({data : profile})
     } 
     catch (error)
     {
@@ -23,7 +22,6 @@ export async function createProfileHandler(req:FastifyRequest , res:FastifyReply
 
 export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
-    
     return res.send(req.body)
 }
 

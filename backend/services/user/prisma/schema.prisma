@@ -4,29 +4,43 @@ generator client {
   provider = "prisma-client-js"
 }
 
+
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
+
+
 model Profile {
   id        Int   @id @default(autoincrement())
 
-  userId    Int   @unique
-  username  String?
-  bio       String?
-  avatarUrl String?
+  userId      Int     @unique
+  username    String  @unique
+  fname       String
+  lname       String
+  bio         String?
+  banner      String?
+  avatar      String @default("/uploads/images/default.png")
+  totalGames  Int     @default(0)
+  wins        Int     @default(0)
+  losses      Int     @default(0)
+  rank        Int     @default(0)
+  level       Int     @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 
+
 model Friendship {
   id              Int    @id @default(autoincrement())
+
   userId          Int
   friendId        Int
-  status          String   // e.g., "pending", "accepted", "blocked"
+  status          String
+
   createdAt       DateTime @default(now())
 
 }

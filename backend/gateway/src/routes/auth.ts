@@ -13,6 +13,7 @@ type Route = {
 
 
 const authRoutes: Route[] = [
+
   // Auth routes
   {
     method: "GET",
@@ -37,6 +38,7 @@ const authRoutes: Route[] = [
     handler: authController.postLogoutHandler,
   },
 
+
   // verify email
   {
     method: "POST",
@@ -44,6 +46,8 @@ const authRoutes: Route[] = [
     handler: authController.verifyEmailHandler,
     schema: { body: verifyEmailSchema },
   },
+
+
 
   // oauth2
   {
@@ -56,6 +60,14 @@ const authRoutes: Route[] = [
     url: "/auth/intra/callback",
     handler: authController.getIntraUserhandler,
   },
+  {
+    method: "GET",
+    url: "/auth/intra",
+    handler: authController.getIntrahandler,
+  },
+
+
+
 
   // refresh token
   {

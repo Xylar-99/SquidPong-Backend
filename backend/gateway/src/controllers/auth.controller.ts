@@ -27,7 +27,7 @@ export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-    console.log(body)
+    console.log('here singup ')
     try
     {
       await isUserAlreadyRegistered(body);
@@ -149,6 +149,20 @@ export async function getGooglehandler(req:FastifyRequest , res:FastifyReply)
     
   return res.send({msg : true})
 }
+
+
+
+
+
+export async function getIntrahandler(req:FastifyRequest , res:FastifyReply) 
+{
+
+  const client_id = process.env.IDINTRA;
+  await fetch(`https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=https%3A%2F%2Fbackend.abquaoub.me%2Fauth%2Fintra%2Fcallback&response_type=code`)
+
+  return res.send({msg : true})
+}
+
 
 
 
