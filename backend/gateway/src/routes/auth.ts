@@ -52,14 +52,13 @@ const authRoutes: Route[] = [
   // oauth2
   {
     method: "GET",
-    url: "/api/signup/:oauth",
-    handler: authController.getoauthhandler,
-  },
-
-  {
-    method: "GET",
     url: "/auth/google/callback",
     handler: authController.getGooglCallbackehandler,
+  },
+  {
+    method: "GET",
+    url: "/api/intra",
+    handler: authController.getIntrahandler,
   },
   {
     method: "GET",
