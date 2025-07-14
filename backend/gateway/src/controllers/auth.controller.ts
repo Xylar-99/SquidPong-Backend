@@ -120,6 +120,7 @@ export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 
 export async function getGooglehandler(req:FastifyRequest , res:FastifyReply) 
 {
+  console.log('google api ')
   const data = await fetch(`/auth/google`)
   
   return res.send(data)
