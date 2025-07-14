@@ -118,11 +118,17 @@ export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-
-
-
-
 export async function getGooglehandler(req:FastifyRequest , res:FastifyReply) 
+{
+  const data = await fetch(`auth/google`)
+  
+  return res.send(data)
+}
+
+
+
+
+export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyReply) 
 {
   const errorResponse : ApiError = {error : true , message : '' , info : {}};
 
@@ -135,9 +141,8 @@ export async function getGooglehandler(req:FastifyRequest , res:FastifyReply)
     data['avatar'] = data.picture
     data['username'] = data.email.split('@')[0];
     data['fname'] = data.given_name;
-    data['fname'] = data.family_name;
+    data['lname'] = data.family_name;
     
-    console.log(data);
     const user = await createAccount(data);
     await isTwoFactorEnabled(res , user , errorResponse);
 
@@ -165,7 +170,7 @@ export async function getIntrahandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-export async function getIntraUserhandler(req:FastifyRequest , res:FastifyReply) 
+export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyReply) 
 {
   const errorResponse : ApiError = {error : true , message : '' , info : {}};
   const {code} = req.query as any;

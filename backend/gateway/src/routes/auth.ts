@@ -51,22 +51,26 @@ const authRoutes: Route[] = [
 
   // oauth2
   {
+    method: "POST",
+    url: "/api/google",
+    handler: authController.getGooglehandler,
+  },
+  {
+    method: "POST",
+    url: "/api/intra",
+    handler: authController.getIntrahandler,
+  },
+
+  {
     method: "GET",
     url: "/auth/google/callback",
-    handler: authController.getGooglehandler,
+    handler: authController.getGooglCallbackehandler,
   },
   {
     method: "GET",
     url: "/auth/intra/callback",
-    handler: authController.getIntraUserhandler,
+    handler: authController.getIntracallbackhandler,
   },
-  {
-    method: "GET",
-    url: "/auth/intra",
-    handler: authController.getIntrahandler,
-  },
-
-
 
 
   // refresh token
