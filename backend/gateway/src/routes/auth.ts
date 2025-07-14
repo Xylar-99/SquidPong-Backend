@@ -51,12 +51,12 @@ const authRoutes: Route[] = [
 
   // oauth2
   {
-    method: "POST",
+    method: "GET",
     url: "/api/google",
     handler: authController.getGooglehandler,
   },
   {
-    method: "POST",
+    method: "GET",
     url: "/api/intra",
     handler: authController.getIntrahandler,
   },
