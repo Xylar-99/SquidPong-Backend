@@ -156,7 +156,7 @@ export async function getIntrahandler(req:FastifyRequest , res:FastifyReply)
   const client_id = process.env.IDINTRA;
   await fetch(`https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=https%3A%2F%2Fbackend.abquaoub.me%2Fauth%2Fintra%2Fcallback&response_type=code`)
 
-  return res.redirect('/auth/intra/callback')
+ return  res.redirect('/auth/intra/callback')
 }
 
 
