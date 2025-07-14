@@ -132,6 +132,7 @@ export async function getGooglehandler(req:FastifyRequest , res:FastifyReply)
     const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });
     const data = await result.json();
 
+    console.log(data);
     data['avatar'] = data.picture
     data['username'] = data.email.split('@')[0];
     data['fname'] = data.given_name;
