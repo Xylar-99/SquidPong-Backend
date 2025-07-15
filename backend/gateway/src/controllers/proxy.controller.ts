@@ -6,7 +6,7 @@ import pump from 'pump';
 
 async function Editprofile(req: FastifyRequest) : Promise<any>
 {
-    const parts = req.parts() as any;
+    const parts = req.parts();
   
     const data: Record<string, string> = {};
     let avatarFile: any = null;
