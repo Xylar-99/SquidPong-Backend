@@ -11,18 +11,19 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
     const data: Record<string, string> = {};
     let avatarFile: any = null;
   
-    console.log("hiiiiiiiiiiiiiii")
     for await (const part of parts) 
     {
-      if (part.type == 'file') 
-          avatarFile = part;
-      else
+        if (part.type == 'file') 
+            avatarFile = part;
+        else
         data[part.fieldname] = part.value;
     }
 
+    console.log("hiiiiiiiiiiiiiii")
     const filePath = `/tmp/images/${avatarFile.filename}`;
     await pump(avatarFile.file, fs.createWriteStream(filePath));
-  
+    console.log("hiiiiiiiiiiiiiii2222")
+    
     const result = {
       ...data,
       avatar: filePath,
