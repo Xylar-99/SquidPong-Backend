@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { sendToService } from '../integration/api_calls';
-import * as fs from 'fs';
+import fs from 'fs';
 import pump from 'pump';
 
 
@@ -27,6 +27,7 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
       avatar: filePath,
     };
   
+    console.log(result)
     return result;
 }
 
