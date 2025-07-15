@@ -1,12 +1,13 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { sendToService } from '../integration/api_calls';
+import { Multipart } from 'fastify-multipart';
 import fs from 'fs';
 import pump from 'pump';
 
 
 async function Editprofile(req: FastifyRequest) : Promise<any>
 {
-    const parts = req.parts();
+    const parts: AsyncIterable<Multipart> = req.parts();
   
     const data: Record<string, string> = {};
     let avatarFile: any = null;
