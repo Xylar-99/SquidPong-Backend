@@ -13,6 +13,7 @@ export async function   createAccount(data:any): Promise<any>
 
     if(!user)
     {
+        delete data.id;
         const profile  = {...Created , ...data }
         await sendToService('http://user:4001/api/users/profile' , 'POST'  , null , profile)
     }
