@@ -4,6 +4,7 @@ import auth2 from '@fastify/oauth2';
 import session from '@fastify/session';
 import jwt from '@fastify/jwt';
 import cors from '@fastify/cors' 
+import multipart from '@fastify/multipart';
 
 
 
@@ -49,6 +50,8 @@ const jwt_config:any = {
 
 
   
+
+
   
   export default async function registerPlugins(app:FastifyInstance)
   {
@@ -57,5 +60,6 @@ const jwt_config:any = {
     app.register(session, session_option );
     app.register(auth2 , auth2_config);
     app.register(jwt, jwt_config);
+    app.register(multipart);
 
 }

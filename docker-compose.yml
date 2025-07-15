@@ -11,7 +11,7 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
-      - ./certbot/etc:/certs:ro   # Mount only `etc/` part to match `/certs/live/...`
+      - ./certbot/etc:/certs:ro  
     networks:
       - web
 
@@ -32,6 +32,9 @@ services:
     command: sh -c "sleep 10 && npx prisma migrate dev --name init && npm run start "
     networks:
         - web
+    volumes:
+      - ./uploads:/tmp/
+    
   user:
     build: ./backend/services/user
     image: user-image

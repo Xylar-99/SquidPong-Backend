@@ -22,7 +22,13 @@ export async function createProfileHandler(req:FastifyRequest , res:FastifyReply
 
 export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
-    return res.send(req.body)
+    const body = req.body as any;
+    const headers = req.headers as any;
+
+    console.log(body);
+
+    await prisma.profile.update({where : {userId : Number(headers.id)} , data : {body} })
+    return res.send({msg : true})
 }
 
 

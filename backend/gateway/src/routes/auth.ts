@@ -74,6 +74,7 @@ const authRoutes: Route[] = [
     handler: authController.postrefreshtokenHandler,
   },
 
+  // edit profile
   
   // 2fa 
   {
