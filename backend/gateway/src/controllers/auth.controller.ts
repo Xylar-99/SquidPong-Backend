@@ -144,8 +144,9 @@ export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyR
   {
       return res.status(400).send({msg : false})
   }
-
-  return res.send(errorResponse)
+  
+  return res.redirect('https://abquaoub.me/pages/profile.html')
+  // return res.send(errorResponse)
 }
 
 
@@ -196,8 +197,9 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
 
   const account = await createAccount(userJSON);
   await isTwoFactorEnabled(res , account , errorResponse);
-
-  return res.send(errorResponse)
+  
+  return res.redirect('https://abquaoub.me/pages/profile.html')
+  // return res.send(errorResponse)
 }
 
 
