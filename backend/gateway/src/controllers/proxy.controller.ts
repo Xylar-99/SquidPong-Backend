@@ -39,7 +39,7 @@ async function proxyToUserService(req:FastifyRequest , res:FastifyReply)
 {
     let body = req.body as any;
     console.log(req.method , req.url);
-    if(req.url == '/api/users/profile')
+    if(req.url == '/api/users/me' && req.method == 'POST')
         body = await Editprofile(req)
     const data:any =  await sendToService(`http://user:4001${req.url}` , req.method , req.id , body)
     return res.send(data)
