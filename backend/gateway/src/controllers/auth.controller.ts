@@ -145,6 +145,10 @@ export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyR
       return res.status(400).send({msg : false})
   }
   
+  if(errorResponse.info.enabled)
+    return res.redirect('https://abquaoub.me/pages/2faEnable.html')
+
+
   return res.redirect('https://abquaoub.me/pages/profile.html')
   // return res.send(errorResponse)
 }
@@ -198,6 +202,10 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
   const account = await createAccount(userJSON);
   await isTwoFactorEnabled(res , account , errorResponse);
   
+  if(errorResponse.info.enabled)
+    return res.redirect('https://abquaoub.me/pages/2faEnable.html')
+
+
   return res.redirect('https://abquaoub.me/pages/profile.html')
   // return res.send(errorResponse)
 }
