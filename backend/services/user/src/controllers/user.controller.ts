@@ -27,7 +27,7 @@ export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply
 
     console.log(body);
 
-    await prisma.profile.update({where : {userId : Number(headers.id)} , data : {body} })
+    await prisma.profile.update({where : {userId : Number(headers.id)} , data : body })
     return res.send({msg : true})
 }
 
