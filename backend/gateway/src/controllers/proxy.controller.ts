@@ -7,11 +7,13 @@ import pump from 'pump';
 
 async function Editprofile(req: FastifyRequest) : Promise<any>
 {
-    const parts: AsyncIterable<any> = req.parts();
+    const parts = await req.parts() as AsyncIterable<any>;
+
   
     const data: Record<string, any> = {};
     let avatarFile: any = null;
   
+    console.log("hiiiiiiiiiiiiiii")
     for await (const part of parts) 
     {
         // avatarFile = part;
@@ -19,7 +21,6 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
             console.log('ss')
         else
             data[part.fieldname] = part.value as string;
-        console.log("hiiiiiiiiiiiiiii")
     }
 
     const filePath = `/tmp/images/${avatarFile.filename}`;
