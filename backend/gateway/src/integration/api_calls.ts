@@ -3,6 +3,9 @@
 export async function sendToService( url: string, method: string , id:any = null , body: any = null): Promise<object> 
 {
 
+  let type = 'application/json';
+  if(method == 'PUT')
+      type = 'multipart/form-data'
   const options:any = {
     method: method,
     headers: {
@@ -12,7 +15,8 @@ export async function sendToService( url: string, method: string , id:any = null
 
   if (body != null && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase()))
   {
-    options.headers['Content-Type'] = 'application/json';
+
+    options.headers['Content-Type'] = type;
     options.body = JSON.stringify(body);
   }
 
