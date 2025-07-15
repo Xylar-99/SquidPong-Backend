@@ -16,10 +16,10 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
         if (part.type == 'file') 
             avatarFile = part;
         else
-        data[part.fieldname] = part.value;
+            data[part.fieldname] = part.value;
+        console.log("hiiiiiiiiiiiiiii")
     }
 
-    console.log("hiiiiiiiiiiiiiii")
     const filePath = `/tmp/images/${avatarFile.filename}`;
     await pump(avatarFile.file, fs.createWriteStream(filePath));
     console.log("hiiiiiiiiiiiiiii2222")
