@@ -9,7 +9,7 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
 {
     const parts: AsyncIterable<any> = req.parts();
   
-    const data: Record<string, string> = {};
+    const data: Record<string, any> = {};
     let avatarFile: any = null;
   
     for await (const part of parts) 
