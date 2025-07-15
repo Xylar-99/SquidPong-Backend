@@ -11,6 +11,7 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
     const data: Record<string, string> = {};
     let avatarFile: any = null;
   
+    console.log("hiiiiiiiiiiiiiii")
     for await (const part of parts) 
     {
       if (part.type == 'file') 
