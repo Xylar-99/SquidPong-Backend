@@ -21,7 +21,7 @@ model Profile {
   lname       String
   bio         String?
   banner      String?
-  avatar      String @default("/uploads/images/default.png")
+  avatar      String @default("https://backend.abquaoub.me/tmp/images/default.png")
   totalGames  Int     @default(0)
   wins        Int     @default(0)
   losses      Int     @default(0)
