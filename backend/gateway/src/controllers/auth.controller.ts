@@ -196,7 +196,7 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
 
   userJSON['fname'] = userJSON.first_name;
   userJSON['lname'] = userJSON.last_name;
-  userJSON['avatar'] = userJSON.image.link;
+  userJSON['avatar'] = userJSON?.image?.link || null;
   userJSON['username'] = userJSON.login;
 
   const account = await createAccount(userJSON);
