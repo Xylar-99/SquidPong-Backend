@@ -98,12 +98,13 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
           errorResponse.message = error.message;
           return res.status(400).send(errorResponse)
         }
-      }
+    }
       
-    return res.send(errorResponse)
+    if(errorResponse.info.enabled)
+      return res.redirect(`https://abquaoub.me/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
+  
+    return res.redirect('https://abquaoub.me/pages/profile.html')
 }
-
-
 
 
 
@@ -146,8 +147,7 @@ export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyR
   }
   
   if(errorResponse.info.enabled)
-    return res.redirect('https://abquaoub.me/pages/2faEnable.html')
-
+    return res.redirect(`https://abquaoub.me/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
 
   return res.redirect('https://abquaoub.me/pages/profile.html')
   // return res.send(errorResponse)
@@ -203,8 +203,7 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
   await isTwoFactorEnabled(res , account , errorResponse);
   
   if(errorResponse.info.enabled)
-    return res.redirect('https://abquaoub.me/pages/2faEnable.html')
-
+    return res.redirect(`https://abquaoub.me/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
 
   return res.redirect('https://abquaoub.me/pages/profile.html')
   // return res.send(errorResponse)

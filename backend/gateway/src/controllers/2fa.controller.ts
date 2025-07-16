@@ -50,7 +50,6 @@ export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply)
   const body = req.body as any;
   const id = await redis.get(body.tmp);
   
-  console.log("hiiiiiiiiiiiiii")
   console.log('verify : ' ,  body);
 
   
