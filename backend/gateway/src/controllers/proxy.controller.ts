@@ -16,9 +16,8 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
     for await (const part of parts) 
     {
         console.log("hello")
-        if (part.type == 'file')
-            avatarFile = part;
-        else
+        // avatarFile = part;
+        if (part.type == 'field')
             data[part.fieldname] = part.value as string;
     }
 
