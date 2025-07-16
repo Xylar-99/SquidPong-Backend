@@ -100,11 +100,7 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
         }
     }
     
-    console.log(errorResponse)
-    if(errorResponse.info.enabled)
-      return res.redirect(`https://abquaoub.me/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
-  
-    return res.redirect('https://abquaoub.me/pages/profile.html')
+  return res.send(errorResponse)
 }
 
 
