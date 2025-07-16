@@ -48,7 +48,7 @@ export async function setupAuthenticatorHandler(req: FastifyRequest, res: Fastif
 export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply) 
 {
   const body = req.body as any;
-  const id = await redis.get(body.tmp);
+  const id = await redis.get(body.token);
   
   console.log('verify : ' ,  body);
 
