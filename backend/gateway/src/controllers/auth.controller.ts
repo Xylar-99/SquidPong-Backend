@@ -194,7 +194,6 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
   const user = await fetch('https://api.intra.42.fr/v2/me', {headers: {  Authorization: `Bearer ${access_token}`,}, });
   const userJSON = await user.json();
 
-  console.log(userJSON)
   
   userJSON['fname'] = userJSON.first_name;
   userJSON['lname'] = userJSON.last_name;
