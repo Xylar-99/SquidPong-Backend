@@ -2,6 +2,8 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { sendToService } from '../integration/api_calls';
 import fs from 'fs';
 import pump from 'pump';
+import { promisify } from 'util';
+const pumpAsync = promisify(pump);
 
 
 async function Editprofile(req: FastifyRequest) : Promise<any>
@@ -24,7 +26,8 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
 
     console.log("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
     const filePath = `/tmp/images/${avatarFile.filename}`;
-    await pump(avatarFile.file, fs.createWriteStream(filePath));
+    console.log(filePath)
+    await pumpAsync(avatarFile.file, fs.createWriteStream(filePath));
     
     const result = {
       ...data,
