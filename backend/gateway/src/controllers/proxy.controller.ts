@@ -16,16 +16,12 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
     const parts = req.parts() ;
   
     const data: Record<string, any> = {};
-    let avatarFile: any = null;
     let filePath;
-    console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
   
     for await (const part of parts)
     {
-        console.log('hello')
         if (part.type == 'file')
         {
-            console.log('filessssssss');
             filePath = `/tmp/images/${Date.now()}-${part.filename}`;
             await pipeline(part.file, fs.createWriteStream(filePath));
             console.log('file saved');
@@ -34,9 +30,8 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
             data[part.fieldname] = part.value as string;
     }
 
-    console.log('1111111111111111111111111111111111')
-    filePath = `https://backend.abquaoub.me/images/${avatarFile.filename}`;
-
+    filePath = `https://backend.abquaoub.me${filePath}`
+    console.log(filePath)
     const result = {
       ...data,
       avatar: filePath,

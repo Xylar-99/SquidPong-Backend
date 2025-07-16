@@ -59,9 +59,9 @@ const jwt_config:any = {
     app.register(session, session_option);
     app.register(jwt, jwt_config);
     app.register(auth2, auth2_config);
-    // await app.register(fastifyStatic, {
-    //   root: '/tmp/images/',
-    //   prefix: '/images/',
-    // });
+    await app.register(fastifyStatic, {
+      root: '/tmp/images/',
+      prefix: '/tmp/images/',
+    });
   }
   
