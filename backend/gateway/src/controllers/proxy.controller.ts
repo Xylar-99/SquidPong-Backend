@@ -3,6 +3,7 @@ import { sendToService } from '../integration/api_calls';
 import fs from 'fs';
 import pump from 'pump';
 import { promisify } from 'util';
+import { pipeline } from 'stream/promises';
 const pumpAsync = promisify(pump);
 
 
@@ -26,8 +27,9 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
     }
 
     let filePath = `/tmp/images/${avatarFile.filename}`;
-    await pumpAsync(avatarFile.file, fs.createWriteStream(filePath));
-    
+    // await pumpAsync(avatarFile.file, fs.createWriteStream(filePath));
+    await pipeline(avatarFile.file, fs.createWriteStream(filePath));
+
     filePath = `https://backend.abquaoub.me/images/${avatarFile.filename}`;
 
     const result = {
