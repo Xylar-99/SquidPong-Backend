@@ -99,7 +99,8 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
           return res.status(400).send(errorResponse)
         }
     }
-      
+    
+    console.log(errorResponse)
     if(errorResponse.info.enabled)
       return res.redirect(`https://abquaoub.me/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
   
