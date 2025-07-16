@@ -2,7 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../db/database';
 import redis from '../integration/redisClient';
 import QRCode from "qrcode";
-
+import { setJwtTokens } from '../validators/2faValidator';
 import { authenticator } from "otplib";
 
 
@@ -49,10 +49,7 @@ export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply)
 {
   const body = req.body as any;
   const id = await redis.get(body.token);
-  
-  console.log('verify : ' ,  body);
-
-  
+  let user:any = {id : Number(id)};
   try
   {
     const twoFA = await prisma.twofactorauth.findFirst({ where: { userId: Number(id) , enabled : true } });
@@ -60,7 +57,6 @@ export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply)
       throw new Error('2FA is not enabled yet');
 
     const isValid = authenticator.check(body.code, twoFA.secret);
-    console.log(isValid , body.code)
     if (!isValid)
       throw new Error('Invalid code');
 
@@ -69,7 +65,7 @@ export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply)
   {
     return res.status(400).send({ msg: false });
   }
-
+  await setJwtTokens(res , user);
   return res.send({ msg: true });
 }
 
