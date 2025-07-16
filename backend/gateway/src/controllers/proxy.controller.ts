@@ -7,13 +7,14 @@ import pump from 'pump';
 async function Editprofile(req: FastifyRequest) : Promise<any>
 {
     const parts = req.parts() ;
+    console.log(req.headers['content-type']);
 
   
     const data: Record<string, any> = {};
     let avatarFile: any = null;
   
     console.log("hiiiiiiiiiiiiiii")
-    for await (const part of parts) 
+    for await (const part of parts)
     {
         console.log("hello")
         // avatarFile = part;
