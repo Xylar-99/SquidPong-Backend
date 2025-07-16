@@ -1,13 +1,12 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { sendToService } from '../integration/api_calls';
-import { Multipart } from 'fastify-multipart';
 import fs from 'fs';
 import pump from 'pump';
 
 
 async function Editprofile(req: FastifyRequest) : Promise<any>
 {
-    const parts = await req.parts() as AsyncIterable<any>;
+    const parts = req.parts() ;
 
   
     const data: Record<string, any> = {};
@@ -20,7 +19,7 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
         if (part.type == 'file')
             avatarFile = part;
         else
-        data[part.fieldname] = part.value as string;
+            data[part.fieldname] = part.value as string;
     }
 
     console.log("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
