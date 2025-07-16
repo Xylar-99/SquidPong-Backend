@@ -25,7 +25,7 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
             data[part.fieldname] = part.value as string;
     }
 
-    const filePath = `/tmp/images/${avatarFile.filename}`;
+    const filePath = `https://backend.abquaoub.me/images/${avatarFile.filename}`;
     console.log(filePath)
     await pumpAsync(avatarFile.file, fs.createWriteStream(filePath));
     
