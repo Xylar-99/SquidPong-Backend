@@ -23,7 +23,10 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
     {
         console.log('hello')
         if (part.type == 'file')
+        {
             avatarFile = part;
+            console.log('filessssssss')
+        }
         else
             data[part.fieldname] = part.value as string;
     }
