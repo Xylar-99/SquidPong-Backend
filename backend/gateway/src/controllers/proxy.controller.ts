@@ -13,12 +13,12 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
     const data: Record<string, any> = {};
     let avatarFile: any = null;
   
-    console.log("hiiiiiiiiiiiiiii")
     for await (const part of parts)
     {
         console.log("hello")
-        // avatarFile = part;
-        if (part.type == 'field')
+        if (part.type == 'file')
+            avatarFile = part;
+        else
             data[part.fieldname] = part.value as string;
     }
 
