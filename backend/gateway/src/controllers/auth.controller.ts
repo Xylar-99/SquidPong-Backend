@@ -196,7 +196,7 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
 
   userJSON['fname'] = userJSON.first_name;
   userJSON['lname'] = userJSON.last_name;
-  userJSON['avatar'] = userJSON?.image?.link || null;
+  userJSON['avatar'] = userJSON.image.link;
   userJSON['username'] = userJSON.login;
 
   const account = await createAccount(userJSON);
@@ -206,7 +206,6 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
     return res.redirect(`https://abquaoub.me/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
 
   return res.redirect('https://abquaoub.me/pages/profile.html')
-  // return res.send(errorResponse)
 }
 
 
