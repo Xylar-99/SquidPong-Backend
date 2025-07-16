@@ -4,8 +4,6 @@ export async function sendToService( url: string, method: string , id:any = null
 {
 
   let type = 'application/json';
-  if(url == '/api/users/profile')
-      type = 'multipart/form-data'
   const options:any = {
     method: method,
     headers: {
