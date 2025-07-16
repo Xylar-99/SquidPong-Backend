@@ -17,6 +17,7 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
   
     const data: Record<string, any> = {};
     let avatarFile: any = null;
+    let filePath;
     console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
   
     for await (const part of parts)
@@ -24,17 +25,16 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
         console.log('hello')
         if (part.type == 'file')
         {
-            avatarFile = part;
-            console.log('filessssssss')
+            console.log('filessssssss');
+            filePath = `/tmp/images/${Date.now()}-${part.filename}`;
+            await pipeline(part.file, fs.createWriteStream(filePath));
+            console.log('file saved');
         }
         else
             data[part.fieldname] = part.value as string;
     }
 
     console.log('1111111111111111111111111111111111')
-    let filePath = `/tmp/images/${avatarFile.filename}`;
-    await pipeline(avatarFile.file, fs.createWriteStream(filePath));
-    console.log('22222222222222222222222222222222')
     filePath = `https://backend.abquaoub.me/images/${avatarFile.filename}`;
 
     const result = {
