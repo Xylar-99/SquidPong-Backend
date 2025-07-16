@@ -52,19 +52,16 @@ const jwt_config:any = {
 
 
 
-  
-  export default async function registerPlugins(app:FastifyInstance)
-  {
-    app.register(cors, { origin: 'https://abquaoub.me' , credentials: true });  
-    app.register(fastifyStatic, {
+  export default async function registerPlugins(app: FastifyInstance) {
+    await app.register(multipart);
+    await app.register(cors, { origin: 'https://abquaoub.me', credentials: true });
+    await app.register(cookie);
+    await app.register(session, session_option);
+    await app.register(jwt, jwt_config);
+    await app.register(auth2, auth2_config);
+    await app.register(fastifyStatic, {
       root: '/tmp/images/',
-      prefix: '/images/',  
+      prefix: '/images/',
     });
-    app.register(cookie);
-    app.register(session, session_option );
-    app.register(auth2 , auth2_config);
-    app.register(jwt, jwt_config);
-    app.register(multipart);
-    
-
-}
+  }
+  
