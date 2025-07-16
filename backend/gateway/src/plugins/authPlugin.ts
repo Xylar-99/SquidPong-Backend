@@ -5,7 +5,8 @@ import session from '@fastify/session';
 import jwt from '@fastify/jwt';
 import cors from '@fastify/cors' 
 import multipart from '@fastify/multipart';
-
+import fastifyStatic from '@fastify/static';
+import path from 'path';
 
 
 
@@ -49,7 +50,6 @@ const jwt_config:any = {
   }
 
 
-  
 
 
   
@@ -61,5 +61,10 @@ const jwt_config:any = {
     app.register(auth2 , auth2_config);
     app.register(jwt, jwt_config);
     app.register(multipart);
+    app.register(fastifyStatic, {
+      root: '/tmp/images/',
+      prefix: '/images/',  
+    });
+    
 
 }

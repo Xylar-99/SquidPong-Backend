@@ -6,25 +6,25 @@ import { promisify } from 'util';
 const pumpAsync = promisify(pump);
 
 
+
+
+
+
 async function Editprofile(req: FastifyRequest) : Promise<any>
 {
     const parts = req.parts() ;
-    console.log(req.headers['content-type']);
-
   
     const data: Record<string, any> = {};
     let avatarFile: any = null;
   
     for await (const part of parts)
     {
-        console.log("hello")
         if (part.type == 'file')
             avatarFile = part;
         else
             data[part.fieldname] = part.value as string;
     }
 
-    console.log("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
     const filePath = `/tmp/images/${avatarFile.filename}`;
     console.log(filePath)
     await pumpAsync(avatarFile.file, fs.createWriteStream(filePath));
