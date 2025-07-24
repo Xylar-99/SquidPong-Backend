@@ -5,13 +5,12 @@ services:
     image: caddy:latest
     container_name: caddy
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "4443:443"
+      - "4000:4000"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-      - ./certbot/etc:/certs:ro  
+      - ./frontend:/etc/caddy/files
     networks:
       - web
 

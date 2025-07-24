@@ -1,4 +1,8 @@
-backend.abquaoub.me {
-  tls /certs/live/backend.abquaoub.me/fullchain.pem /certs/live/backend.abquaoub.me/privkey.pem
+:80 {
   reverse_proxy gateway:4000
+}
+
+:4000 {
+    root * /etc/caddy/files
+    file_server
 }
