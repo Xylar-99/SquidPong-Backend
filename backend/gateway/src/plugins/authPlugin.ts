@@ -26,7 +26,7 @@ const auth2_config:any = {
     }
   },
   startRedirectPath: '/auth/google',
-  callbackUri: 'https://backend.abquaoub.me/auth/google/callback'
+  callbackUri: `${process.env.URL}/auth/google/callback`
 }
 
 
@@ -54,7 +54,7 @@ const jwt_config:any = {
 
   export default async function registerPlugins(app: FastifyInstance) {
     app.register(multipart);
-    app.register(cors, { origin: 'https://abquaoub.me', credentials: true });
+    app.register(cors, { origin: true, credentials: true });
     app.register(cookie);
     app.register(session, session_option);
     app.register(jwt, jwt_config);

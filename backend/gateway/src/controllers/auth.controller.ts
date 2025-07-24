@@ -144,9 +144,9 @@ export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyR
   }
   
   if(errorResponse.info.enabled)
-    return res.redirect(`https://abquaoub.me/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
+    return res.redirect(`http://localhost:4000/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
 
-  return res.redirect('https://abquaoub.me/pages/profile.html')
+  return res.redirect(`http://localhost:4000/pages/profile.html`)
   // return res.send(errorResponse)
 }
 
@@ -156,7 +156,7 @@ export async function getIntrahandler(req:FastifyRequest , res:FastifyReply)
 {
 
   const client_id = process.env.IDINTRA;
-  const url =  `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=https%3A%2F%2Fbackend.abquaoub.me%2Fauth%2Fintra%2Fcallback&response_type=code`;
+  const url =  `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fauth%2Fintra%2Fcallback&response_type=code`;
 
  return  res.redirect(url)
 }
@@ -175,7 +175,7 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
       client_id: process.env.IDINTRA,
       client_secret: process.env.SECRETINTRA,
       code: code,
-      redirect_uri: 'https://backend.abquaoub.me/auth/intra/callback',
+      redirect_uri: `${process.env.URL}/auth/intra/callback`,
     }
 
   const tokens = await fetch('https://api.intra.42.fr/oauth/token', {
@@ -201,9 +201,9 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
   await isTwoFactorEnabled(res , account , errorResponse);
   
   if(errorResponse.info.enabled)
-    return res.redirect(`https://abquaoub.me/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
+    return res.redirect(`http://localhost:4000/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
 
-  return res.redirect('https://abquaoub.me/pages/profile.html')
+  return res.redirect(`http://localhost:4000/pages/profile.html`)
 }
 
 
