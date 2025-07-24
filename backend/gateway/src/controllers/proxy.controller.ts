@@ -1,10 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { sendToService } from '../integration/api_calls';
 import fs from 'fs';
-import pump from 'pump';
-import { promisify } from 'util';
 import { pipeline } from 'stream/promises';
-const pumpAsync = promisify(pump);
 
 
 
@@ -30,14 +27,13 @@ async function Editprofile(req: FastifyRequest) : Promise<any>
             data[part.fieldname] = part.value as string;
     }
 
-    filePath = `https://backend.abquaoub.me${filePath}`
+    filePath = `${process.env.URL}${filePath}`
     console.log(filePath)
     const result = {
       ...data,
       avatar: filePath,
     };
   
-    console.log(result)
     return result;
 }
 
