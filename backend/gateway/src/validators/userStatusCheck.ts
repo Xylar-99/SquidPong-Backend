@@ -41,11 +41,11 @@ export async function isUserVerified(body:any)
     if(userdb && userdb.password)
       throw new Error(AuthErrors.EMAIL_ALREADY_VERIFIED);
 
-    const data = await redis.get(`2fa:${body.email}`);
-    if(!data)
+    const code = await redis.get(`2fa:${body.email}`);
+    if(!code)
         throw new Error(AuthErrors.VERIFICATION_CODE_EXPIRED)
 
-    if(data != body.code)
+    if(code != body.code)
       throw new Error(AuthErrors.VERIFICATION_FAILED)
 }
 

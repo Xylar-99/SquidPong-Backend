@@ -1,7 +1,7 @@
 import { RouteHandlerMethod , FastifySchema } from 'fastify';
 import * as authController from '../controllers/auth.controller';
 import * as twofaController from '../controllers/2fa.controller';
-import { loginSchema,resetPasswordSchema ,  signupSchema , changePasswordSchema , forgotPasswordSchema ,  , verifyEmailSchema } from '../validators/authSchemas';
+import { loginSchema , resetPasswordSchema ,  signupSchema , changePasswordSchema , forgotPasswordSchema , verifyEmailSchema } from '../validators/authSchemas';
 
 
 type Route = {

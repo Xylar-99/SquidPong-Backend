@@ -7,12 +7,13 @@ import { createAccount } from '../utils/utils';
 import { isTwoFactorEnabled } from '../validators/2faValidator';
 import { ApiError } from '../utils/errorHandler';
 import { VerifyPassword } from '../utils/hashedPassword';
-import { hashPassword } from "./hashedPassword";
+import { hashPassword } from '../utils/hashedPassword';
 import { sendDataToQueue } from '../integration/rabbitmqClient';
 
 import redis from '../integration/redisClient';
 import prisma from '../db/database';
 import app from '../app';
+
 
 
 declare module 'fastify' {
@@ -58,7 +59,7 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
       await isUserVerified(body);
       const data = await redis.get(body.email);
 
-      { // change him later
+      { // change  later
 
         if(!data)
           throw new Error("s")
