@@ -2,10 +2,13 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import { sendVerificationEmail } from '../utils/verification_messenger';
 import { OAuth2Namespace } from '@fastify/oauth2';
 import { setJwtTokens } from '../validators/2faValidator';
-import { isUserVerified , isUserAlreadyRegistered  , isUserAllowedToLogin} from '../validators/userStatusCheck';
+import { isUserVerified , isResetCodeValid , isUserAlreadyRegistered  , isUserAllowedToLogin} from '../validators/userStatusCheck';
 import { createAccount } from '../utils/utils';
 import { isTwoFactorEnabled } from '../validators/2faValidator';
 import { ApiError } from '../utils/errorHandler';
+import { VerifyPassword } from '../utils/hashedPassword';
+import { hashPassword } from "./hashedPassword";
+import { sendDataToQueue } from '../integration/rabbitmqClient';
 
 import redis from '../integration/redisClient';
 import prisma from '../db/database';
@@ -237,3 +240,81 @@ export async function getUserCallbackhandler(req: FastifyRequest, res: FastifyRe
 }
 
 
+
+
+export async function postForgotPasswordHandler(req: FastifyRequest, res: FastifyReply) 
+{
+  const {email} = req.body as any;
+
+  try 
+  {
+    const user = await prisma.user.findFirst({ where: { email: email , password : {not : null} }})
+    if(!user)
+      throw new Error("user not found")
+    await sendDataToQueue({email}, "emailhub"); // changed him later
+
+  } 
+  catch (error) 
+  {
+    if (error instanceof Error)
+      return res.status(400).send({message : error.message})
+  }
+
+  return res.send({msg : true});
+}
+
+
+
+
+export async function postChangePasswordHandler(req: FastifyRequest, res: FastifyReply) 
+{
+  const id = req.id as any;
+  const {oldPassword , newPassword} = req.body as any;
+
+  try 
+  {
+    const user = await prisma.user.findFirst({ where: { id: Number(id) , password : {not : null} }})
+    if(!user)
+      throw new Error("user not found")
+    if(await VerifyPassword(oldPassword , user.password) == false)
+      throw new Error("please change password is ready used write new password")
+    
+    await prisma.user.update({ where: { id: Number(id)}  , data : {password : await hashPassword(newPassword)} })
+
+  } 
+  catch (error) 
+  {
+    if (error instanceof Error)
+      return res.status(400).send({message : error.message})
+  }
+  
+
+  return res.send({msg : true});
+}
+
+
+
+
+export async function postResetPasswordHandler(req: FastifyRequest, res: FastifyReply) 
+{
+  const {confirmPassword , newPassword , code , email} = req.body as any;
+
+  try 
+  {
+    const user = await prisma.user.findFirst({ where: { email , password : {not : null} }})
+    if(!user)
+      throw new Error("user not found")
+
+    isResetCodeValid(code , confirmPassword , newPassword , user);
+    await prisma.user.update({ where: { email}  , data : {password : await hashPassword(newPassword)} })
+
+  } 
+  catch (error) 
+  {
+    if (error instanceof Error)
+      return res.status(400).send({message : error.message})
+  }
+  
+
+  return res.send({msg : true});
+}

@@ -1,7 +1,7 @@
-import { RouteHandlerMethod , preValidationHookHandler , FastifySchema } from 'fastify';
+import { RouteHandlerMethod , FastifySchema } from 'fastify';
 import * as authController from '../controllers/auth.controller';
 import * as twofaController from '../controllers/2fa.controller';
-import { loginSchema, signupSchema , verifyEmailSchema } from '../validators/authSchemas';
+import { loginSchema,resetPasswordSchema ,  signupSchema , changePasswordSchema , forgotPasswordSchema ,  , verifyEmailSchema } from '../validators/authSchemas';
 
 
 type Route = {
@@ -47,6 +47,28 @@ const authRoutes: Route[] = [
     schema: { body: verifyEmailSchema },
   },
 
+  
+  // password
+  {
+  method: "POST",
+  url: "/api/forgot-password",
+  handler: authController.postForgotPasswordHandler,
+  schema: { body: forgotPasswordSchema },
+  },
+  
+  {
+  method: "POST",
+  url: "/api/reset-password",
+  handler: authController.postResetPasswordHandler,
+  schema: { body: resetPasswordSchema},
+  },
+
+  {
+  method: "POST",
+  url: "/api/change-password",
+  handler: authController.postChangePasswordHandler,
+  schema: { body: changePasswordSchema },
+  },
 
 
   // oauth2

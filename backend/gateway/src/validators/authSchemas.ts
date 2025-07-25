@@ -53,4 +53,32 @@ const verifyEmailSchema = {
     
 }
 
-export { loginSchema  , verifyEmailSchema , signupSchema, detailsSchema };
+const forgotPasswordSchema = {
+  type: "object",
+  required: ["email"],
+  properties: {
+    email: { type: "string", format: "email" },
+  },
+};
+
+const changePasswordSchema = {
+  type: "object",
+  required: ["oldPassword", "newPassword"],
+  properties: {
+    oldPassword: { type: "string", minLength: 8 },
+    newPassword: { type: "string", minLength: 8 },
+  },
+};
+
+const resetPasswordSchema = {
+      type: "object",
+      required: ["email", "code", "newPassword", "confirmPassword"],
+      properties: {
+        email: { type: "string", format: "email" },
+        code: { type: "string" },
+        newPassword: { type: "string", minLength: 8 },
+        confirmPassword: { type: "string", minLength: 8 }
+      },
+    }
+
+export { loginSchema , resetPasswordSchema , changePasswordSchema , forgotPasswordSchema  , verifyEmailSchema , signupSchema, detailsSchema };

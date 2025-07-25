@@ -79,3 +79,20 @@ export async function isUserAlreadyRegistered(body:any)
       throw new Error(AuthErrors.USER_EXISTS);
 
 }
+
+
+
+
+export async function isResetCodeValid(code:string , confirmPassword:string , newPassword:string , user:any)
+{
+    
+    if(code != '999999')  
+      throw new Error("user not found")
+      
+    if(confirmPassword != newPassword)
+      throw new Error("confirmPassword != newPassword")
+      
+    if(await VerifyPassword(newPassword , user.password) == false)
+      throw new Error("please change password is ready used write new password")
+    
+}
