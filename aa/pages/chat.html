@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Real Chat</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .chat-container {
+      max-width: 500px;
+      margin: 50px auto;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .messages {
+      padding: 20px;
+      height: 300px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      padding: 10px 15px;
+      border-radius: 20px;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+
+    .sent {
+      background: #007bff;
+      color: white;
+      align-self: flex-end;
+    }
+
+    .received {
+      background: #e5e5ea;
+      color: black;
+      align-self: flex-start;
+    }
+
+    .input-area {
+      display: flex;
+      border-top: 1px solid #ccc;
+      padding: 10px;
+      background: #fafafa;
+    }
+
+    .input-area input[type="text"] {
+      flex-grow: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    .input-area button {
+      margin-left: 10px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 20px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+
+    .input-area button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="messages" id="messages"></div>
+  <div class="input-area">
+    <input type="text" id="messageInput" placeholder="Type your message..." />
+    <input type="hidden" id="userId" value="1" />
+    <input type="hidden" id="recipientId" value="2" />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+  
+  let from  = document.getElementById("userId").value;
+  let to    = document.getElementById("recipientId").value;
+
+  fetch('http://backend.abquaoub.me:4000/user')
+  .then(res => res.json())
+  .then((data) => {
+
+    document.getElementById("userId").value = String(data.userId);
+    document.getElementById("recipientId").value = (data.userId == 2 ? "1" : "2");
+
+  });
+
+
+
+
+  const ws = new WebSocket('ws://localhost:4000/ws');
+  ws.onopen = async () => {};
+
+
+  ws.onmessage = (event) => {
+  
+    const data = JSON.parse(event.data);
+    addMessage(data.content,'received');
+  
+  };
+
+  async function sendMessage() 
+  {
+    const input = document.getElementById("messageInput");
+    const content = input.value.trim();
+
+
+    if (content === '') return;
+
+    const data = { type: "chat", from, to, content };
+    const friend = { type: "friend", from, to , status : "pending" };
+
+    ws.send(JSON.stringify(data));
+    ws.send(JSON.stringify(friend));
+    addMessage(content, 'sent');
+    input.value = '';
+  }
+
+  function addMessage(text, type) 
+  {
+    const container = document.getElementById("messages");
+    const div = document.createElement("div");
+    div.classList.add("message", type);
+    div.textContent = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  
+  // Send message on Enter key
+  document.getElementById("messageInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter")
+      sendMessage();
+
+
+
+});
+</script>
+
+</body>
+</html>
