@@ -41,19 +41,21 @@ const session_option = {
   }
 
 
-
-
-  
   
 const jwt_config:any = {
-    secret: 'process.env.JWTSECRET_abdelbassat'
+    secret: process.env.JWTSECRET
   }
 
 
 
 
   export default async function registerPlugins(app: FastifyInstance) {
-    app.register(multipart);
+  //   app.register(multipart , {
+  // limits: {
+  //   fileSize: 10 * 1024 * 1024,
+  //   files: 1,
+  //   fields: 3
+  // }});
     app.register(cors, { origin: true, credentials: true });
     app.register(cookie);
     app.register(session, session_option);

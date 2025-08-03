@@ -4,7 +4,6 @@ import {authRoutes } from './routes/auth';
 import {gatewayRoutes} from './routes/proxy'
 import { errorHandler } from './utils/errorHandler';
 import registerPlugins from './plugins/plugins'
-import { addCustomData } from './controllers/proxy.controller';
 
 const app: FastifyInstance = fastify();
 export default app;

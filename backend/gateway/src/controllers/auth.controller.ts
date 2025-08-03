@@ -78,8 +78,6 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-
-
 export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;

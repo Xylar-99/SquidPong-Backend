@@ -26,7 +26,7 @@ export async function isFriendRequestExists(friendata:any) : Promise<any>
 
 export async function Editprofile(req: FastifyRequest) : Promise<any>
 {
-    const parts = req.parts() ;
+    const parts = await req.parts() ;
   
     const data: Record<string, any> = {};
     let filePath;
@@ -45,6 +45,7 @@ export async function Editprofile(req: FastifyRequest) : Promise<any>
 
     filePath = `${process.env.URL}${filePath}`
     console.log(filePath)
+
     const result = {
       ...data,
       avatar: filePath,

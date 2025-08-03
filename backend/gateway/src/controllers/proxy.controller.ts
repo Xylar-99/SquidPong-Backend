@@ -2,22 +2,20 @@ import { FastifyRequest, FastifyReply  } from 'fastify';
 import { sendToService } from '../integration/api_calls';
 
 
-
-export const addCustomData = async (req:any) => {
-  req.userId = '1';
-};
-
 async function proxyToUserService(req: FastifyRequest, res: FastifyReply) 
 {
   const userId = req.id;
+  console.log(req.url , req.method)
   return res.from(`http://user:4001${req.url}`, {
   rewriteRequestHeaders: (reqq:any, headers:any) => {
   headers['x-user-id'] = userId;
+  // delete headers['content-length'];
+  // headers['transfer-encoding'] = 'chunked';
+  // console.log(headers['content-type'])
+
   return headers;
-}
-
+  }
 });
-
 }
 
 

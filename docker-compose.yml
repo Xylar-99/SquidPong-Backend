@@ -29,6 +29,8 @@ services:
     build: ./backend/gateway
     image: gateway-image
     container_name: gateway
+    volumes:
+      - ./frontend/src/uploads:/tmp/
     env_file:
       - ./backend/gateway/.env
     command: sh -c "sleep 10 && npx prisma migrate dev --name init && npm run start "
@@ -55,15 +57,15 @@ services:
   #   command: sh -c "sleep 15 && npx prisma migrate dev --name init && npm run start "
   #   networks: 
   #       - web
-  # notify:
-  #   build: ./backend/services/notify
-  #   image: notify-image
-  #   container_name: notify
-  #   env_file:
-  #     - ./backend/services/notify/.env
-  #   command: sh -c "sleep 20 && npm run start "
-  #   networks: 
-  #       - web
+  notify:
+    build: ./backend/services/notify
+    image: notify-image
+    container_name: notify
+    env_file:
+      - ./backend/services/notify/.env
+    command: sh -c "sleep 20 && npm run start "
+    networks: 
+        - web
   # game:
   #   build: ./backend/services/game
   #   image: game-image

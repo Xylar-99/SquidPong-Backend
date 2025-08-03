@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../db/database';
-
+import { Editprofile } from '../utils/utils';
 
 export async function createProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
@@ -22,7 +22,9 @@ export async function createProfileHandler(req:FastifyRequest , res:FastifyReply
 
 export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
-    const body = req.body as any;
+    console.log("heeeeleellllllllllllllllllllllllllllll")
+    const body = await Editprofile(req);
+    console.log('bodyyyyyy' ,   body)
     const headers = req.headers as any;
     const userId = Number(headers['x-user-id'])
 

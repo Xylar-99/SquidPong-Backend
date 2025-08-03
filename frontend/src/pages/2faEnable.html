@@ -438,7 +438,7 @@
                     return;
                 }
                 
-                if (code.length !== 6) {
+                if (code.length != 6) {
                     this.showMessage('Code must be 6 digits', 'error');
                     return;
                 }
@@ -446,8 +446,8 @@
                 this.setLoading(true);
                 
                 try {
-                    const storedToken = localStorage.getItem('token');
-                    if (!storedToken) {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
                         throw new Error('Authentication token missing. Please log in again.');
                     }
 
@@ -458,8 +458,8 @@
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            code: code,
-                            token: storedToken, // Send the token from localStorage
+                            code , 
+                            token
                         })
                     });
                     
