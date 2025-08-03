@@ -629,7 +629,7 @@
 
         async function generateQRCode() {
             try {
-                const url = await fetch('http://localhost:8080/api/2fa/setup', {
+                const url = await fetch('http://localhost:4000/api/2fa/setup', {
                     credentials: 'include',
                 });
                 const data = await url.json();
@@ -686,7 +686,7 @@
             }
 
             try {
-                const res = await fetch('http://localhost:8080/api/2fa/enable', {
+                const res = await fetch('http://localhost:4000/api/2fa/enable', {
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },

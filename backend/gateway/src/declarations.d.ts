@@ -3,4 +3,3 @@ declare module "pump";
 declare module "qrcode";
 declare module "ws";
 declare module "fastify-multipart";
-

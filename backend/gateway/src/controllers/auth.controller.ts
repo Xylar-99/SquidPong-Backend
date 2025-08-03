@@ -1,7 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { sendVerificationEmail } from '../utils/verification_messenger';
 import { OAuth2Namespace } from '@fastify/oauth2';
-import { setJwtTokens } from '../validators/2faValidator';
 import { isUserVerified , isResetCodeValid , isUserAlreadyRegistered  , isUserAllowedToLogin} from '../validators/userStatusCheck';
 import { createAccount } from '../utils/utils';
 import { isTwoFactorEnabled } from '../validators/2faValidator';
@@ -148,9 +147,9 @@ export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyR
   }
   
   if(errorResponse.info.enabled)
-    return res.redirect(`http://localhost:4000/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
+    return res.redirect(`http://localhost:8080/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
 
-  return res.redirect(`http://localhost:4000/pages/profile.html`)
+  return res.redirect(`http://localhost:8080/pages/profile.html`)
   // return res.send(errorResponse)
 }
 
@@ -160,7 +159,7 @@ export async function getIntrahandler(req:FastifyRequest , res:FastifyReply)
 {
 
   const client_id = process.env.IDINTRA;
-  const url =  `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fauth%2Fintra%2Fcallback&response_type=code`;
+  const url =  `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fauth%2Fintra%2Fcallback&response_type=code`;
 
  return  res.redirect(url)
 }
@@ -205,9 +204,9 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
   await isTwoFactorEnabled(res , account , errorResponse);
   
   if(errorResponse.info.enabled)
-    return res.redirect(`http://localhost:4000/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
+    return res.redirect(`http://localhost:8080/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
 
-  return res.redirect(`http://localhost:4000/pages/profile.html`)
+  return res.redirect(`http://localhost:8080/pages/profile.html`)
 }
 
 

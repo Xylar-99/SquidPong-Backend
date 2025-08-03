@@ -23,20 +23,22 @@ export async function getFriendsListHandler(req:FastifyRequest , res:FastifyRepl
 {
 
   const headers = req.headers as any;
+  const userId = Number(headers['x-user-id'])
+
   const friendships = await prisma.friendship.findMany({
     where: 
     {
       status: 'accepted',
       OR: [
-        { userId: Number(headers.id)},
-        { friendId: Number(headers.id) }
+        { userId: userId},
+        { friendId: userId }
         ]
     }
   });
   
   
  
-  const friendIds = friendships.map((f:any) => {return (Number(headers.id) != f.userId) ? f.userId : f.friendId });
+  const friendIds = friendships.map((f:any) => {return (userId != f.userId) ? f.userId : f.friendId });
   const profiles = await prisma.profile.findMany({ where: { id: { in: friendIds } } })
   
   return res.send(profiles);
@@ -47,8 +49,9 @@ export async function getPendingRequestsHandler(req:FastifyRequest , res:Fastify
 {
 
   const headers = req.headers as any;
+  const userId = Number(headers['x-user-id'])
   const friendships = await prisma.friendship.findMany({
-    where: {friendId : Number(headers.id) , status: 'pending'}
+    where: {friendId : userId , status: 'pending'}
   });
   
   const friendIds:any = friendships.map((arg:any) => {return arg.userId});
@@ -68,9 +71,10 @@ export async function sendFriendRequestHandler(req:FastifyRequest , res:FastifyR
 {
   const body = req.body as any;
   const headers = req.headers as any;
+  const userId = Number(headers['x-user-id'])
 
   const friendata:any = {};
-  friendata['userId'] = Number(headers.id);
+  friendata['userId'] = userId;
   friendata['friendId'] = body.friendId;
   friendata['status'] = 'pending';
   
@@ -96,9 +100,10 @@ export async function acceptFriendRequestHandler(req:FastifyRequest , res:Fastif
 {
   const body = req.body as any;
   const headers = req.headers as any;
+  const userId = Number(headers['x-user-id'])
 
   const friendata:any = {};
-  friendata['userId'] = Number(headers.id);
+  friendata['userId'] = userId;
   friendata['friendId'] = body.friendId;
   friendata['status'] = 'accepted';
   
@@ -132,9 +137,10 @@ export async function rejectFriendRequestHandler(req:FastifyRequest , res:Fastif
 {
   const body = req.body as any;
   const headers = req.headers as any;
+  const userId = Number(headers['x-user-id'])
 
   const friendata:any = {};
-  friendata['userId'] = Number(headers.id);
+  friendata['userId'] = userId;
   friendata['friendId'] = body.friendId;
   friendata['status'] = 'pending';
   
@@ -168,9 +174,10 @@ export async function removeFriendHandler(req:FastifyRequest , res:FastifyReply)
 
   const {friendId} = req.params as any;
   const headers = req.headers as any;
+  const userId = Number(headers['x-user-id'])
 
   const friendata:any = {};
-  friendata['userId'] = Number(headers.id);
+  friendata['userId'] = userId;
   friendata['friendId'] = friendId;
   friendata['status'] = 'accepted';
   
@@ -201,7 +208,7 @@ export async function removeFriendHandler(req:FastifyRequest , res:FastifyReply)
 
 export async function cancelFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
 {
-    
+  
 }
 
 export async function getSentRequestsHandler(req:FastifyRequest , res:FastifyReply)

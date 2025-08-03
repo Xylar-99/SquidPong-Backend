@@ -1,47 +1,39 @@
 import app from './app'
-import path from 'path'
 import { WebSocket } from "ws";
 import dotenv from 'dotenv'
 import { handleWsConnect  , handleHttpUpgrade} from './events/websocketEvents';
-import { sendDataToQueue , receiveFromQueue , initRabbitMQ } from './integration/rabbitmqClient'
+import { receiveFromQueue , initRabbitMQ } from './integration/rabbitmqClient'
 
 
-dotenv.config({path: path.resolve(__dirname, '../.env')})
+dotenv.config()
 
 const port = Number(process.env.PORT)
 const host = process.env.HOST
 
 
 
-async function StartServer() 
+async function start() 
 {
 	try 
 	{
-		app.listen({port: port, host: host}, () => {
-			console.log(`server listen on http://${host}:${port} ...`)
-		})
+		app.listen({port: port, host: host}, () => { console.log(`server listen on http://${host}:${port} ...`) })
 	} 
 	catch (error) 
 	{
 		console.log('error in server')
 		process.exit(1)
 	}
+
+	await initRabbitMQ()
+	await receiveFromQueue('chatservice')
 }
+
 
 
 export const ws = new WebSocket.Server({noServer: true})
 
-
 ws.on('connection', handleWsConnect);
 app.server.on('upgrade',handleHttpUpgrade);
 
-
-
-async function start() 
-{
-	StartServer()
-	await initRabbitMQ()
-	await receiveFromQueue('chatservice')
-}
 
 start()

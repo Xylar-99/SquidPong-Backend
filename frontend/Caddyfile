@@ -1,8 +1,8 @@
-:80 {
+:4000 {
   reverse_proxy gateway:4000
 }
 
-:4000 {
+:80 {
     root * /etc/caddy/files
     file_server
 }

@@ -1,56 +1,25 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyRequest, FastifyReply  } from 'fastify';
 import { sendToService } from '../integration/api_calls';
-import fs from 'fs';
-import { pipeline } from 'stream/promises';
 
 
 
+export const addCustomData = async (req:any) => {
+  req.userId = '1';
+};
 
-
-
-async function Editprofile(req: FastifyRequest) : Promise<any>
+async function proxyToUserService(req: FastifyRequest, res: FastifyReply) 
 {
-    const parts = req.parts() ;
-  
-    const data: Record<string, any> = {};
-    let filePath;
-  
-    for await (const part of parts)
-    {
-        if (part.type == 'file')
-        {
-            filePath = `/tmp/images/${Date.now()}-${part.filename}`;
-            await pipeline(part.file, fs.createWriteStream(filePath));
-            console.log('file saved');
-        }
-        else
-            data[part.fieldname] = part.value as string;
-    }
-
-    filePath = `${process.env.URL}${filePath}`
-    console.log(filePath)
-    const result = {
-      ...data,
-      avatar: filePath,
-    };
-  
-    return result;
+  const userId = req.id;
+  return res.from(`http://user:4001${req.url}`, {
+  rewriteRequestHeaders: (reqq:any, headers:any) => {
+  headers['x-user-id'] = userId;
+  return headers;
 }
 
+});
 
-    
-  
-
-
-async function proxyToUserService(req:FastifyRequest , res:FastifyReply)
-{
-    let body = req.body as any;
-    console.log(req.method , req.url);
-    if(req.url == '/api/users/me' && req.method == 'POST')
-        body = await Editprofile(req)
-    const data:any =  await sendToService(`http://user:4001${req.url}` , req.method , req.id , body)
-    return res.send(data)
 }
+
 
 
 

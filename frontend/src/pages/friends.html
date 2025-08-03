@@ -608,7 +608,7 @@
 
         // Get current user profile
         async function getUser() {
-            const res = await fetch('http://localhost:8080/api/users/me', {credentials: 'include'});
+            const res = await fetch('http://localhost:4000/api/user/me', {credentials: 'include'});
             if (!res.ok) throw new Error('Failed to get profile');
             profile = await res.json();
         }
@@ -616,7 +616,7 @@
         // Load friends list
         async function loadFriends() {
             try {
-                const res = await fetch('http://localhost:8080/api/friends/', {credentials: 'include'});
+                const res = await fetch('http://localhost:4000/api/friend/', {credentials: 'include'});
                 if (!res.ok) throw new Error('Failed to load allies');
                 friends = await res.json();
                 displayFriends();
@@ -628,7 +628,7 @@
         // Load friend requests
         async function loadRequests() {
             try {
-                const res = await fetch('http://localhost:8080/api/friends/pending', {credentials: 'include'});
+                const res = await fetch('http://localhost:4000/api/friend/pending', {credentials: 'include'});
                 if (!res.ok) throw new Error('Failed to load alliance requests');
                 requests = await res.json();
                 displayRequests();
@@ -640,7 +640,7 @@
         // Load blocked users
         async function loadBlockedUsers() {
             try {
-                const res = await fetch('http://localhost:8080/api/friends/blocked/', {credentials: 'include'});
+                const res = await fetch('http://localhost:4000/api/friend/blocked/', {credentials: 'include'});
                 if (!res.ok) throw new Error('Failed to load blocked players');
                 blockedUsers = await res.json();
                 displayBlockedUsers();
@@ -652,7 +652,7 @@
         // Load all users for friend invitations
         async function loadAllUsers() {
             try {
-                const res = await fetch('http://localhost:8080/api/users/', {credentials: 'include'});
+                const res = await fetch('http://localhost:4000/api/user/', {credentials: 'include'});
                 if (!res.ok) throw new Error('Failed to load player database');
                 allUsers = await res.json();
                 displayAllUsers();
@@ -899,7 +899,7 @@
                 button.disabled = true;
                 button.textContent = 'Sending...';
 
-                const res = await fetch('http://localhost:8080/api/friends/request', {
+                const res = await fetch('http://localhost:4000/api/friend/request', {
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
@@ -924,7 +924,7 @@
                 button.disabled = true;
                 button.textContent = 'Accepting...';
 
-                const res = await fetch('http://localhost:8080/api/friends/accept', {
+                const res = await fetch('http://localhost:4000/api/friend/accept', {
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
@@ -949,7 +949,7 @@
                 button.disabled = true;
                 button.textContent = 'Rejecting...';
 
-                const res = await fetch('http://localhost:8080/api/friends/reject', {
+                const res = await fetch('http://localhost:4000/api/friend/reject', {
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
@@ -973,7 +973,7 @@
                 button.disabled = true;
                 button.textContent = 'Removing...';
 
-                const res = await fetch(`http://localhost:8080/api/friends/${friendId}`, {
+                const res = await fetch(`http://localhost:4000/api/friend/${friendId}`, {
                     method: 'DELETE',
                     credentials: 'include'
                 });
@@ -995,7 +995,7 @@
                 button.disabled = true;
                 button.textContent = 'Blocking...';
 
-                const res = await fetch(`http://localhost:8080/api/friends/blocked/${userId}`, {
+                const res = await fetch(`http://localhost:4000/api/friend/blocked/${userId}`, {
                     method: 'POST',
                     credentials: 'include'
                 });
@@ -1020,7 +1020,7 @@
                 button.disabled = true;
                 button.textContent = 'Unblocking...';
 
-                const res = await fetch(`http://localhost:8080/api/friends/blocked/${blockId}`, {
+                const res = await fetch(`http://localhost:4000/api/friend/blocked/${blockId}`, {
                     method: 'DELETE',
                     credentials: 'include'
                 });

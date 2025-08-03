@@ -24,10 +24,9 @@ export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply
 {
     const body = req.body as any;
     const headers = req.headers as any;
+    const userId = Number(headers['x-user-id'])
 
-    console.log(body);
-
-    await prisma.profile.update({where : {userId : Number(headers.id)} , data : body })
+    await prisma.profile.update({where : {userId : userId} , data : body })
     return res.send({msg : true})
 }
 
@@ -35,11 +34,13 @@ export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply
 export async function getAllUserHandler(req:FastifyRequest , res:FastifyReply)
 {
     const headers = req.headers as any;
+    const userId = Number(headers['x-user-id'])
+
 
     const friendships = await prisma.friendship.findMany();
     const friendIds =  [...new Set(friendships.flatMap((f:any) => {return [f.userId, f.friendId]}))] as any;
-    if (!friendIds.includes(Number(headers.id)))
-        friendIds.push(Number(headers.id));
+    if (!friendIds.includes(userId))
+        friendIds.push(userId);
 
     const profile = await prisma.profile.findMany({where : {userId : {notIn: friendIds}}});
     return res.send(profile)
@@ -48,19 +49,20 @@ export async function getAllUserHandler(req:FastifyRequest , res:FastifyReply)
 
 export async function deleteProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
+    const headers = req.headers as any;
+    const userId = Number(headers['x-user-id'])
+
     return res.send(req.body)
 }
-
-
 
 export async function getCurrentUserHandler(req:FastifyRequest , res:FastifyReply)
 {
     const headers = req.headers as any;
-    const profile = await prisma.profile.findUnique({where : {userId : Number(headers.id)}})
+    const userId = Number(headers['x-user-id'])
+
+    const profile = await prisma.profile.findUnique({where : {userId : userId}})
     return res.send(profile)
 }
-
-
 
 
 export async function getUserByIdHandler(req:FastifyRequest , res:FastifyReply)

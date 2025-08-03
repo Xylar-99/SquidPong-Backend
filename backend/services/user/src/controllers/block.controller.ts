@@ -7,11 +7,12 @@ import { isFriendRequestExists } from '../utils/utils';
 
 export async function blockUserHandler(req:FastifyRequest , res:FastifyReply)
 {
-  const {blockId} = req.params as any;
   const headers = req.headers as any;
+  const {blockId} = req.params as any;
+  const userId = Number(headers['x-user-id'])
 
   let friendata:any = {};
-  friendata['userId'] = Number(headers.id);
+  friendata['userId'] = userId;
   friendata['friendId'] = Number(blockId);
   friendata['status'] = 'accepted';
   
@@ -57,9 +58,10 @@ export async function unblockUserHandler(req:FastifyRequest , res:FastifyReply)
 {
   const {blockId} = req.params as any;
   const headers = req.headers as any;
+  const userId = Number(headers['x-user-id'])
 
   let friendata:any = {};
-  friendata['userId'] = Number(headers.id);
+  friendata['userId'] = userId;
   friendata['friendId'] = Number(blockId);
   friendata['status'] = 'blocked';
   
@@ -97,8 +99,9 @@ export async function unblockUserHandler(req:FastifyRequest , res:FastifyReply)
 export async function getBlockedUsersHandler(req:FastifyRequest , res:FastifyReply)
 {
     
-  const headers = req.headers as any;
-  const blockedusers = await prisma.friendship.findMany({where: {userId : Number(headers.id) , status: 'blocked'}});
+      const headers = req.headers as any;
+    const userId = Number(headers['x-user-id'])
+  const blockedusers = await prisma.friendship.findMany({where: {userId : userId , status: 'blocked'}});
 
   const friendIds = blockedusers.map((f:any) => f.friendId);
 

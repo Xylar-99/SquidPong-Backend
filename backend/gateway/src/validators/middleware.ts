@@ -11,6 +11,7 @@ export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
 {
   const uri:string[] = ['/pages/signup.html'  , '/api/reset-password', '/api/forgot-password' , '/api/intra' ,  '/api/2fa/verify' , '/ws' , '/auth/intra/callback' , '/pages/verification.html' , '/pages/login.html' , '/api/signup' , '/api/login' , '/api/verify-email' , '/' , '/favicon.ico']
 
+  console.log(`uri == ${req.url}`)
   if (uri.includes(req.url) == true || req.url.startsWith('/auth/') == true)
     return ;
   
@@ -18,6 +19,7 @@ export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
   {
     const token:string = req.cookies['accessToken'] as string;
     const payload = await app.jwt.verify(token) as any;
+    console.log(payload.userId)
     req.id = payload.userId
   }
   catch 

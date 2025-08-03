@@ -6,11 +6,10 @@ services:
     container_name: caddy
     ports:
       - "8080:80"
-      - "4443:443"
       - "4000:4000"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./frontend:/etc/caddy/files
+      - ./frontend/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/src:/etc/caddy/files
     networks:
       - web
 
@@ -19,46 +18,58 @@ services:
     container_name: redis
     networks:
         - web
+
   rabbitmq:
     image: rabbitmq
     container_name: rabbitmq
     networks:
         - web
+
   gateway:
     build: ./backend/gateway
     image: gateway-image
     container_name: gateway
+    env_file:
+      - ./backend/gateway/.env
     command: sh -c "sleep 10 && npx prisma migrate dev --name init && npm run start "
     networks:
         - web
-    volumes:
-      - ./uploads:/tmp/
     
   user:
     build: ./backend/services/user
     image: user-image
     container_name: user
     command: sh -c "sleep 10 && npx prisma migrate dev --name init && npm run start "
+    env_file:
+      - ./backend/services/user/.env
+    volumes:
+      - ./frontend/src/uploads:/tmp/
     networks:
         - web
-  chat:
-    build: ./backend/services/chat
-    image: chat-image
-    container_name: chat
-    command: sh -c "sleep 15 && npx prisma migrate dev --name init && npm run start "
-    networks: 
-        - web
-  notify:
-    build: ./backend/services/notify
-    image: notify-image
-    container_name: notify
-    command: sh -c "sleep 20 && npm run start "
-    networks: 
-        - web
+  # chat:
+  #   build: ./backend/services/chat
+  #   image: chat-image
+  #   container_name: chat
+  #   env_file:
+  #     - ./backend/services/chat/.env
+  #   command: sh -c "sleep 15 && npx prisma migrate dev --name init && npm run start "
+  #   networks: 
+  #       - web
+  # notify:
+  #   build: ./backend/services/notify
+  #   image: notify-image
+  #   container_name: notify
+  #   env_file:
+  #     - ./backend/services/notify/.env
+  #   command: sh -c "sleep 20 && npm run start "
+  #   networks: 
+  #       - web
   # game:
   #   build: ./backend/services/game
   #   image: game-image
   #   container_name: game
+  #   env_file:
+  #       - ./backend/services/game/.env
   #   command: sh -c "npx prisma migrate dev --name init && npm run start "
   #   networks: 
   #       - web

@@ -451,7 +451,7 @@
                         throw new Error('Authentication token missing. Please log in again.');
                     }
 
-                    const response = await fetch('http://localhost:8080/api/2fa/verify', {
+                    const response = await fetch('http://localhost:4000/api/2fa/verify', {
                         method: 'POST',
                         credentials: 'include',
                         headers: {
