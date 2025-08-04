@@ -2,51 +2,21 @@
 import prisma from "../db/database";
 import redis from "../integration/redisClient";
 import { VerifyPassword } from "../utils/hashedPassword";
-
-export const AuthErrors = {
-    // Signup errors
-    USERNAME_DUP : 'Username is already in use. Try another one.',
-    EMAIL_REQUIRED: 'Email is required',
-    PASSWORD_REQUIRED: 'Password is required',
-    USER_EXISTS: 'User already exists',
-    PASSWORD_TOO_SHORT: 'Password must be at least 6 characters',
-    USERNAME_REQUIRED: 'Username is required',
-    INVALID_EMAIL_FORMAT: 'Invalid email format',
-  
-    // Login errors
-    INVALID_CREDENTIALS: 'Invalid email or password',
-    USER_NOT_FOUND: 'User not found',
-    ACCOUNT_LOCKED: 'Account is locked',
-    TOO_MANY_ATTEMPTS: 'Too many login attempts, please try again later',
-  
-    // Email verification errors
-    
-  
-    OAUTH_LOGIN_REQUIRED: 'This account was created with an external provider (e.g. Google, 42). Please use that method to log in.',
-    VERIFICATION_CODE_EXPIRED: 'Verification code has expired. Please sign up again or request a new code.',
-    VERIFICATION_TOKEN_EXPIRED: 'Verification token expired',
-    VERIFICATION_TOKEN_INVALID: 'Invalid verification token',
-    EMAIL_NOT_VERIFIED: 'You have already signed up. Please verify your email before continuing.',
-    EMAIL_ALREADY_VERIFIED: 'Your email is already verified. You can log in directly.',
-    VERIFICATION_FAILED: 'Email verification failed, please try again',
-    
-  } as const;
-  
-  
+import { UserProfileMessage ,EmailMessage } from "../utils/messages";
 
 
 export async function isUserVerified(body:any)
 {
     const userdb = await prisma.user.findUnique({ where: { email: body.email }})
     if(userdb && userdb.password)
-      throw new Error(AuthErrors.EMAIL_ALREADY_VERIFIED);
+      throw new Error(EmailMessage.EMAIL_ALREADY_VERIFIED);
 
     const code = await redis.get(`2fa:${body.email}`);
     if(!code)
-        throw new Error(AuthErrors.VERIFICATION_CODE_EXPIRED)
+        throw new Error(EmailMessage.VERIFICATION_TOKEN_EXPIRED)
 
     if(code != body.code)
-      throw new Error(AuthErrors.VERIFICATION_FAILED)
+      throw new Error(EmailMessage.INVALID_VERIFICATION_TOKEN)
 }
 
 
@@ -56,13 +26,13 @@ export async function isUserVerified(body:any)
 export async function isUserAllowedToLogin(body:any , user:any | null)
 {
     if(!user)
-      throw new Error(AuthErrors.USER_NOT_FOUND)
+      throw new Error(UserProfileMessage.USER_NOT_FOUND)
 
     if(!user.password)
-        throw new Error(AuthErrors.OAUTH_LOGIN_REQUIRED)
+        throw new Error(UserProfileMessage.OAUTH_LOGIN_REQUIRED)
 
     if(await VerifyPassword(body.password , user.password) ==  false)
-      throw new Error(AuthErrors.INVALID_CREDENTIALS)
+      throw new Error(UserProfileMessage.INVALID_CREDENTIALS)
 
 }
 
@@ -76,7 +46,7 @@ export async function isUserAlreadyRegistered(body:any)
         return;
 
     if(user.password)
-      throw new Error(AuthErrors.USER_EXISTS);
+      throw new Error(UserProfileMessage.USER_ALREADY_EXISTS);
 
 }
 

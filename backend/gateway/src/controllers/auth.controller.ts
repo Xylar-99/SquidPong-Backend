@@ -12,6 +12,7 @@ import { sendDataToQueue } from '../integration/rabbitmqClient';
 import redis from '../integration/redisClient';
 import prisma from '../db/database';
 import app from '../app';
+import { PasswordMessage ,EmailMessage , AuthError, UserProfileMessage } from '../utils/messages';
 
 
 
@@ -32,8 +33,9 @@ export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 
 export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 {
+    const respond : ApiResponse<null > = {success : true  , message : UserProfileMessage.EMAIL_ALREADY_USED}
     const body = req.body as any;
-    console.log('here singup ')
+
     try
     {
       await isUserAlreadyRegistered(body);
@@ -41,39 +43,44 @@ export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
     }
     catch (error) 
     {
+      respond.success = false;
       if (error instanceof Error)
-        return res.status(400).send({message : error.message})
+        {
+          respond.message = error.message;
+          return res.status(400).send(respond)
+        }
     }
-  return res.send({msg : true})
+    
+  return res.send(respond)
 }
 
 
 
 export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<null > = {success : true  , message : EmailMessage.EMAIL_VERIFIED_SUCCESSFULLY}
     const body = req.body as any;
 
     try 
     {
       await isUserVerified(body);
       const data = await redis.get(body.email);
-
-      { // change  later
-
-        if(!data)
-          throw new Error("s")
-      }
-
+      if(!data)
+          throw new Error(AuthError.VALIDATION_ERROR)
       const parsed = JSON.parse(data);
       await createAccount(parsed);
     }
     catch (error) 
     {
+      respond.success = false;
       if (error instanceof Error)
-        return res.status(400).send({message : error.message})
+        {
+          respond.message = error.message;
+          return res.status(400).send(respond)
+        }
     }
-
-  return res.send({msg : true})
+    
+  return res.send(respond)
 }
 
 
@@ -82,12 +89,13 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
     const respond : ApiResponse<{is2FAEnabled : boolean , token : string} > = {success : true  , message : 'login success'}
+    respond.data = {is2FAEnabled : false , token : ''}
 
     try 
     {
       const user = await prisma.user.findUnique({ where: { email: body.email}})
       if(!user)
-        throw new Error("user not found")
+        throw new Error(UserProfileMessage.USER_NOT_FOUND)
 
       await isUserAllowedToLogin(body , user);
       await isTwoFactorEnabled(res , user , respond);
@@ -262,7 +270,7 @@ export async function postForgotPasswordHandler(req: FastifyRequest, res: Fastif
     const user = await prisma.user.findFirst({ where: { email: email , password : {not : null} }})
     if(!user)
       throw new Error("user not found")
-    await sendDataToQueue({email}, "emailhub"); // changed him later
+    await sendDataToQueue({email}, "emailhub");
 
   } 
   catch (error) 
@@ -290,11 +298,12 @@ export async function postChangePasswordHandler(req: FastifyRequest, res: Fastif
   try 
   {
     const user = await prisma.user.findFirst({ where: { id: Number(id) , password : {not : null} }})
-    if(!user)
-      throw new Error("user not found")
-    if(await VerifyPassword(oldPassword , user.password) == false)
-      throw new Error("please change password is ready used write new password")
     
+    if(!user)
+      throw new Error(UserProfileMessage.USER_NOT_FOUND)
+    if(await VerifyPassword(oldPassword , user.password) == false)
+      throw new Error(PasswordMessage.PASSWORD_SAME_AS_OLD)
+
     await prisma.user.update({ where: { id: Number(id)}  , data : {password : await hashPassword(newPassword)} })
 
   } 
@@ -307,7 +316,6 @@ export async function postChangePasswordHandler(req: FastifyRequest, res: Fastif
         return res.status(400).send(respond)
       }
   }
-  
 
   return res.send(respond);
 }
@@ -323,7 +331,7 @@ export async function postResetPasswordHandler(req: FastifyRequest, res: Fastify
   {
     const user = await prisma.user.findFirst({ where: { email , password : {not : null} }})
     if(!user)
-      throw new Error("user not found")
+      throw new Error(UserProfileMessage.USER_NOT_FOUND)
 
     isResetCodeValid(code , confirmPassword , newPassword , user);
     await prisma.user.update({ where: { email}  , data : {password : await hashPassword(newPassword)} })
@@ -339,6 +347,5 @@ export async function postResetPasswordHandler(req: FastifyRequest, res: Fastify
       }
   }
   
-
   return res.send(respond);
 }

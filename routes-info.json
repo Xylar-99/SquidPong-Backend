@@ -1,0 +1,118 @@
+[
+
+    {
+      "method": "POST",
+      "uri": "/api/signup",
+      "response": {
+        "success": true,
+        "message": "UserProfileMessage.EMAIL_ALREADY_USED",
+        "data": {}
+      }
+    },
+
+    {
+      "method": "POST",
+      "uri": "/api/login",
+      "response": {
+        "success": true,
+        "message": "AuthMessage.LOGIN_SUCCESS",
+        "data": {"is2FAEnabled" : "boolean" , "token" : "string"}
+      }
+    },
+
+
+    {
+      "method": "POST",
+      "uri": "/api/logout",
+      "response": {
+        "success": true,
+        "message": "AuthMessage.LOGOUT_SUCCESS",
+        "data": {}
+      }
+    },
+    {
+      "method": "POST",
+      "uri": "/api/verify-email",
+      "response": {
+        "success": true,
+        "message": "UserProfileMessage.EMAIL_VERIFIED",
+        "data": {}
+      }
+    },
+    {
+      "method": "POST",
+      "uri": "/api/forgot-password",
+      "response": {
+        "success": true,
+        "message": "AuthMessage.FORGOT_PASSWORD_EMAIL_SENT",
+        "data": {}
+      }
+    },
+    {
+      "method": "POST",
+      "uri": "/api/reset-password",
+      "response": {
+        "success": true,
+        "message": "AuthMessage.PASSWORD_RESET_SUCCESS",
+        "data": {}
+      }
+    },
+    {
+      "method": "POST",
+      "uri": "/api/change-password",
+      "response": {
+        "success": true,
+        "message": "AuthMessage.PASSWORD_CHANGE_SUCCESS",
+        "data": {}
+      }
+    },
+    
+    {
+      "method": "GET",
+      "uri": "/api/intra",
+      "response": {
+        "success": true,
+        "message": "AuthMessage.INTRA_AUTH_SUCCESS",
+        "data": {}
+      }
+    },
+    
+    {
+      "method": "GET",
+      "uri": "/api/2fa/setup",
+      "response": 
+      {
+        "success": true,
+        "message": "TwoFAMessage.SETUP_SUCCESS",
+        "data": {"QRCode" : "string" , "key" : "string"}
+      }
+    },
+    {
+      "method": "POST",
+      "uri": "/api/2fa/verify",
+      "response": {
+        "success": true,
+        "message": "TwoFAMessage.VERIFY_SUCCESS",
+        "data": {}
+      }
+    },
+    {
+      "method": "POST",
+      "uri": "/api/2fa/disable",
+      "response": {
+        "success": true,
+        "message": "TwoFAMessage.DISABLE_SUCCESS",
+        "data": {}
+      }
+    },
+    {
+      "method": "POST",
+      "uri": "/api/2fa/enable",
+      "response": {
+        "success": true,
+        "message": "TwoFAMessage.ENABLE_SUCCESS",
+        "data": {}
+      }
+    }
+  ]
+  

@@ -793,8 +793,8 @@
             window.location.href = '/pages/verification.html';
           }, 1500);
         } else {
-          const errorData = await res.json();
-          showError(errorData.message || 'Entry denied. Try again.');
+          const respond = await res.json();
+          showError(respond.message );
           generateCaptcha();
         }
       } catch (err) {

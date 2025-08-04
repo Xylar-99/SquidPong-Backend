@@ -714,11 +714,12 @@
         {
           showSuccess('Access granted! Entering game...');
           let href = '/pages/profile.html';
-          const data = await res.json();
+          const respond = await res.json();
           
-          if (data.info.enabled == true) {
+          if (respond.data.is2FAEnabled) 
+          {
             href = '/pages/2faEnable.html';
-            sessionStorage.setItem('token', data.info.tmp);
+            sessionStorage.setItem('token', respond.data.token);
           }
           
           setTimeout(() => {
