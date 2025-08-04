@@ -1409,10 +1409,11 @@
       updateSettingsUI();
     }
 
-    function displayPlayerData(data) {
-      document.getElementById('firstName').textContent = data.fname || 'Unknown';
-      document.getElementById('lastName').textContent = data.lname || 'Unknown';
-      document.getElementById('username').textContent = data.username || 'Unknown';
+    function displayPlayerData(player) 
+    {
+      document.getElementById('firstName').textContent = player.data.fname || 'Unknown';
+      document.getElementById('lastName').textContent = player.data.lname || 'Unknown';
+      document.getElementById('username').textContent = player.data.username || 'Unknown';
       
       // Security status
       const securityBadge = document.getElementById('securityBadge');
@@ -1428,13 +1429,13 @@
         securityBadge.style.display = 'inline-block';
       }
       
-      const level = data.level || Math.floor(Math.random() * 50) + 1;
+      const level = player.data.level || Math.floor(Math.random() * 50) + 1;
       document.getElementById('level').textContent = level;
 
-      if (data.avatar) {
-        document.getElementById('playerAvatar').src = data.avatar;
+      if (player.data.avatar) {
+        document.getElementById('playerAvatar').src = player.data.avatar;
       } else {
-        const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.username || 'player'}&backgroundColor=ff1493`;
+        const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${player.data.username || 'player'}&backgroundColor=ff1493`;
         document.getElementById('playerAvatar').src = avatarUrl;
       }
 

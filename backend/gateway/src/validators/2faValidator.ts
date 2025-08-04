@@ -38,6 +38,7 @@ export async function setJwtTokens(res: FastifyReply, user: any | null)
 
 export async function isTwoFactorEnabled(res: FastifyReply, user: any | null , respond: ApiResponse ) : Promise<any>
 {
+
   if(!user.is2FAEnabled)
   {
     respond.data.is2FAEnabled = false;

@@ -124,8 +124,9 @@ export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 
 export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyReply) 
 {
-  const respond : ApiResponse<{is2FAEnabled : boolean , token : string} | null > = {success : true  , message : 'login success'}
+  const respond : ApiResponse<{is2FAEnabled : boolean , token : string} > = {success : true  , message : 'login success'}
 
+  respond.data = {is2FAEnabled : false , token : ''}
   try 
   {
     const tokengoogle:any = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
@@ -177,6 +178,8 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
 
   const respond : ApiResponse<{is2FAEnabled : boolean , token : string} > = {success : true  , message : 'login success'}
   const {code} = req.query as any;
+  
+  respond.data = {is2FAEnabled : false , token : ''}
 
   const body:object = {
       grant_type: 'authorization_code',
