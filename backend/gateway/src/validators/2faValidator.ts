@@ -3,7 +3,7 @@ import app from "../app";
 import prisma from "../db/database";
 import { sendDataToQueue } from "../integration/rabbitmqClient";
 import redis from "../integration/redisClient";
-import { ApiError } from "../utils/errorHandler";
+import { ApiResponse } from "../utils/errorHandler";
 
 
 function generateToken(length = 10) 
@@ -36,20 +36,18 @@ export async function setJwtTokens(res: FastifyReply, user: any | null)
 
 
 
-export async function isTwoFactorEnabled(res: FastifyReply, user: any | null , errorResponse: ApiError ) : Promise<any>
+export async function isTwoFactorEnabled(res: FastifyReply, user: any | null , respond: ApiResponse ) : Promise<any>
 {
-  const data  = await prisma.twofactorauth.findFirst({ where: { userId: user.id , enabled : true}})
-  
-  if(!data)
+  if(!user.is2FAEnabled)
   {
-    errorResponse.info.enabled = false;
+    respond.data.is2FAEnabled = false;
     await setJwtTokens(res , user);
     return ;
   }
   
-  errorResponse.info.enabled = true;
-  errorResponse.info.tmp = generateToken();
-  await redis.set(errorResponse.info.tmp, user.id, "EX", "260");
+  respond.data.is2FAEnabled = true;
+  respond.data.token = generateToken();
+  await redis.set(respond.data.token, user.id, "EX", "260");
 
 }
 

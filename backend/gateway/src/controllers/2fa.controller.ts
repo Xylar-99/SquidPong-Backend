@@ -5,70 +5,85 @@ import QRCode from "qrcode";
 import { setJwtTokens } from '../validators/2faValidator';
 import { authenticator } from "otplib";
 
-
+import { ApiResponse } from '../utils/errorHandler';
 
 
 
 export async function setupAuthenticatorHandler(req: FastifyRequest, res: FastifyReply) 
 {
 
-  // change later  for check is enabled and not generate new secret !!!!!!!!!!
+  const respond : ApiResponse<{QRCode : string , key : string} > = {success : true  , message : '2fa enabled success'}
+  const serviceName = "ft_trandandan";
+
   try 
   {
+
     const user = await prisma.user.findFirst({where : {id : Number(req.id)}})
-    if(!user) //  for only typescripte types ..  change later
+    if(!user)
       throw new Error("user not found")
-  
+
+    if(!user.is2FAEnabled)
+    {
+      respond.data = {QRCode : user.twoFAQRCode! , key : user.twoFAKey!}
+      return res.send(respond);
+    }
+    
     const secret = authenticator.generateSecret();
-    const serviceName = "ft_trandandan";
-    
     const otpauth = authenticator.keyuri(user.username, serviceName, secret);
-    
+
     const key = otpauth.split('=')[1].split('&')[0]
-    const url  = await QRCode.toDataURL(otpauth);
+    const QRcodeUrl  = await QRCode.toDataURL(otpauth);
 
-    await prisma.twofactorauth.upsert({ where: { userId: user.id }, 
-      update: { secret: secret,},
-      create: { userId: user.id ,  secret: secret},
-    });
+    await prisma.user.update({ where: { id: user.id }, data : { is2FAEnabled : true , twoFASecret: secret , twoFAKey : key , twoFAQRCode : QRcodeUrl },});
     
-    
-    return res.send({url , key})
+    respond.data = {QRCode : QRcodeUrl! , key : key!}
   } 
-  catch {}
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
+  }
 
-  return res.status(400).send({msg : false})
+  return res.send(respond)
 }
-
-
 
 
 
 
 export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply) 
 {
+  const respond : ApiResponse<null > = {success : true  , message : '2fa enabled success'}
   const body = req.body as any;
-  console.log(body)
   const id = await redis.get(body.token);
-  let user:any = {id : Number(id)};
+
 
   try
   {
-    const twoFA = await prisma.twofactorauth.findFirst({ where: { userId: Number(id) , enabled : true } });
-    if (!twoFA)
+    const user = await prisma.user.findUnique({ where: { id : Number(id) , is2FAEnabled : true } });
+    if (!user)
       throw new Error('2FA is not enabled yet');
 
-    const isValid = authenticator.check(body.code, twoFA.secret);
+    const isValid = authenticator.check(body.code, user.twoFASecret!);
     if (!isValid)
       throw new Error('Invalid code');
 
   } 
-  catch 
+  catch (error) 
   {
-    return res.status(400).send({ msg: false });
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
-  await setJwtTokens(res , user);
-  return res.send({ msg: true });
+
+  await setJwtTokens(res , {userId : id});
+  return res.send(respond);
 }
 
 
@@ -78,51 +93,63 @@ export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply)
 
 export async function disable2FAHandler(req: FastifyRequest, res: FastifyReply) 
 {
+  const respond : ApiResponse<{QRCode:string , key : string} > = {success : true  , message : '2fa enabled success'}
   const id = req.id as any;
 
   try 
   {
-    const twoFA = await prisma.twofactorauth.findFirst({ where: { userId: Number(id)  , enabled : false} });
-    if (twoFA) 
+    const user = await prisma.user.findUnique({ where: { id: Number(id)  , is2FAEnabled : false} });
+    if (user) 
       throw new Error('2FA ready disabled');
 
-    await prisma.twofactorauth.update({ where: { userId: Number(id) }  , data : {enabled : false}})
+    await prisma.user.update({ where: { id: Number(id) }  , data : {is2FAEnabled : false}})
 
   } 
-  catch 
+  catch (error) 
   {
-    return res.status(400).send({ msg: false });
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
 
-  return res.send({ msg: true });
+
+  return res.send(respond);
 }
 
 
 
 export async function enableTwoFAHandler(req: FastifyRequest, res: FastifyReply) 
 {
+  const respond : ApiResponse<null > = {success : true  , message : '2fa enabled success'}
   const body = req.body as any;
   const id = req.id as any;
 
   try 
   {
-    const twoFA = await prisma.twofactorauth.findFirst({ where: { userId: Number(id)  , enabled : false} });
-    if (!twoFA)
+    const user = await prisma.user.findUnique({ where: { id: Number(id)  , is2FAEnabled : false} });
+    if (!user)
       throw new Error('2FA ready enabled');
 
-    const isValid = authenticator.check(body.code, twoFA.secret);
+    const isValid = authenticator.check(body.code, user.twoFASecret!);
 
     if (!isValid)
       throw new Error('Invalid code');
 
-    await prisma.twofactorauth.update({ where: { userId: Number(id) }  , data : {enabled : true}})
-
-
+    await prisma.user.update({ where: { id: Number(id) }  , data : {is2FAEnabled : true}})
   } 
-  catch 
+  catch (error) 
   {
-    return res.status(400).send({ msg: false });
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
 
-  return res.send({ msg: true });
+
+  return res.send(respond);
 }

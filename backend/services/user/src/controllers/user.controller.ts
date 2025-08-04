@@ -1,9 +1,12 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../db/database';
 import { Editprofile } from '../utils/utils';
+import { ApiResponse } from '../utils/errorHandler';
+import { UserProfile } from '../utils/types';
 
 export async function createProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
+    const respond : ApiResponse<null > = {success : true  , message : 'user created success'}
     const body = req.body as any;
     const profile = {userId : body.id , fname : body.fname , lname : body.lname  , username : body.username  , bio : body?.bio ?? 'Ready to play. Ready to win.'  , avatar: body.avatar }
     
@@ -11,17 +14,27 @@ export async function createProfileHandler(req:FastifyRequest , res:FastifyReply
     {
         await prisma.profile.create({data : profile})
     } 
-    catch (error)
+    catch (error) 
     {
-        return res.status(400).send({msg : false})
+        respond.success = false;
+        if (error instanceof Error)
+          {
+            respond.message = error.message;
+            return res.status(400).send(respond)
+          }
     }
-    return res.send({msg : true})
+    return res.send(respond)
 }
 
 
 
 export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
+    const respond : ApiResponse<null > = {success : true  , message : 'user created success'}
+
+    try 
+    {
+
     console.log("heeeeleellllllllllllllllllllllllllllll")
     const body = await Editprofile(req);
     console.log('bodyyyyyy' ,   body)
@@ -29,48 +42,121 @@ export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply
     const userId = Number(headers['x-user-id'])
 
     await prisma.profile.update({where : {userId : userId} , data : body })
-    return res.send({msg : true})
+    } 
+    catch (error) 
+    {
+        respond.success = false;
+        if (error instanceof Error)
+          {
+            respond.message = error.message;
+            return res.status(400).send(respond)
+          }
+    }
+    
+    return res.send(respond)
 }
 
 
 export async function getAllUserHandler(req:FastifyRequest , res:FastifyReply)
 {
-    const headers = req.headers as any;
-    const userId = Number(headers['x-user-id'])
+    const respond : ApiResponse<UserProfile[]> = {success : true  , message : 'user created success'}
 
-
-    const friendships = await prisma.friendship.findMany();
-    const friendIds =  [...new Set(friendships.flatMap((f:any) => {return [f.userId, f.friendId]}))] as any;
-    if (!friendIds.includes(userId))
-        friendIds.push(userId);
-
-    const profile = await prisma.profile.findMany({where : {userId : {notIn: friendIds}}});
-    return res.send(profile)
+    try 
+    {
+        const headers = req.headers as any;
+        const userId = Number(headers['x-user-id'])
+    
+    
+        const friendships = await prisma.friendship.findMany();
+        const friendIds =  [...new Set(friendships.flatMap((f:any) => {return [f.userId, f.friendId]}))] as any;
+        if (!friendIds.includes(userId))
+            friendIds.push(userId);
+    
+        const profile = await prisma.profile.findMany({where : {userId : {notIn: friendIds}}});
+        respond.data = profile;
+    }
+    catch (error) 
+    {
+        respond.success = false;
+        if (error instanceof Error)
+          {
+            respond.message = error.message;
+            return res.status(400).send(respond)
+          }
+    }
+        
+    return res.send(respond)
 }
 
 
 export async function deleteProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
-    const headers = req.headers as any;
-    const userId = Number(headers['x-user-id'])
+    const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
 
-    return res.send(req.body)
+    try 
+    {
+    // const headers = req.headers as any;
+    // const userId = Number(headers['x-user-id'])
+        
+    } 
+    catch (error) 
+    {
+        respond.success = false;
+        if (error instanceof Error)
+          {
+            respond.message = error.message;
+            return res.status(400).send(respond)
+          }
+    }
+
+    return res.send(respond)
 }
 
 export async function getCurrentUserHandler(req:FastifyRequest , res:FastifyReply)
 {
-    const headers = req.headers as any;
-    const userId = Number(headers['x-user-id'])
+    const respond : ApiResponse<UserProfile | null> = {success : true  , message : 'user created success'}
 
-    const profile = await prisma.profile.findUnique({where : {userId : userId}})
-    return res.send(profile)
+    try 
+    {
+        const headers = req.headers as any;
+        const userId = Number(headers['x-user-id'])
+        
+        const profile = await prisma.profile.findUnique({where : {userId : userId}})
+        respond.data = profile;
+    } 
+    catch (error) 
+    {
+        respond.success = false;
+        if (error instanceof Error)
+          {
+            respond.message = error.message;
+            return res.status(400).send(respond)
+          }
+    }
+
+    return res.send(respond)
 }
 
 
 export async function getUserByIdHandler(req:FastifyRequest , res:FastifyReply)
 {
+    const respond : ApiResponse<UserProfile | null> = {success : true  , message : 'user created success'}
     const { id } = req.params as any;
 
-    const profile = await prisma.profile.findUnique({where : {userId : Number(id)}})
-    return res.send(profile)
+    try 
+    {
+        const profile = await prisma.profile.findUnique({where : {userId : Number(id)}})
+        respond.data = profile;
+    }
+    catch (error) 
+    {
+        respond.success = false;
+        if (error instanceof Error)
+          {
+            respond.message = error.message;
+            return res.status(400).send(respond)
+          }
+    }
+
+    return res.send(respond)
 }

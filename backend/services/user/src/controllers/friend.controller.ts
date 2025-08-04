@@ -1,6 +1,8 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../db/database';
 import { isFriendRequestExists } from '../utils/utils';
+import { ApiResponse } from '../utils/errorHandler';
+import { UserProfile } from '../utils/types';
 
 export async function sendFriendInvite(data:any) 
 {
@@ -21,9 +23,12 @@ export async function sendFriendInvite(data:any)
 
 export async function getFriendsListHandler(req:FastifyRequest , res:FastifyReply)
 {
-
+  const respond : ApiResponse<UserProfile[]> = {success : true  , message : 'user created success'}
   const headers = req.headers as any;
   const userId = Number(headers['x-user-id'])
+
+  try 
+  {
 
   const friendships = await prisma.friendship.findMany({
     where: 
@@ -34,41 +39,68 @@ export async function getFriendsListHandler(req:FastifyRequest , res:FastifyRepl
         { friendId: userId }
         ]
     }
-  });
+    });
+    
+    const friendIds = friendships.map((f:any) => {return (userId != f.userId) ? f.userId : f.friendId });
+    const profiles = await prisma.profile.findMany({ where: { id: { in: friendIds } } })
+    respond.data = profiles;
   
+  }
+  catch (error) 
+    {
+      respond.success = false;
+      if (error instanceof Error)
+        {
+          respond.message = error.message;
+          return res.status(400).send(respond)
+        }
+    }
   
- 
-  const friendIds = friendships.map((f:any) => {return (userId != f.userId) ? f.userId : f.friendId });
-  const profiles = await prisma.profile.findMany({ where: { id: { in: friendIds } } })
-  
-  return res.send(profiles);
+  return res.send(respond)
 }
 
 
 export async function getPendingRequestsHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<UserProfile[]> = {success : true  , message : 'user created success'}
 
   const headers = req.headers as any;
   const userId = Number(headers['x-user-id'])
-  const friendships = await prisma.friendship.findMany({
-    where: {friendId : userId , status: 'pending'}
-  });
   
-  const friendIds:any = friendships.map((arg:any) => {return arg.userId});
-
-  const profiles = await prisma.profile.findMany({
-    where: {
-      id: { in: friendIds }
-    }
-  })
-
-  return res.send(profiles);
+  try 
+  {
+    const friendships = await prisma.friendship.findMany({
+      where: {friendId : userId , status: 'pending'}
+    });
+    
+    const friendIds:any = friendships.map((arg:any) => {return arg.userId});
+  
+    const profiles = await prisma.profile.findMany({
+      where: {
+        id: { in: friendIds }
+      }
+    })
+    respond.data  = profiles
+  } 
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
+  }
+  
+  return res.send(respond);
 }
 
 
 
 export async function sendFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+
   const body = req.body as any;
   const headers = req.headers as any;
   const userId = Number(headers['x-user-id'])
@@ -77,8 +109,7 @@ export async function sendFriendRequestHandler(req:FastifyRequest , res:FastifyR
   friendata['userId'] = userId;
   friendata['friendId'] = body.friendId;
   friendata['status'] = 'pending';
-  
-  console.log(friendata);
+
 
   try 
   {
@@ -87,17 +118,24 @@ export async function sendFriendRequestHandler(req:FastifyRequest , res:FastifyR
 
     await prisma.friendship.create({data : friendata})
   } 
-  catch
+  catch (error) 
   {
-    return res.status(400).send({msg : false})
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
   
-  return res.send({msg : true})
+  return res.send(respond)
 }
 
 
 export async function acceptFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+  
   const body = req.body as any;
   const headers = req.headers as any;
   const userId = Number(headers['x-user-id'])
@@ -124,17 +162,23 @@ export async function acceptFriendRequestHandler(req:FastifyRequest , res:Fastif
     });
     
   }
-  catch
+  catch (error) 
   {
-    return res.status(400).send({msg : false})
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
   
-  return res.send({msg : true})
+  return res.send(respond)
 }
 
 
 export async function rejectFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
   const body = req.body as any;
   const headers = req.headers as any;
   const userId = Number(headers['x-user-id'])
@@ -159,18 +203,24 @@ export async function rejectFriendRequestHandler(req:FastifyRequest , res:Fastif
       }
     });
   }
-  catch
+  catch (error) 
   {
-    return res.status(400).send({msg : false})
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
   
-  return res.send({msg : true})
+  return res.send(respond)
 }
 
 
 
 export async function removeFriendHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
 
   const {friendId} = req.params as any;
   const headers = req.headers as any;
@@ -197,27 +247,89 @@ export async function removeFriendHandler(req:FastifyRequest , res:FastifyReply)
     });
     
   } 
-  catch
+  catch (error) 
   {
-    return res.status(400).send({msg : false})
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
   
-  return res.send({msg : true})
+  return res.send(respond)
 }
 
 
 export async function cancelFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+
   
+
+  try 
+  {
+    
+    
+  } 
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
+  }
+  
+  return res.send(respond)
 }
 
 export async function getSentRequestsHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+
+  
+
+  try 
+  {
     
+    
+  } 
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
+  }
+  
+  return res.send(respond)
 }
 
 
 export async function getReceivedRequestsHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+
+  
+
+  try 
+  {
     
+    
+  } 
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
+  }
+  
+  return res.send(respond)
 }

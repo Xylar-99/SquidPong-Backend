@@ -2,11 +2,18 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../db/database';
 import { isFriendRequestExists } from '../utils/utils';
 
+import { UserProfile } from '../utils/types';
+import { ApiResponse } from '../utils/errorHandler';
 
+
+
+  
 
 
 export async function blockUserHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+
   const headers = req.headers as any;
   const {blockId} = req.params as any;
   const userId = Number(headers['x-user-id'])
@@ -44,18 +51,25 @@ export async function blockUserHandler(req:FastifyRequest , res:FastifyReply)
     });
     
   }
-  catch
+  catch (error) 
   {
-    return res.status(400).send({msg : false})
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
   
-  return res.send({msg : true})
+  return res.send(respond)
 }
 
 
 
 export async function unblockUserHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+
   const {blockId} = req.params as any;
   const headers = req.headers as any;
   const userId = Number(headers['x-user-id'])
@@ -87,22 +101,30 @@ export async function unblockUserHandler(req:FastifyRequest , res:FastifyReply)
     });
     
   }
-  catch
+  catch (error) 
   {
-    return res.status(400).send({msg : false})
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
   
-  return res.send({msg : true})
+  return res.send(respond)
 }
 
 
 export async function getBlockedUsersHandler(req:FastifyRequest , res:FastifyReply)
 {
-    
-      const headers = req.headers as any;
-    const userId = Number(headers['x-user-id'])
-  const blockedusers = await prisma.friendship.findMany({where: {userId : userId , status: 'blocked'}});
+  const respond : ApiResponse<UserProfile[]> = {success : true  , message : 'user created success'}
 
+  const headers = req.headers as any;
+  const userId = Number(headers['x-user-id'])
+
+  try 
+  {
+  const blockedusers = await prisma.friendship.findMany({where: {userId : userId , status: 'blocked'}});
   const friendIds = blockedusers.map((f:any) => f.friendId);
 
   const profiles = await prisma.profile.findMany({
@@ -110,6 +132,18 @@ export async function getBlockedUsersHandler(req:FastifyRequest , res:FastifyRep
       id: { in: friendIds }
     }
   })
+  respond.data = profiles;
+  } 
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
+  }
   
-  return res.send(profiles);
+  return res.send(respond)
+  
 }

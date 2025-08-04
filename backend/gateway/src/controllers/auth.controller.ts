@@ -4,7 +4,7 @@ import { OAuth2Namespace } from '@fastify/oauth2';
 import { isUserVerified , isResetCodeValid , isUserAlreadyRegistered  , isUserAllowedToLogin} from '../validators/userStatusCheck';
 import { createAccount } from '../utils/utils';
 import { isTwoFactorEnabled } from '../validators/2faValidator';
-import { ApiError } from '../utils/errorHandler';
+import { ApiResponse } from '../utils/errorHandler';
 import { VerifyPassword } from '../utils/hashedPassword';
 import { hashPassword } from '../utils/hashedPassword';
 import { sendDataToQueue } from '../integration/rabbitmqClient';
@@ -81,38 +81,40 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
 export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 {
     const body = req.body as any;
-    const errorResponse : ApiError = {error : true , message : '' , info : {}};
+    const respond : ApiResponse<{is2FAEnabled : boolean , token : string} > = {success : true  , message : 'login success'}
 
     try 
     {
       const user = await prisma.user.findUnique({ where: { email: body.email}})
-      if(!user) // for syntax  i ready check inside isuserallowed... ?
+      if(!user)
         throw new Error("user not found")
 
       await isUserAllowedToLogin(body , user);
-      await isTwoFactorEnabled(res , user , errorResponse);
+      await isTwoFactorEnabled(res , user , respond);
     }
     catch (error) 
     {
+      respond.success = false;
       if (error instanceof Error)
         {
-          errorResponse.message = error.message;
-          return res.status(400).send(errorResponse)
+          respond.message = error.message;
+          return res.status(400).send(respond)
         }
     }
     
-  return res.send(errorResponse)
+  return res.send(respond)
 }
 
 
 
 export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 {
+  const respond : ApiResponse<null > = {success : true  , message : 'logout success'}
 
   res.clearCookie('accessToken', { path : '/' , httpOnly: true });
   res.clearCookie('refreshToken', { path : '/' , httpOnly: true });
 
-  return res.send({msg : true})
+  return res.send(respond)
 }
 
 
@@ -122,7 +124,7 @@ export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 
 export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyReply) 
 {
-  const errorResponse : ApiError = {error : true , message : '' , info : {}};
+  const respond : ApiResponse<{is2FAEnabled : boolean , token : string} | null > = {success : true  , message : 'login success'}
 
   try 
   {
@@ -136,19 +138,23 @@ export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyR
     data['lname'] = data.family_name;
     
     const user = await createAccount(data);
-    await isTwoFactorEnabled(res , user , errorResponse);
+    await isTwoFactorEnabled(res , user , respond);
 
   }
   catch (error) 
   {
-      return res.status(400).send({msg : false})
+    respond.success = false;
+    if (error instanceof Error)
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
   
-  if(errorResponse.info.enabled)
-    return res.redirect(`http://localhost:8080/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
+  if(respond.data?.is2FAEnabled)
+    return res.redirect(`http://localhost:8080/pages/2faEnable.html?token=${respond.data?.token}`)
 
   return res.redirect(`http://localhost:8080/pages/profile.html`)
-  // return res.send(errorResponse)
 }
 
 
@@ -168,7 +174,8 @@ export async function getIntrahandler(req:FastifyRequest , res:FastifyReply)
 
 export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyReply) 
 {
-  const errorResponse : ApiError = {error : true , message : '' , info : {}};
+
+  const respond : ApiResponse<{is2FAEnabled : boolean , token : string} > = {success : true  , message : 'login success'}
   const {code} = req.query as any;
 
   const body:object = {
@@ -179,30 +186,46 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
       redirect_uri: `${process.env.URL}/auth/intra/callback`,
     }
 
-  const tokens = await fetch('https://api.intra.42.fr/oauth/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
 
+    try 
+    {
+      const tokens = await fetch('https://api.intra.42.fr/oauth/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    
+    
+      const tokensJSON = await tokens.json();
+      const access_token = tokensJSON.access_token;
+    
+      const user = await fetch('https://api.intra.42.fr/v2/me', {headers: {  Authorization: `Bearer ${access_token}`,}, });
+      const userJSON = await user.json();
+    
+      
+      userJSON['fname'] = userJSON.first_name;
+      userJSON['lname'] = userJSON.last_name;
+      userJSON['avatar'] = userJSON.image.link;
+      userJSON['username'] = userJSON.login;
+    
+      const account = await createAccount(userJSON);
+      await isTwoFactorEnabled(res , account , respond);
+      
+    } 
+    catch (error) 
+    {
+      respond.success = false;
+      if (error instanceof Error)
+        {
+          respond.message = error.message;
+          return res.status(400).send(respond)
+        }
+    }
 
-  const tokensJSON = await tokens.json();
-  const access_token = tokensJSON.access_token;
-
-  const user = await fetch('https://api.intra.42.fr/v2/me', {headers: {  Authorization: `Bearer ${access_token}`,}, });
-  const userJSON = await user.json();
 
   
-  userJSON['fname'] = userJSON.first_name;
-  userJSON['lname'] = userJSON.last_name;
-  userJSON['avatar'] = userJSON.image.link;
-  userJSON['username'] = userJSON.login;
-
-  const account = await createAccount(userJSON);
-  await isTwoFactorEnabled(res , account , errorResponse);
-  
-  if(errorResponse.info.enabled)
-    return res.redirect(`http://localhost:8080/pages/2faEnable.html?token=${errorResponse.info.tmp}`)
+  if(respond.data?.is2FAEnabled)
+    return res.redirect(`http://localhost:8080/pages/2faEnable.html?token=${respond.data.token}`)
 
   return res.redirect(`http://localhost:8080/pages/profile.html`)
 }
@@ -226,22 +249,9 @@ export async function postrefreshtokenHandler(req:FastifyRequest , res:FastifyRe
 
 
 
-
-export async function getUserCallbackhandler(req: FastifyRequest, res: FastifyReply) 
-{
-  
-  const id = req.id as any;
-  const user = await fetch(`http://user:4001/api/users/${String(id)}`);
-  
-  const data = await user.json();
-  return res.send(data);
-}
-
-
-
-
 export async function postForgotPasswordHandler(req: FastifyRequest, res: FastifyReply) 
 {
+  const respond : ApiResponse<null > = {success : true  , message : 'login success'}
   const {email} = req.body as any;
 
   try 
@@ -254,11 +264,15 @@ export async function postForgotPasswordHandler(req: FastifyRequest, res: Fastif
   } 
   catch (error) 
   {
+    respond.success = false;
     if (error instanceof Error)
-      return res.status(400).send({message : error.message})
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
 
-  return res.send({msg : true});
+  return res.send(respond);
 }
 
 
@@ -266,6 +280,7 @@ export async function postForgotPasswordHandler(req: FastifyRequest, res: Fastif
 
 export async function postChangePasswordHandler(req: FastifyRequest, res: FastifyReply) 
 {
+  const respond : ApiResponse<null > = {success : true  , message : 'login success'}
   const id = req.id as any;
   const {oldPassword , newPassword} = req.body as any;
 
@@ -282,19 +297,23 @@ export async function postChangePasswordHandler(req: FastifyRequest, res: Fastif
   } 
   catch (error) 
   {
+    respond.success = false;
     if (error instanceof Error)
-      return res.status(400).send({message : error.message})
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
   
 
-  return res.send({msg : true});
+  return res.send(respond);
 }
-
 
 
 
 export async function postResetPasswordHandler(req: FastifyRequest, res: FastifyReply) 
 {
+  const respond : ApiResponse<null > = {success : true  , message : 'login success'}
   const {confirmPassword , newPassword , code , email} = req.body as any;
 
   try 
@@ -309,10 +328,14 @@ export async function postResetPasswordHandler(req: FastifyRequest, res: Fastify
   } 
   catch (error) 
   {
+    respond.success = false;
     if (error instanceof Error)
-      return res.status(400).send({message : error.message})
+      {
+        respond.message = error.message;
+        return res.status(400).send(respond)
+      }
   }
   
 
-  return res.send({msg : true});
+  return res.send(respond);
 }

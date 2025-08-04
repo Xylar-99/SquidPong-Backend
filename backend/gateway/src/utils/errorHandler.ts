@@ -14,11 +14,11 @@ export function errorHandler( request: FastifyRequest, reply: FastifyReply ,  er
 }
 
 
-export type ApiError = {
-  error: boolean;
-  info :  Record<string, any>;
+
+
+export type ApiResponse<T = any> = {
+  success: boolean;
   message: string;
-  code?: string;
-  status?: number;
+  data?: T | undefined;
 };
 
