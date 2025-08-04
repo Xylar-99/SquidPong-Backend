@@ -6,7 +6,7 @@ import { updateUserSchema  } from '../validators/user';
 
 
 type Route = {
-    method  : 'GET' | 'POST' | 'DELETE' | 'PATCH' | 'PUT'; 
+    method  : 'GET' | 'POST' | 'DELETE' | 'PATCH' | 'PUT';
     url     : string;
     handler : RouteHandlerMethod;
     schema? : FastifySchema;
@@ -15,8 +15,8 @@ type Route = {
 
 const userRoutes: Route[] = [
 
-  { method: 'POST', url: '/api/user/profile', handler: userController.createProfileHandler,},
-  { method: 'POST', url: '/api/user/me', handler: userController.updateProfileHandler,},
+  { method: 'POST', url: '/api/user/me', handler: userController.createProfileHandler,},
+  { method: 'PUT', url: '/api/user/me', handler: userController.updateProfileHandler,},
   { method: 'DELETE', url: '/api/user/me', handler: userController.deleteProfileHandler,},
   
   { method: 'GET', url: '/api/user/me', handler: userController.getCurrentUserHandler,},

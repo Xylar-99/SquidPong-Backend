@@ -12,16 +12,63 @@ datasource db {
 
 
 
-model Profile {
-  id        Int   @id @default(autoincrement())
+//  enums
 
-  userId      Int     @unique
-  username    String  
-  fname       String
-  lname       String
-  bio         String?
-  banner      String?
-  avatar      String @default("http://localhost:4000/tmp/images/default.png")
+enum UserStatus {
+  online
+  offline
+  idle
+  doNotDisturb
+}
+
+
+enum Character {
+  WARRIOR
+  MAGE
+  ARCHER
+  ROGUE
+}
+
+enum RankDivision {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum RankTier {
+  TIER1
+  TIER2
+  TIER3
+}
+
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+
+  username  String
+  fname     String
+  lname     String
+  bio       String?
+  banner    String?
+  avatar    String   @default("http://localhost:4000/tmp/images/default.png")
+
+  status    UserStatus @default(online)
+  walletBalance Int   @default(0)
+
+  playerStats         Json?
+
+  playerCharacters    Json?
+  playerSelectedCharacter Character? @default(WARRIOR)
+
+  preferences         Json?
+  matchHistory        Json?
+
+  isVerified          Boolean @default(false)
+  rankDivision        RankDivision @default(BRONZE)
+  rankTier            RankTier     @default(TIER1)
+
   totalGames  Int     @default(0)
   wins        Int     @default(0)
   losses      Int     @default(0)
