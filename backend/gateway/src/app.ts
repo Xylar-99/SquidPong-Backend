@@ -7,13 +7,13 @@ import registerPlugins from './plugins/plugins'
 
 const app: FastifyInstance = fastify();
 export default app;
-registerPlugins(app);
 
+registerPlugins(app);
 
 
 app.addHook('onRequest', authenticateUser);
 app.addHook('onError', errorHandler);
 
 authRoutes.forEach(route => {app.route(route)})
-gatewayRoutes.forEach(route => {app.all(route.url , route.handler )})
+// gatewayRoutes.forEach(route => {app.all(route.url , route.handler )})
 

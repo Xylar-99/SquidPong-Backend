@@ -1351,14 +1351,8 @@
       try {
         
         const response = await fetch('http://localhost:4000/api/user/me', {
-          method: 'GET',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
         });
-
-        alert(response.ok)
         if (response.ok) 
         {
           playerData = await response.json();
@@ -1845,9 +1839,9 @@
         if (avatarFile) {
           formData.append('avatar', avatarFile);
         }
-        
-        const response = await fetch('http://localhost:4000/api/user/me', {
-          method: 'PUT',
+
+        const response = await fetch('http://localhost:4000/api/user/mee', {
+          method: 'POST',
           credentials: 'include',
           body: formData
         });

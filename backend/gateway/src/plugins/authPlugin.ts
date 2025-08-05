@@ -49,20 +49,19 @@ const jwt_config:any = {
 
 
   export default async function registerPlugins(app: FastifyInstance) {
-    app.register(cors, { origin: (origin:any, cb:any) => {
-      const allowed = ['http://localhost:8080', 'http://localhost:5173'];
-      if (!origin || allowed.includes(origin)) {
-        cb(null, true);
-      } else {
-        cb(new Error('Not allowed'), false);
-      }
-    } , credentials: true });
+    app.register(cors, {
+      origin: ['http://localhost:8080', 'http://localhost:5173'],
+      credentials: true,
+      allowedHeaders: ['Content-Type'],
+    });
     
-    app.register(cookie);
-    app.register(session, session_option);
-    app.register(jwt, jwt_config);
-    app.register(auth2, auth2_config);
-    await app.register(fastifyStatic, {
+
+    // await app.register(multipart)
+     app.register(cookie);
+     app.register(session, session_option);
+     app.register(jwt, jwt_config);
+     app.register(auth2, auth2_config);
+     app.register(fastifyStatic, {
       root: '/tmp/images/',
       prefix: '/tmp/images/',
     });

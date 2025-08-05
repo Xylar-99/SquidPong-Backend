@@ -30,13 +30,13 @@ export async function createProfileHandler(req:FastifyRequest , res:FastifyReply
 
 export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
-
+  
+  console.log("updae scooooooooooooooooooooooooooooooop")
     const respond : ApiResponse<null > = {success : true  , message : 'user created success'}
 
     try 
     {
 
-    console.log("updae scooooooooooooooooooooooooooooooop")
     const body = await Editprofile(req);
     console.log('bodyyyyyy' ,   body)
     const headers = req.headers as any;
@@ -115,13 +115,14 @@ export async function deleteProfileHandler(req:FastifyRequest , res:FastifyReply
 
 export async function getCurrentUserHandler(req:FastifyRequest , res:FastifyReply)
 {
+
     const respond : ApiResponse<UserProfile | null> = {success : true  , message : 'user created success'}
 
     try 
     {
         const headers = req.headers as any;
-        const userId = Number(headers['x-user-id'])
-        
+        const userId = Number(headers['x-user-id']) as number;
+        console.log('userIduserId: ', userId);
         const profile = await prisma.profile.findUnique({where : {userId : userId}})
         respond.data = profile;
     } 

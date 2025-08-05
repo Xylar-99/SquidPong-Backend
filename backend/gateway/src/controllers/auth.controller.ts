@@ -8,7 +8,6 @@ import { ApiResponse } from '../utils/errorHandler';
 import { VerifyPassword } from '../utils/hashedPassword';
 import { hashPassword } from '../utils/hashedPassword';
 import { sendDataToQueue } from '../integration/rabbitmqClient';
-
 import redis from '../integration/redisClient';
 import prisma from '../db/database';
 import app from '../app';

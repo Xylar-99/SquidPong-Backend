@@ -2,20 +2,25 @@ import { FastifyRequest, FastifyReply  } from 'fastify';
 import { sendToService } from '../integration/api_calls';
 
 
-async function proxyToUserService(req: FastifyRequest, res: FastifyReply) 
-{
-  const userId = req.id;
-  console.log('proxy id : ' ,  userId)
-  return res.from(`http://user:4001${req.url}`, {
+// async function proxyToUserService(req: FastifyRequest, res: FastifyReply) 
+// {
+//   const userId = req.id;
+//   console.log('proxy id : ' ,  userId)
+//   return res.from(`http://user:4001${req.url}`, {
 
-  rewriteRequestHeaders: (reqq:any, headers:any) => {
-  headers['x-user-id'] = userId;
-  return headers;
+//   rewriteRequestHeaders: (reqq:any, headers:any) => {
+//   headers['x-user-id'] = userId;
+//   return headers;
 
-  }
-  });
+//   },
+//   requestOptions: {
+//       method: req.method,
+//       headers: req.headers,
+//       body: req.raw, // ✅ forward raw stream (important for multipart)
+//     }
+//   });
 
-}
+// }
 
 
 
@@ -55,4 +60,4 @@ async function proxyToNotifyService(req:FastifyRequest , res:FastifyReply)
 
 
 
-export {proxyToNotifyService , proxyToChatService , proxyToGameService , proxyToUserService}
+export {proxyToNotifyService , proxyToChatService , proxyToGameService }

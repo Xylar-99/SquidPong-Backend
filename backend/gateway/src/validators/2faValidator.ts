@@ -23,7 +23,7 @@ export async function setJwtTokens(res: FastifyReply, user: any | null)
   const accessToken = await app.jwt.sign({ userId: user.id }, { expiresIn: "1h" });
   const refreshToken = await app.jwt.sign({ userId: user.id }, { expiresIn: "7d" });
 
-  res.setCookie("accessToken", accessToken, { httpOnly: true, path: "/" });
+  res.setCookie("accessToken", accessToken, { httpOnly: true, path: "/", sameSite: "lax", secure: false });
   res.setCookie("refreshToken", refreshToken, {
     httpOnly: true,
     path: "/",

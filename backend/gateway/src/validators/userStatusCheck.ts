@@ -43,7 +43,7 @@ export async function isUserAlreadyRegistered(body:any)
     const user = await prisma.user.findUnique({ where: { email: body.email , username : body.username}})
 
     if(!user)
-        return;
+      return;
 
     if(user.password)
       throw new Error(UserProfileMessage.USER_ALREADY_EXISTS);

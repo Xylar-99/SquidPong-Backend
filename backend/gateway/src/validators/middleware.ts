@@ -14,7 +14,8 @@ export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
     '/pages/signup.html', '/pages/verification.html', '/pages/login.html',
   ];
 
-
+  console.log("URL : " , req.url)
+  console.log(req.headers)
   const isPublic = publicURIs.includes(req.url) || req.url.startsWith('/auth/');
   if (isPublic) return;
 
@@ -30,9 +31,9 @@ export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
       return reply.status(401).send({ message: 'Missing access token' });
 
     const payload:any = await app.jwt.verify(token);
-    
-    console.log('userId:', payload.userId);
-    req.id = payload.userId as string; 
+
+    console.log( 'url : '  , req.url , 'userId : ', payload.userId);
+    req.id = payload.userId;
 
   } 
   catch (err) 
