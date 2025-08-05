@@ -730,7 +730,9 @@
           const errorData = await res.json();
           showError(errorData.message || 'Access denied. Check your credentials.');
         }
-      } catch (err) {
+      } 
+      
+      catch (err) {
         showError('Connection failed: ' + err.message);
       } finally {
         setLoading(false);

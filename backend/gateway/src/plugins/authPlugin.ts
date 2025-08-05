@@ -56,7 +56,17 @@ const jwt_config:any = {
   //   files: 1,
   //   fields: 3
   // }});
-    app.register(cors, { origin: true, credentials: true });
+    app.register(cors, { origin: (origin:any, cb:any) => {
+    const allowed = ['http://localhost:8080', 'http://localhost:5173'];
+    if (!origin || allowed.includes(origin)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Not allowed'), false);
+    }
+    } , credentials: true });
+
+
+
     app.register(cookie);
     app.register(session, session_option);
     app.register(jwt, jwt_config);
