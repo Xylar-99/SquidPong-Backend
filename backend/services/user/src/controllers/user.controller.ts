@@ -12,16 +12,16 @@ export async function createProfileHandler(req:FastifyRequest , res:FastifyReply
     
     try 
     {
-        await prisma.profile.create({data : profile})
+      await prisma.profile.create({data : profile})
     } 
     catch (error) 
     {
-        respond.success = false;
-        if (error instanceof Error)
-          {
-            respond.message = error.message;
-            return res.status(400).send(respond)
-          }
+      respond.success = false;
+      if (error instanceof Error)
+        {
+          respond.message = error.message;
+          return res.status(400).send(respond)
+        }
     }
     return res.send(respond)
 }
@@ -30,12 +30,13 @@ export async function createProfileHandler(req:FastifyRequest , res:FastifyReply
 
 export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
+
     const respond : ApiResponse<null > = {success : true  , message : 'user created success'}
 
     try 
     {
 
-    console.log("heeeeleellllllllllllllllllllllllllllll")
+    console.log("updae scooooooooooooooooooooooooooooooop")
     const body = await Editprofile(req);
     console.log('bodyyyyyy' ,   body)
     const headers = req.headers as any;

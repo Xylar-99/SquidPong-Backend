@@ -6,7 +6,6 @@ import jwt from '@fastify/jwt';
 import cors from '@fastify/cors' 
 import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
-import path from 'path';
 
 
 
@@ -50,23 +49,15 @@ const jwt_config:any = {
 
 
   export default async function registerPlugins(app: FastifyInstance) {
-  //   app.register(multipart , {
-  // limits: {
-  //   fileSize: 10 * 1024 * 1024,
-  //   files: 1,
-  //   fields: 3
-  // }});
     app.register(cors, { origin: (origin:any, cb:any) => {
-    const allowed = ['http://localhost:8080', 'http://localhost:5173'];
-    if (!origin || allowed.includes(origin)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Not allowed'), false);
-    }
+      const allowed = ['http://localhost:8080', 'http://localhost:5173'];
+      if (!origin || allowed.includes(origin)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Not allowed'), false);
+      }
     } , credentials: true });
-
-
-
+    
     app.register(cookie);
     app.register(session, session_option);
     app.register(jwt, jwt_config);

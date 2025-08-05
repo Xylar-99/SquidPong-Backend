@@ -36,7 +36,7 @@ export enum AuthMessage {
     TWO_FA_REQUIRED = 'Two-factor authentication required.',
     ALREADY_LOGGED_IN = 'User is already logged in.',
   }
-  
+
   export enum SignupError {
     EMAIL_ALREADY_USED = 'Email is already registered.',
     USERNAME_ALREADY_USED = 'Username is already taken.',

@@ -2,28 +2,41 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import app from '../app';
 
 
-interface JwtPayload {
-  userId: Number;
-  // add other fields like email, role, etc. if needed
-}
 
-export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
+export async function authenticateUser(req: FastifyRequest, reply: FastifyReply) 
 {
-  const uri:string[] = ['/pages/signup.html'  , '/api/reset-password', '/api/forgot-password' , '/api/intra' ,  '/api/2fa/verify' , '/ws' , '/auth/intra/callback' , '/pages/verification.html' , '/pages/login.html' , '/api/signup' , '/api/login' , '/api/verify-email' , '/' , '/favicon.ico']
+  const publicURIs: string[] = [
+    '/', '/favicon.ico',
+    '/api/signup', '/api/login', '/api/verify-email',
+    '/api/reset-password', '/api/forgot-password',
+    '/api/intra', '/api/2fa/verify',
+    '/auth/intra/callback',
+    '/pages/signup.html', '/pages/verification.html', '/pages/login.html',
+  ];
 
-  console.log(`uri == ${req.url}`)
-  if (uri.includes(req.url) == true || req.url.startsWith('/auth/') == true)
-    return ;
-  
-  try 
+
+  const isPublic = publicURIs.includes(req.url) || req.url.startsWith('/auth/');
+  if (isPublic) return;
+
+  try
   {
-    const token:string = req.cookies['accessToken'] as string;
-    const payload = await app.jwt.verify(token) as any;
-    console.log(payload.userId)
-    req.id = payload.userId
-  }
-  catch 
+
+    const cookie = req.headers.cookie;
+    if(!cookie)
+        throw new Error("not allowed")
+
+    const token = cookie.split('=')[1].split(';')[0]
+    if (!token) 
+      return reply.status(401).send({ message: 'Missing access token' });
+
+    const payload:any = await app.jwt.verify(token);
+    
+    console.log('userId:', payload.userId);
+    req.id = payload.userId as string; 
+
+  } 
+  catch (err) 
   {
-    return reply.status(401).send('Unauthorized');
+    return reply.status(401).send({ message: 'Unauthorized' });
   }
 }

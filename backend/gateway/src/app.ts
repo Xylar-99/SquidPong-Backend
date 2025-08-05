@@ -11,7 +11,7 @@ registerPlugins(app);
 
 
 
-app.addHook('preHandler', authenticateUser);
+app.addHook('onRequest', authenticateUser);
 app.addHook('onError', errorHandler);
 
 authRoutes.forEach(route => {app.route(route)})

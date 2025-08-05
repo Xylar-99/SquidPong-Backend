@@ -33,7 +33,7 @@ export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 
 export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 {
-    const respond : ApiResponse<null > = {success : true  , message : UserProfileMessage.EMAIL_ALREADY_USED}
+    const respond : ApiResponse<null > = {success : true  , message : EmailMessage.EMAIL_VERIFICATION_SENT}
     const body = req.body as any;
 
     try

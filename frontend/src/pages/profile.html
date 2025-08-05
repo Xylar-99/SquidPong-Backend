@@ -1349,6 +1349,7 @@
 
     async function loadPlayerData() {
       try {
+        
         const response = await fetch('http://localhost:4000/api/user/me', {
           method: 'GET',
           credentials: 'include',
@@ -1357,11 +1358,16 @@
           }
         });
 
-        if (response.ok) {
+        alert(response.ok)
+        if (response.ok) 
+        {
           playerData = await response.json();
           displayPlayerData(playerData);
           hideLoading();
-        } else {
+        } 
+        else 
+        {
+          alert(response.ok)
           throw new Error('Failed to load player data');
         }
       } catch (error) {
@@ -1411,6 +1417,7 @@
 
     function displayPlayerData(player) 
     {
+      alert(player.data.fname)
       document.getElementById('firstName').textContent = player.data.fname || 'Unknown';
       document.getElementById('lastName').textContent = player.data.lname || 'Unknown';
       document.getElementById('username').textContent = player.data.username || 'Unknown';
@@ -1683,11 +1690,11 @@
         
         if (!response.ok) throw new Error('Failed to setup 2FA');
         
-        const data = await response.json();
+        const respond = await response.json();
         
         // Show 2FA setup modal
-        document.getElementById('secretKey').textContent = data.key;
-        document.getElementById('qrCodeImage').src = data.url;
+        document.getElementById('secretKey').textContent = respond.data.key;
+        document.getElementById('qrCodeImage').src = respond.data.QRCode;
         document.getElementById('qrCodeImage').alt = 'Security QR Code';
         
         openModal('twoFactorModal');
@@ -1739,7 +1746,8 @@
           credentials: 'include'
         });
 
-        if (response.ok) {
+        if (response.ok) 
+        {
           settings.twoFactor = false;
           showMessage('settingsSuccessMessage', '2FA disabled');
           displayPlayerData(playerData); // Refresh security status
@@ -1839,7 +1847,7 @@
         }
         
         const response = await fetch('http://localhost:4000/api/user/me', {
-          method: 'POST',
+          method: 'PUT',
           credentials: 'include',
           body: formData
         });
@@ -1847,11 +1855,11 @@
         if (response.ok) {
           const updatedData = await response.json();
           
-          // displayPlayerData();
-          
+          displayPlayerData();
           // Show success message
           showMessage('editSuccessMessage', '✓ Profile updated successfully!');
           
+
           // Close modal after delay
           setTimeout(() => {
             closeModal('editModal');
