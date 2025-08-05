@@ -4,7 +4,7 @@ import auth2 from '@fastify/oauth2';
 import session from '@fastify/session';
 import jwt from '@fastify/jwt';
 import cors from '@fastify/cors' 
-import multipart from '@fastify/multipart';
+// import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 
 
@@ -50,11 +50,11 @@ const jwt_config:any = {
 
   export default async function registerPlugins(app: FastifyInstance) {
     app.register(cors, {
-      origin: ['http://localhost:8080', 'http://localhost:5173'],
-      credentials: true,
-      allowedHeaders: ['Content-Type'],
-    });
-    
+        origin: ['http://localhost:8080', 'http://localhost:5173'],
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type']
+        });
 
     // await app.register(multipart)
      app.register(cookie);
