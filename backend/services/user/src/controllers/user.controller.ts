@@ -116,12 +116,13 @@ export async function deleteProfileHandler(req:FastifyRequest , res:FastifyReply
 export async function getCurrentUserHandler(req:FastifyRequest , res:FastifyReply)
 {
 
+    console.log("hhiiiiiiiiiiiiii")
     const respond : ApiResponse<UserProfile | null> = {success : true  , message : 'user created success'}
 
     try 
     {
         const headers = req.headers as any;
-        const userId = Number(headers['x-user-id']) as number;
+        const userId = Number(headers['x-user-id'] | 1) as number;
         console.log('userIduserId: ', userId);
         const profile = await prisma.profile.findUnique({where : {userId : userId}})
         respond.data = profile;

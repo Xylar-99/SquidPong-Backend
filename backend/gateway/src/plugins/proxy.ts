@@ -1,47 +1,14 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import httpProxy from '@fastify/http-proxy';
+import { FastifyInstance , FastifyRequest, FastifyReply } from 'fastify'
+import fastifyHttpProxy from '@fastify/http-proxy'
 
-// const proxy = httpProxy.createProxyServer();
-
-// export default function registerPlugins(app: FastifyInstance) 
-// {
-
-//   app.all('/api/user/*', (req: FastifyRequest, reply: FastifyReply) => {
-//     req.headers['x-user-id'] = req.id ?? 'anonymous';
-
-//     proxy.on('proxyRes', (proxyRes:any, req:any, res:any) => {
-
-//       res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
-//       res.setHeader('Access-Control-Allow-Credentials', 'true');
-//       res.setHeader('Access-Control-Expose-Headers', 'x-user-id');
-//     });
-
-//     proxy.web(req.raw, reply.raw, {
-//       target: 'http://user:4001',
-//       changeOrigin: true,
-//     }, (err:any) => {
-//       if (err) {
-//         reply.status(502).send('Bad Gateway: user service unreachable');
-//       }
-//     });
-//     return;
-//   });
-
-// }
-
-
-export default function registerPlugins(app: FastifyInstance)
+export default async function registerProxy(app: FastifyInstance)
 {
+ 
+app.register(fastifyHttpProxy, {
+  upstream: 'http://user:4001',
+  prefix: '/api/user',
+  // prefixRewrite: '',
 
-  app.register(httpProxy, {
-    upstream: 'http://user:4001',
-    prefix: '/api/user',
-    http2: false,
-  
-    preHandler: async (req: FastifyRequest, reply: FastifyReply) => {
-      req.headers['x-user-id'] = '1';
-    }
-  });
-  
-  
+});
+
 }

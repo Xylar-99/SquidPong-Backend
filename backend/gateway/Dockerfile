@@ -10,11 +10,7 @@ RUN npm install
 
 RUN npm install @fastify/cors
 
-RUN npm install @fastify/http-proxy@latest
-
-RUN npm install http-proxy
-
-RUN npm install --save-dev @types/http-proxy
+RUN npm install @fastify/http-proxy
 
 
 COPY ./src ./src
