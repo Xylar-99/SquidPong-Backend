@@ -12,6 +12,7 @@ RUN npm install @fastify/cors
 
 RUN npm install @fastify/http-proxy
 
+RUN npm install @fastify/swagger-ui
 
 COPY ./src ./src
 
