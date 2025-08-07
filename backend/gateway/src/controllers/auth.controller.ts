@@ -171,7 +171,7 @@ export async function getIntrahandler(req:FastifyRequest , res:FastifyReply)
 {
 
   const client_id = process.env.IDINTRA;
-  const url =  `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fauth%2Fintra%2Fcallback&response_type=code`;
+  const url =  `https://api.intra.42.fr/oauth/authorize?client_id=${client_id}&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fapi%2Fauth%2Fintra%2Fcallback&response_type=code`;
 
  return  res.redirect(url)
 }
@@ -193,7 +193,7 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
       client_id: process.env.IDINTRA,
       client_secret: process.env.SECRETINTRA,
       code: code,
-      redirect_uri: `${process.env.URL}/auth/intra/callback`,
+      redirect_uri: `${process.env.URL}/api/auth/intra/callback`,
     }
 
 

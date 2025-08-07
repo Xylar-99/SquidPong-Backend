@@ -58,7 +58,8 @@ export enum AuthMessage {
   export enum TwoFA {
     TWO_FA_SETUP_SUCCESS = '2FA setup completed successfully.',
     TWO_FA_ALREADY_ENABLED = '2FA is already enabled.',
-    TWO_FA_NOT_ENABLED = '2FA is not enabled.',
+    TWO_FA_ENABLED = '2FA is  enabled.',
+    TWO_FA_DESABLED = '2FA is  desabled.',
     INVALID_2FA_CODE = 'Invalid 2FA code.',
     VALID_2FA_CODE = 'Valid 2FA code.',
     TWO_FA_SETUP_REQUIRED = '2FA setup required.',

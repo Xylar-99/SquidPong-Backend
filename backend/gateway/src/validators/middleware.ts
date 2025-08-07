@@ -7,14 +7,14 @@ export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
 {
   const publicURIs: string[] = [
     '/', '/favicon.ico',
-    '/api/signup', '/api/login', '/api/verify-email',
-    '/api/reset-password', '/api/forgot-password',
-    '/api/intra', '/api/2fa/verify',
-    '/auth/intra/callback',
+    '/api/auth/signup', '/api/auth/login', '/api/auth/verify-email',
+    '/api/auth/reset-password', '/api/auth/forgot-password',
+    '/api/auth/intra', '/api/2fa/verify',
+    '/api/auth/intra/callback',
     '/pages/signup.html', '/pages/verification.html', '/pages/login.html',
   ];
 
-  const isPublic = publicURIs.includes(req.url) || req.url.startsWith('/auth/');
+  const isPublic = publicURIs.includes(req.url) || req.url.startsWith('/api/auth/');
   if (isPublic) return;
 
   try

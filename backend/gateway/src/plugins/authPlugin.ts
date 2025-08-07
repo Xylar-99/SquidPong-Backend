@@ -4,7 +4,6 @@ import auth2 from '@fastify/oauth2';
 import session from '@fastify/session';
 import jwt from '@fastify/jwt';
 import cors from '@fastify/cors' 
-// import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 
 
@@ -24,8 +23,8 @@ const auth2_config:any = {
       tokenPath: '/token'
     }
   },
-  startRedirectPath: '/auth/google',
-  callbackUri: `${process.env.URL}/auth/google/callback`
+  startRedirectPath: '/api/auth/google',
+  callbackUri: `${process.env.URL}/api/auth/google/callback`
 }
 
 
@@ -56,7 +55,6 @@ const jwt_config:any = {
         allowedHeaders: ['Content-Type']
         });
 
-    // await app.register(multipart)
      app.register(cookie);
      app.register(session, session_option);
      app.register(jwt, jwt_config);

@@ -22,19 +22,19 @@ const authRoutes: Route[] = [
   },
   {
     method: "POST",
-    url: "/api/signup",
+    url: "/api/auth/signup",
     handler: authController.postSignupHandler,
     schema: { body: signupSchema },
   },
   {
     method: "POST",
-    url: "/api/login",
+    url: "/api/auth/login",
     handler: authController.postLoginHandler,
     schema: { body: loginSchema },
   },
   {
     method: "POST",
-    url: "/api/logout",
+    url: "/api/auth/logout",
     handler: authController.postLogoutHandler,
   },
 
@@ -42,7 +42,7 @@ const authRoutes: Route[] = [
   // verify email
   {
     method: "POST",
-    url: "/api/verify-email",
+    url: "/api/auth/verify-email",
     handler: authController.verifyEmailHandler,
     schema: { body: verifyEmailSchema },
   },
@@ -51,21 +51,21 @@ const authRoutes: Route[] = [
   // password
   {
   method: "POST",
-  url: "/api/forgot-password",
+  url: "/api/auth/forgot-password",
   handler: authController.postForgotPasswordHandler,
   schema: { body: forgotPasswordSchema },
   },
   
   {
   method: "POST",
-  url: "/api/reset-password",
+  url: "/api/auth/reset-password",
   handler: authController.postResetPasswordHandler,
   schema: { body: resetPasswordSchema},
   },
 
   {
   method: "POST",
-  url: "/api/change-password",
+  url: "/api/auth/change-password",
   handler: authController.postChangePasswordHandler,
   schema: { body: changePasswordSchema },
   },
@@ -74,17 +74,17 @@ const authRoutes: Route[] = [
   // oauth2
   {
     method: "GET",
-    url: "/auth/google/callback",
+    url: "/api/auth/google/callback",
     handler: authController.getGooglCallbackehandler,
   },
   {
     method: "GET",
-    url: "/api/intra",
+    url: "/api/auth/intra",
     handler: authController.getIntrahandler,
   },
   {
     method: "GET",
-    url: "/auth/intra/callback",
+    url: "/api/auth/intra/callback",
     handler: authController.getIntracallbackhandler,
   },
 
@@ -92,7 +92,7 @@ const authRoutes: Route[] = [
   // refresh token
   {
     method: "POST",
-    url: "/refresh-token",
+    url: "/api/auth/refresh-token",
     handler: authController.postrefreshtokenHandler,
   },
 
@@ -103,6 +103,11 @@ const authRoutes: Route[] = [
     method: "GET",
     url: "/api/2fa/setup",
     handler: twofaController.setupAuthenticatorHandler,
+  },
+  {
+    method: "GET",
+    url: "/api/2fa/status",
+    handler: twofaController.statusAuthenticatorHandler,
   },
   {
     method: "POST",
