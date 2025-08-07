@@ -1,7 +1,7 @@
 import { RouteHandlerMethod , FastifySchema } from 'fastify';
 import * as authController from '../controllers/auth.controller';
 import * as twofaController from '../controllers/2fa.controller';
-import { loginSchema , resetPasswordSchema ,  signupSchema , changePasswordSchema , forgotPasswordSchema , verifyEmailSchema } from '../validators/authSchemas';
+import { loginSchema , loginResponseSchema , resetPasswordSchema ,  signupSchema , changePasswordSchema , forgotPasswordSchema , verifyEmailSchema } from '../validators/authSchemas';
 
 
 type Route = {
@@ -30,7 +30,13 @@ const authRoutes: Route[] = [
     method: "POST",
     url: "/api/auth/login",
     handler: authController.postLoginHandler,
-    schema: { body: loginSchema },
+    schema: {
+    tags: ['auth'], 
+    summary: 'User login',
+    body: loginSchema,
+    response: loginResponseSchema
+  }
+
   },
   {
     method: "POST",

@@ -16,6 +16,7 @@ async function start()
 {
 	try 
 	{
+		await app.ready()
 		app.listen({port: port, host: host}, () => { console.log(`server listen on http://${host}:${port} ...`) })
 	} 
 	catch (error) 

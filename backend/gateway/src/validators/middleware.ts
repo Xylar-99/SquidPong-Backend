@@ -15,7 +15,7 @@ export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
     '/pages/signup.html', '/pages/verification.html', '/pages/login.html',
   ];
 
-  const isPublic = publicURIs.includes(req.url) || req.url.startsWith('/documentation') || req.url.startsWith('/api/auth/');
+  const isPublic = publicURIs.includes(req.url) || req.url.startsWith('/docs') || req.url.startsWith('/api/auth/');
   if (isPublic) return;
 
   try

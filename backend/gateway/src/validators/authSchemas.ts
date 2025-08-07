@@ -11,6 +11,25 @@ const loginSchema = {
 }
 
 
+const loginResponseSchema = {
+  200: {
+    type: "object",
+    properties: {
+      token: { type: "string" },
+      userId: { type: "string" },
+      // add other response fields here
+    },
+  },
+  400: {
+    type: "object",
+    properties: {
+      error: { type: "string" },
+      message: { type: "string" },
+    },
+  },
+};
+
+
 const signupSchema = {
     type : "object" ,
     properties : {
@@ -81,4 +100,4 @@ const resetPasswordSchema = {
       },
     }
 
-export { loginSchema , resetPasswordSchema , changePasswordSchema , forgotPasswordSchema  , verifyEmailSchema , signupSchema, detailsSchema };
+export {loginResponseSchema ,  loginSchema , resetPasswordSchema , changePasswordSchema , forgotPasswordSchema  , verifyEmailSchema , signupSchema, detailsSchema };
