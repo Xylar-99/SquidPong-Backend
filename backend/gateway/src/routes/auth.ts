@@ -31,8 +31,8 @@ const authRoutes: Route[] = [
     url: "/api/auth/login",
     handler: authController.postLoginHandler,
     schema: {
-    tags: ['auth'], 
-    summary: 'User login',
+    tags: ['user', 'code'],
+    summary: 'qwerty',
     body: loginSchema,
     response: loginResponseSchema
   }
