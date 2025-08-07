@@ -1361,7 +1361,6 @@
         } 
         else 
         {
-          alert(response.ok)
           throw new Error('Failed to load player data');
         }
       } catch (error) {
@@ -1411,7 +1410,6 @@
 
     function displayPlayerData(player) 
     {
-      alert(player.data.fname)
       document.getElementById('firstName').textContent = player.data.fname || 'Unknown';
       document.getElementById('lastName').textContent = player.data.lname || 'Unknown';
       document.getElementById('username').textContent = player.data.username || 'Unknown';
@@ -1551,9 +1549,9 @@
 
     function populateEditForm() 
     {
-      document.getElementById('editFirstName').value = playerData.fname || '';
-      document.getElementById('editLastName').value = playerData.lname || '';
-      document.getElementById('editBio').value = playerData.bio || '';
+      document.getElementById('editFirstName').value = playerData.data.fname || '';
+      document.getElementById('editLastName').value = playerData.data.lname || '';
+      document.getElementById('editBio').value = playerData.data.bio || '';
 
       const currentAvatar = document.getElementById('playerAvatar').src;
       document.getElementById('avatarPreview').src = currentAvatar;
@@ -1846,10 +1844,11 @@
           body: formData
         });
         
-        if (response.ok) {
+        if (response.ok) 
+        {
           const updatedData = await response.json();
           
-          displayPlayerData();
+          // displayPlayerData();
           // Show success message
           showMessage('editSuccessMessage', '✓ Profile updated successfully!');
           
@@ -1866,7 +1865,8 @@
         }
         
       } 
-      catch (error) {
+      catch (error) 
+      {
         // alert('Error updating profile:', error);
 
         showMessage('editErrorMessage', `⚠ ${error.message}`);

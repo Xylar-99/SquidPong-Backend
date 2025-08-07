@@ -14,8 +14,6 @@ export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
     '/pages/signup.html', '/pages/verification.html', '/pages/login.html',
   ];
 
-  console.log("URL : " , req.url)
-  console.log(req.headers)
   const isPublic = publicURIs.includes(req.url) || req.url.startsWith('/auth/');
   if (isPublic) return;
 

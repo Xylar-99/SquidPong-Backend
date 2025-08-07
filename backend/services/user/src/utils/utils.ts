@@ -24,7 +24,7 @@ export async function isFriendRequestExists(friendata:any) : Promise<any>
 
 
 
-export async function Editprofile(req: FastifyRequest) : Promise<any>
+export async function convertMultipartToJson(req: FastifyRequest) : Promise<any>
 {
     const parts = await req.parts() ;
   
@@ -37,18 +37,15 @@ export async function Editprofile(req: FastifyRequest) : Promise<any>
         {
             filePath = `/tmp/images/${Date.now()}-${part.filename}`;
             await pipeline(part.file, fs.createWriteStream(filePath));
-            console.log('file saved');
+            data['avatar'] = `${process.env.URL}${filePath}`;
         }
         else
             data[part.fieldname] = part.value as string;
     }
 
-    filePath = `${process.env.URL}${filePath}`
-    console.log(filePath)
 
     const result = {
       ...data,
-      avatar: filePath,
     };
   
     return result;

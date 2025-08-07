@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../db/database';
-import { Editprofile } from '../utils/utils';
+import { convertMultipartToJson } from '../utils/utils';
 import { ApiResponse } from '../utils/errorHandler';
 import { UserProfile } from '../utils/types';
 
@@ -31,19 +31,18 @@ export async function createProfileHandler(req:FastifyRequest , res:FastifyReply
 export async function updateProfileHandler(req:FastifyRequest , res:FastifyReply)
 {
   
-  console.log("updae scooooooooooooooooooooooooooooooop")
-    const respond : ApiResponse<null > = {success : true  , message : 'user created success'}
+    const respond : ApiResponse<null > = {success : true  , message : 'user updated success'}
 
     try 
     {
 
-    const body = await Editprofile(req);
+    const body = await convertMultipartToJson(req);
     console.log('bodyyyyyy' ,   body)
     const headers = req.headers as any;
     const userId = Number(headers['x-user-id'])
 
-    await prisma.profile.update({where : {userId : userId} , data : body })
-    } 
+    await prisma.profile.update({where : {userId} , data : body })
+    }
     catch (error) 
     {
         respond.success = false;
@@ -116,14 +115,12 @@ export async function deleteProfileHandler(req:FastifyRequest , res:FastifyReply
 export async function getCurrentUserHandler(req:FastifyRequest , res:FastifyReply)
 {
 
-    console.log("hhiiiiiiiiiiiiii")
     const respond : ApiResponse<UserProfile | null> = {success : true  , message : 'user created success'}
 
     try 
     {
         const headers = req.headers as any;
-        const userId = Number(headers['x-user-id'] | 1) as number;
-        console.log('userIduserId: ', userId);
+        const userId = Number(headers['x-user-id']) as number;
         const profile = await prisma.profile.findUnique({where : {userId : userId}})
         respond.data = profile;
     } 

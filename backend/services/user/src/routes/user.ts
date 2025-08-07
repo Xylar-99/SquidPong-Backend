@@ -19,7 +19,7 @@ const userRoutes: Route[] = [
   { method: 'POST', url: '/api/user/mee', handler: userController.updateProfileHandler,},
   { method: 'DELETE', url: '/api/user/me', handler: userController.deleteProfileHandler,},
 
-  { method: 'GET', url: '/me', handler: userController.getCurrentUserHandler,},
+  { method: 'GET', url: '/api/user/me', handler: userController.getCurrentUserHandler,},
   { method: 'GET', url: '/api/user/:id', handler: userController.getUserByIdHandler },
   { method: 'GET', url: '/api/user/', handler: userController.getAllUserHandler },
 
