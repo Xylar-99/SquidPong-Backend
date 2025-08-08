@@ -3,7 +3,6 @@ import * as authController from '../controllers/auth.controller';
 import * as twofaController from '../controllers/2fa.controller';
 import { loginSchema , loginResponseSchema , resetPasswordSchema ,  signupSchema , changePasswordSchema , forgotPasswordSchema , verifyEmailSchema } from '../validators/authSchemas';
 
-
 type Route = {
     method  : 'GET' | 'POST' | 'DELETE'; 
     url     : string;
@@ -12,9 +11,11 @@ type Route = {
 };
 
 
+
+
+
 const authRoutes: Route[] = [
 
-  // Auth routes
   {
     method: "GET",
     url: "/",
@@ -31,8 +32,8 @@ const authRoutes: Route[] = [
     url: "/api/auth/login",
     handler: authController.postLoginHandler,
     schema: {
-    tags: ['user', 'code'],
-    summary: 'qwerty',
+    tags: ['user'],
+    summary: 'this routes',
     body: loginSchema,
     response: loginResponseSchema
   }
@@ -102,8 +103,10 @@ const authRoutes: Route[] = [
     handler: authController.postrefreshtokenHandler,
   },
 
-  // edit profile
-  
+
+];
+
+const twofaRoutes: Route[] = [
   // 2fa 
   {
     method: "GET",
@@ -135,4 +138,4 @@ const authRoutes: Route[] = [
 
 
 
-export {authRoutes}
+export {authRoutes , twofaRoutes}

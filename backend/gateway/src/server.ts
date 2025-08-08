@@ -16,7 +16,9 @@ async function start()
 {
 	try 
 	{
-		await app.ready()
+		// await app.ready();
+		// app.swagger();
+
 		app.listen({port: port, host: host}, () => { console.log(`server listen on http://${host}:${port} ...`) })
 	} 
 	catch (error) 

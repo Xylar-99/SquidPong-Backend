@@ -4,6 +4,6 @@ import proxyplugin from './proxy'
 
 export default async function registerPlugins(app:FastifyInstance) 
 {
-   await proxyplugin(app);
+    proxyplugin(app);
     authplugin(app);
 }

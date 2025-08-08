@@ -26,8 +26,7 @@ const auth2_config:any = {
   startRedirectPath: '/api/auth/google',
   callbackUri: `${process.env.URL}/api/auth/google/callback`
 }
-
-
+  
 
 const session_option = {
     secret: 'this_is_a_very_long_secret_key_that_is_secure',
