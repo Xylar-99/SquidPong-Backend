@@ -48,7 +48,7 @@ const jwt_config:any = {
 
   export default async function registerPlugins(app: FastifyInstance) {
     app.register(cors, {
-        origin: ['http://localhost:8080', 'http://localhost:5173'],
+        origin: ['http://localhost:8080', 'http://localhost:5173' , 'http://localhost:9090'],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type']
