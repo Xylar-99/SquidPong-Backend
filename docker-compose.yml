@@ -18,7 +18,6 @@ services:
     container_name: redis
     networks:
         - web
-
   rabbitmq:
     image: rabbitmq
     container_name: rabbitmq
@@ -26,12 +25,13 @@ services:
         - web
   swagger-ui:
     image: swaggerapi/swagger-ui:latest
+    container_name: swagger
     ports:
       - "9090:8080"
     environment:
-      - URLS=[{"url":"http://localhost:4000/api/auth/docs/json","name":"Auth Service"}]
+      - URLS=[{"url":"http://localhost:4000/api/auth/docs/json","name":"Auth Service"},{"url":"http://localhost:4000/api/user/docs/json","name":"User Service"}]
     networks:
-    - backend_net
+    - web
   gateway:
     build: ./backend/gateway
     image: gateway-image

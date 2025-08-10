@@ -1,100 +1,148 @@
-// schemas/twofaSchemas.ts
-const ApiResponseSchema = {
-  type: "object",
-  properties: {
-    success: { type: "boolean" },
-    message: { type: "string" },
-  },
-  required: ["success", "message"],
-};
-
-const ApiErrorSchema = {
-  type: "object",
-  properties: {
-    success: { type: "boolean", default: false },
-    message: { type: "string" },
-  },
-  required: ["success", "message"],
-};
-
-
-
-// ---------- GET /api/2fa/setup ----------
 export const twofaSetupSchema = {
-  tags: ["2FA"],
-  description: "Generate a new 2FA QR code and secret key for the authenticated user",
+  tags: ['Two-Factor Authentication'],
+  summary: 'Setup 2FA authenticator',
+  description: 'Generate QR code and secret key for 2FA setup',
   response: {
     200: {
-      type: "object",
-      allOf: [ApiResponseSchema],
+      type: 'object',
       properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
         data: {
-          type: "object",
+          type: 'object',
           properties: {
-            QRCode: { type: "string", description: "Base64 QR code image" },
-            key: { type: "string", description: "2FA secret key" },
-          },
-          required: ["QRCode", "key"],
-        },
-      },
+            QRCode: {
+              type: 'string',
+              description: 'Base64 encoded QR code image'
+            },
+            key: {
+              type: 'string',
+              description: 'Secret key for manual entry'
+            }
+          }
+        }
+      }
     },
-    400: ApiErrorSchema,
-  },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    }
+  }
 };
 
-// ---------- GET /api/2fa/status ----------
 export const twofaStatusSchema = {
-  tags: ["2FA"],
-  description: "Check if the authenticated user has 2FA enabled",
+  tags: ['Two-Factor Authentication'],
+  summary: 'Get 2FA status',
+  description: 'Check if 2FA is enabled for the current user',
   response: {
-    200: ApiResponseSchema,
-    400: ApiErrorSchema,
-  },
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    }
+  }
 };
 
-// ---------- POST /api/2fa/verify ----------
 export const twofaVerifySchema = {
+  tags: ['Two-Factor Authentication'],
+  summary: 'Verify 2FA code',
+  description: 'Verify 2FA authentication code during login',
   body: {
-    type: "object",
-    required: ["token", "code"],
+    type: 'object',
     properties: {
-      token: { type: "string", description: "Temporary token from login step" },
-      code: { type: "string", description: "2FA verification code" },
+      token: {
+        type: 'string',
+        description: 'Temporary login token'
+      },
+      code: {
+        type: 'string',
+        pattern: '^[0-9]{6}$',
+        description: '6-digit 2FA code from authenticator app'
+      }
     },
-    additionalProperties: false,
+    required: ['token', 'code']
   },
-  tags: ["2FA"],
-  description: "Verify a 2FA code and complete the login process",
   response: {
-    200: ApiResponseSchema,
-    400: ApiErrorSchema,
-  },
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    }
+  }
 };
 
-// ---------- POST /api/2fa/disable ----------
 export const twofaDisableSchema = {
-  tags: ["2FA"],
-  description: "Disable 2FA for the authenticated user",
+  tags: ['Two-Factor Authentication'],
+  summary: 'Disable 2FA',
+  description: 'Disable two-factor authentication for the current user',
   response: {
-    200: ApiResponseSchema,
-    400: ApiErrorSchema,
-  },
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    }
+  }
 };
 
-// ---------- POST /api/2fa/enable ----------
 export const twofaEnableSchema = {
+  tags: ['Two-Factor Authentication'],
+  summary: 'Enable 2FA',
+  description: 'Enable two-factor authentication by verifying setup code',
   body: {
-    type: "object",
-    required: ["code"],
+    type: 'object',
     properties: {
-      code: { type: "string", description: "2FA verification code" },
+      code: {
+        type: 'string',
+        pattern: '^[0-9]{6}$',
+        description: '6-digit verification code from authenticator app'
+      }
     },
-    additionalProperties: false,
+    required: ['code']
   },
-  tags: ["2FA"],
-  description: "Enable 2FA for the authenticated user",
   response: {
-    200: ApiResponseSchema,
-    400: ApiErrorSchema,
-  },
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    }
+  }
 };

@@ -12,7 +12,7 @@ import redis from '../integration/redisClient';
 import prisma from '../db/database';
 import app from '../app';
 import { PasswordMessage ,EmailMessage , AuthError, UserProfileMessage } from '../utils/messages';
-
+import {  signupSchema, loginSchema, verifyEmailSchema, forgotPasswordSchema, resetPasswordSchema, changePasswordSchema, } from '../validators/authSchemas';
 
 
 declare module 'fastify' {

@@ -2,7 +2,9 @@ import { RouteHandlerMethod , FastifySchema } from 'fastify';
 import * as userController from '../controllers/user.controller';
 import * as friendController from '../controllers/friend.controller';
 import * as blockController from '../controllers/block.controller';
-import { updateUserSchema  } from '../validators/user';
+import { createProfileSchema , updateProfileSchema , deleteProfileSchema , getCurrentUserSchema  , getUserByIdSchema , getAllUserSchema} from '../validators/ProfileSchema';
+import { sendFriendRequestSchema, acceptFriendRequestSchema, rejectFriendRequestSchema, getFriendsListSchema, removeFriendSchema, getPendingRequestsSchema,blockUserSchema,unblockUserSchema,getBlockedUsersSchema } from '../validators/FriendSchema';
+
 
 
 type Route = {
@@ -14,39 +16,25 @@ type Route = {
 
 
 const userRoutes: Route[] = [
-
-  { method: 'POST', url: '/api/user/me', handler: userController.createProfileHandler,},
-  { method: 'PUT', url: '/api/user/me', handler: userController.updateProfileHandler,},
-  { method: 'DELETE', url: '/api/user/me', handler: userController.deleteProfileHandler,},
-
-  { method: 'GET', url: '/api/user/me', handler: userController.getCurrentUserHandler,},
-  { method: 'GET', url: '/api/user/:id', handler: userController.getUserByIdHandler },
-  { method: 'GET', url: '/api/user/', handler: userController.getAllUserHandler },
-
+  { method: 'POST', url: '/api/user/me', handler: userController.createProfileHandler, schema: createProfileSchema },
+  { method: 'PUT', url: '/api/user/me', handler: userController.updateProfileHandler, schema: updateProfileSchema },
+  { method: 'DELETE', url: '/api/user/me', handler: userController.deleteProfileHandler, schema: deleteProfileSchema },
+  { method: 'GET', url: '/api/user/me', handler: userController.getCurrentUserHandler, schema: getCurrentUserSchema },
+  { method: 'GET', url: '/api/user/:id', handler: userController.getUserByIdHandler, schema: getUserByIdSchema },
+  { method: 'GET', url: '/api/user/', handler: userController.getAllUserHandler, schema: getAllUserSchema },
 ];
 
 
-
 const friendRoutes: Route[] = [
-
-  // Friend requests
-  { method: 'POST', url: '/api/friend/request', handler: friendController.sendFriendRequestHandler },
-  { method: 'POST', url: '/api/friend/accept', handler: friendController.acceptFriendRequestHandler },
-  { method: 'POST', url: '/api/friend/reject', handler: friendController.rejectFriendRequestHandler },
-
-  // Friend list
-  { method: 'GET', url: '/api/friend/', handler: friendController.getFriendsListHandler },
-  { method: 'DELETE', url: '/api/friend/:friendId', handler: friendController.removeFriendHandler },
-  
-  // get frineds lists
-  { method: 'GET', url: '/api/friend/pending', handler: friendController.getPendingRequestsHandler },
-  
-
-  // Block users
-  { method: 'POST', url: '/api/friend/blocked/:blockId', handler: blockController.blockUserHandler },
-  { method: 'DELETE', url: '/api/friend/blocked/:blockId', handler: blockController.unblockUserHandler },
-  { method: 'GET', url: '/api/friend/blocked/', handler: blockController.getBlockedUsersHandler },
-
+  { method: 'POST', url: '/api/friend/request', handler: friendController.sendFriendRequestHandler, schema: sendFriendRequestSchema },
+  { method: 'POST', url: '/api/friend/accept', handler: friendController.acceptFriendRequestHandler, schema: acceptFriendRequestSchema },
+  { method: 'POST', url: '/api/friend/reject', handler: friendController.rejectFriendRequestHandler, schema: rejectFriendRequestSchema },
+  { method: 'GET', url: '/api/friend/', handler: friendController.getFriendsListHandler, schema: getFriendsListSchema },
+  { method: 'DELETE', url: '/api/friend/:friendId', handler: friendController.removeFriendHandler, schema: removeFriendSchema },
+  { method: 'GET', url: '/api/friend/pending', handler: friendController.getPendingRequestsHandler, schema: getPendingRequestsSchema },
+  { method: 'POST', url: '/api/friend/blocked/:blockId', handler: blockController.blockUserHandler, schema: blockUserSchema },
+  { method: 'DELETE', url: '/api/friend/blocked/:blockId', handler: blockController.unblockUserHandler, schema: unblockUserSchema },
+  { method: 'GET', url: '/api/friend/blocked/', handler: blockController.getBlockedUsersHandler, schema: getBlockedUsersSchema },
 ];
 
 

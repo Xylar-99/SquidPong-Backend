@@ -1,14 +1,13 @@
 import { RouteHandlerMethod , FastifySchema } from 'fastify';
 import * as authController from '../controllers/auth.controller';
 import * as twofaController from '../controllers/2fa.controller';
-import { loginSchema  , resetPasswordSchema ,  signupSchema , changePasswordSchema , forgotPasswordSchema , verifyEmailSchema } from '../validators/authSchemas';
 
-import { twofaSetupSchema  , twofaStatusSchema , twofaVerifySchema , twofaDisableSchema  , twofaEnableSchema } from '../validators/twofaSchema';
-
+import {  signupSchema, loginSchema, verifyEmailSchema, forgotPasswordSchema, resetPasswordSchema, changePasswordSchema} from '../validators/authSchemas';
+import {  twofaSetupSchema, twofaStatusSchema, twofaVerifySchema, twofaDisableSchema, twofaEnableSchema } from '../validators/twofaSchema';
 
 
 type Route = {
-    method  : 'GET' | 'POST' | 'DELETE'; 
+    method  : 'GET' | 'POST' | 'DELETE' | 'PUT' | 'PATCH'; 
     url     : string;
     handler : RouteHandlerMethod;
     schema? : FastifySchema;
@@ -16,10 +15,7 @@ type Route = {
 
 
 
-
-
 const authRoutes: Route[] = [
-
   {
     method: "GET",
     url: "/",
@@ -36,15 +32,12 @@ const authRoutes: Route[] = [
     url: "/api/auth/login",
     handler: authController.postLoginHandler,
     schema: loginSchema
-
   },
   {
     method: "POST",
     url: "/api/auth/logout",
     handler: authController.postLogoutHandler,
   },
-
-
   // verify email
   {
     method: "POST",
@@ -52,31 +45,25 @@ const authRoutes: Route[] = [
     handler: authController.verifyEmailHandler,
     schema: verifyEmailSchema,
   },
-
-  
   // password
   {
-  method: "POST",
-  url: "/api/auth/forgot-password",
-  handler: authController.postForgotPasswordHandler,
-  schema: forgotPasswordSchema
+    method: "POST",
+    url: "/api/auth/forgot-password",
+    handler: authController.postForgotPasswordHandler,
+    schema: forgotPasswordSchema
   },
-  
   {
-  method: "POST",
-  url: "/api/auth/reset-password",
-  handler: authController.postResetPasswordHandler,
-  schema: resetPasswordSchema
+    method: "POST",
+    url: "/api/auth/reset-password",
+    handler: authController.postResetPasswordHandler,
+    schema: resetPasswordSchema
   },
-
   {
-  method: "POST",
-  url: "/api/auth/change-password",
-  handler: authController.postChangePasswordHandler,
-  schema: changePasswordSchema
+    method: "POST",
+    url: "/api/auth/change-password",
+    handler: authController.postChangePasswordHandler,
+    schema: changePasswordSchema
   },
-
-
   // oauth2
   {
     method: "GET",
@@ -93,22 +80,17 @@ const authRoutes: Route[] = [
     url: "/api/auth/intra/callback",
     handler: authController.getIntracallbackhandler,
   },
-
-
   // refresh token
   {
     method: "POST",
     url: "/api/auth/refresh-token",
     handler: authController.postrefreshtokenHandler,
   },
-
-
 ];
 
 
-
 const twofaRoutes: Route[] = [
-  // 2fa 
+  // 2fa
   {
     method: "GET",
     url: "/api/2fa/setup",
@@ -118,30 +100,28 @@ const twofaRoutes: Route[] = [
   {
     method: "GET",
     url: "/api/2fa/status",
-    schema : twofaStatusSchema,
+    schema: twofaStatusSchema,
     handler: twofaController.statusAuthenticatorHandler,
   },
   {
     method: "POST",
     url: "/api/2fa/verify",
-    schema : twofaVerifySchema,
+    schema: twofaVerifySchema,
     handler: twofaController.verifyTwofaHandler,
   },
   {
     method: "POST",
     url: "/api/2fa/disable",
-    schema : twofaDisableSchema,
+    schema: twofaDisableSchema,
     handler: twofaController.disable2FAHandler,
   },
   {
     method: "POST",
     url: "/api/2fa/enable",
-    schema : twofaEnableSchema,
+    schema: twofaEnableSchema,
     handler: twofaController.enableTwoFAHandler,
   },
-
 ];
-
 
 
 export {authRoutes , twofaRoutes}

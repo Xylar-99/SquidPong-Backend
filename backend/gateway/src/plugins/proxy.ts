@@ -25,7 +25,7 @@ app.register(fastifySwagger, {
   })
 
 
-app.register(fastifySwaggerUi, { routePrefix: '/docs', });
+app.register(fastifySwaggerUi, { routePrefix: '/api/auth/docs', });
 
 
 app.register(fastifyHttpProxy, {

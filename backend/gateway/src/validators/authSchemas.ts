@@ -1,150 +1,254 @@
 
-
-const ApiResponseSchema = {
-  type: "object",
-  properties: {
-    success: { type: "boolean" },
-    message: { type: "string" },
-  },
-  required: ["success", "message"],
-};
-
-const ApiErrorSchema = {
-  type: "object",
-  properties: {
-    success: { type: "boolean", default: false },
-    message: { type: "string" },
-  },
-  required: ["success", "message"],
-};
-
-
-
-
-// ---------------- LOGIN ----------------
-export const loginSchema = {
+export const signupSchema = {
+  tags: ['Authentication'],
+  summary: 'User signup',
+  description: 'Register a new user account and send verification email',
   body: {
-    type: "object",
+    type: 'object',
     properties: {
-      email: { type: "string", format: "email" },
-      password: { type: "string", minLength: 4 },
+      email: {
+        type: 'string',
+        format: 'email',
+        description: 'User email address'
+      },
+      password: {
+        type: 'string',
+        minLength: 6,
+        description: 'User password (minimum 6 characters)'
+      },
+      fname: {
+        type: 'string',
+        description: 'First name'
+      },
+      lname: {
+        type: 'string',
+        description: 'Last name'
+      },
+      username: {
+        type: 'string',
+        description: 'Username'
+      }
     },
-    required: ["email", "password"],
-    additionalProperties: false,
+    required: ['email', 'password', 'fname', 'lname', 'username']
   },
-  tags: ["Auth"],
-  description: "Login with email and password",
   response: {
     200: {
-      type: "object",
-      allOf: [ApiResponseSchema],
+      type: 'object',
       properties: {
-        data: {
-          type: "object",
-          properties: {
-            is2FAEnabled: { type: "boolean" },
-            token: { type: "string" },
-          },
-          required: ["is2FAEnabled", "token"],
-        },
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    }
+  }
+};
+
+export const loginSchema = {
+  tags: ['Authentication'],
+  summary: 'User login',
+  description: 'Authenticate user and return login token',
+  body: {
+    type: 'object',
+    properties: {
+      email: {
+        type: 'string',
+        format: 'email',
+        description: 'User email address'
       },
+      password: {
+        type: 'string',
+        description: 'User password'
+      }
     },
-    400: ApiErrorSchema,
+    required: ['email', 'password']
   },
-};
-
-// ---------------- SIGNUP ----------------
-export const signupSchema = {
-  body: {
-    type: "object",
-    properties: {
-      fname: { type: "string" },
-      lname: { type: "string" },
-      username: { type: "string" },
-      email: { type: "string", format: "email" },
-      password: { type: "string", minLength: 6 },
-    },
-    required: ["email", "username", "fname", "lname", "password"],
-    additionalProperties: false,
-  },
-  tags: ["Auth"],
-  description: "Register a new account and send verification email",
   response: {
-    200: ApiResponseSchema,
-    400: ApiErrorSchema,
-  },
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+        data: {
+          type: 'object',
+          properties: {
+            is2FAEnabled: { 
+              type: 'boolean',
+              description: 'Whether 2FA is enabled for this user'
+            },
+            token: { 
+              type: 'string',
+              description: 'Authentication token'
+            }
+          }
+        }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    }
+  }
 };
 
-// ---------------- VERIFY EMAIL ----------------
 export const verifyEmailSchema = {
+  tags: ['Authentication'],
+  summary: 'Verify email address',
+  description: 'Verify user email address with verification code',
   body: {
-    type: "object",
+    type: 'object',
     properties: {
-      email: { type: "string", format: "email" },
-      code: { type: "string", minLength: 2 },
+      email: {
+        type: 'string',
+        format: 'email',
+        description: 'User email address'
+      },
+      code: {
+        type: 'string',
+        description: 'Email verification code'
+      }
     },
-    required: ["email", "code"],
-    additionalProperties: false,
+    required: ['email', 'code']
   },
-  tags: ["Auth"],
-  description: "Verify email with code and create account",
   response: {
-    200: ApiResponseSchema,
-    400: ApiErrorSchema,
-  },
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    }
+  }
 };
 
-// ---------------- FORGOT PASSWORD ----------------
 export const forgotPasswordSchema = {
+  tags: ['Authentication'],
+  summary: 'Forgot password',
+  description: 'Send password reset email to user',
   body: {
-    type: "object",
-    required: ["email"],
+    type: 'object',
     properties: {
-      email: { type: "string", format: "email" },
+      email: {
+        type: 'string',
+        format: 'email',
+        description: 'User email address'
+      }
     },
+    required: ['email']
   },
-  tags: ["Auth"],
-  description: "Send password reset code to email",
   response: {
-    200: ApiResponseSchema,
-    400: ApiErrorSchema,
-  },
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    }
+  }
 };
 
-// ---------------- CHANGE PASSWORD ----------------
-export const changePasswordSchema = {
-  body: {
-    type: "object",
-    required: ["oldPassword", "newPassword"],
-    properties: {
-      oldPassword: { type: "string", minLength: 8 },
-      newPassword: { type: "string", minLength: 8 },
-    },
-  },
-  tags: ["Auth"],
-  description: "Change user password",
-  response: {
-    200: ApiResponseSchema,
-    400: ApiErrorSchema,
-  },
-};
-
-// ---------------- RESET PASSWORD ----------------
 export const resetPasswordSchema = {
+  tags: ['Authentication'],
+  summary: 'Reset password',
+  description: 'Reset user password using reset code',
   body: {
-    type: "object",
-    required: ["email", "code", "newPassword", "confirmPassword"],
+    type: 'object',
     properties: {
-      email: { type: "string", format: "email" },
-      code: { type: "string" },
-      newPassword: { type: "string", minLength: 8 },
-      confirmPassword: { type: "string", minLength: 8 },
+      email: {
+        type: 'string',
+        format: 'email',
+        description: 'User email address'
+      },
+      code: {
+        type: 'string',
+        description: 'Password reset code'
+      },
+      newPassword: {
+        type: 'string',
+        minLength: 6,
+        description: 'New password (minimum 6 characters)'
+      },
+      confirmPassword: {
+        type: 'string',
+        minLength: 6,
+        description: 'Confirm new password'
+      }
     },
+    required: ['email', 'code', 'newPassword', 'confirmPassword']
   },
-  tags: ["Auth"],
-  description: "Reset password using code",
   response: {
-    200: ApiResponseSchema,
-    400: ApiErrorSchema,
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    }
+  }
+};
+
+export const changePasswordSchema = {
+  tags: ['Authentication'],
+  summary: 'Change password',
+  description: 'Change user password (requires authentication)',
+  body: {
+    type: 'object',
+    properties: {
+      oldPassword: {
+        type: 'string',
+        description: 'Current password'
+      },
+      newPassword: {
+        type: 'string',
+        minLength: 6,
+        description: 'New password (minimum 6 characters)'
+      }
+    },
+    required: ['oldPassword', 'newPassword']
   },
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    },
+    400: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' }
+      }
+    }
+  }
 };

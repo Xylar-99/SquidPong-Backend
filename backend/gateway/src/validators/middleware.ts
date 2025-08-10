@@ -12,7 +12,7 @@ export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
     '/api/auth/reset-password', '/api/auth/forgot-password',
     '/api/auth/intra', '/api/2fa/verify',
     '/api/auth/intra/callback',
-    '/pages/signup.html', '/pages/verification.html', '/pages/login.html',
+    '/pages/signup.html', '/api/user/docs/json' ,  '/pages/verification.html', '/pages/login.html',
   ];
 
   const isPublic = publicURIs.includes(req.url) || req.url.startsWith('/docs') || req.url.startsWith('/api/auth/');

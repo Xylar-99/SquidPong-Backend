@@ -11,8 +11,7 @@ registerPlugins(app);
 
 const routes = [...userRoutes , ...friendRoutes]
 
-routes.forEach(route => {app.route(route)})
 
-console.log("say hello user");
+app.register(async () => {routes.forEach(route => app.route(route))});
 
 app.setErrorHandler(errorHandler)
