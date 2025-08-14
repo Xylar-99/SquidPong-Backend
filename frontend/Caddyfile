@@ -3,6 +3,8 @@
 }
 
 :80 {
-    root * /etc/caddy/files
-    file_server
+    handle {
+        root * /etc/caddy/files
+        file_server
+    }
 }

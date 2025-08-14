@@ -91,71 +91,95 @@
     <button onclick="sendMessage()">Send</button>
   </div>
 </div>
-
+<!-- <script src="./js/connect.js"></script> -->
 <script>
   
-  let from  = document.getElementById("userId").value;
-  let to    = document.getElementById("recipientId").value;
+let from = document.getElementById("userId").value;
+let to = document.getElementById("recipientId").value;
 
-  fetch('http://backend.abquaoub.me:4000/user')
+// Get user info first
+fetch('http://localhost:4000/api/user/me')
   .then(res => res.json())
   .then((data) => {
-
     document.getElementById("userId").value = String(data.userId);
     document.getElementById("recipientId").value = (data.userId == 2 ? "1" : "2");
-
+    from = String(data.userId);
+    to = (data.userId == 2 ? "1" : "2");
   });
 
+// Create WebSocket
+let ws = new WebSocket('ws://localhost:4000/chat');
 
+ws.onopen = () => {
+  console.log("WebSocket connected");
+};
 
+ws.onclose = () => {
+  console.log("WebSocket disconnected. Try reconnecting...");
+  // Optional: auto-reconnect after 3 seconds
+  setTimeout(() => {
+    ws = new WebSocket('ws://localhost:4000/chatt');
+    attachWsHandlers();
+  }, 3000);
+};
 
-  const ws = new WebSocket('ws://localhost:4000/ws');
-  ws.onopen = async () => {};
+ws.onerror = (err) => {
+  console.error("WebSocket error:", err);
+};
 
-
+// Attach onmessage handler
+function attachWsHandlers() {
   ws.onmessage = (event) => {
-  
     const data = JSON.parse(event.data);
-    addMessage(data.content,'received');
-  
+    addMessage(data.content, 'received');
   };
 
-  async function sendMessage() 
-  {
-    const input = document.getElementById("messageInput");
-    const content = input.value.trim();
+  ws.onopen = () => {
+    console.log("WebSocket reconnected");
+  };
 
+  ws.onclose = () => {
+    console.log("WebSocket disconnected");
+  };
+}
 
-    if (content === '') return;
+// Call initially
+attachWsHandlers();
 
-    const data = { type: "chat", from, to, content };
-    const friend = { type: "friend", from, to , status : "pending" };
+async function sendMessage() {
+  const input = document.getElementById("messageInput");
+  const content = input.value.trim();
 
-    ws.send(JSON.stringify(data));
-    ws.send(JSON.stringify(friend));
-    addMessage(content, 'sent');
-    input.value = '';
+  if (content === '') return;
+
+  if (ws.readyState !== WebSocket.OPEN) {
+    alert("WebSocket is not connected. Please wait...");
+    return;
   }
 
-  function addMessage(text, type) 
-  {
-    const container = document.getElementById("messages");
-    const div = document.createElement("div");
-    div.classList.add("message", type);
-    div.textContent = text;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-  }
+  const data = { type: "chat", from, to, content };
+  const friend = { type: "friend", from, to, status: "pending" };
 
-  
-  // Send message on Enter key
-  document.getElementById("messageInput").addEventListener("keydown", function (e) {
-    if (e.key === "Enter")
-      sendMessage();
+  ws.send(JSON.stringify(data));
+  ws.send(JSON.stringify(friend));
+  addMessage(content, 'sent');
+  input.value = '';
+}
 
+function addMessage(text, type) {
+  const container = document.getElementById("messages");
+  const div = document.createElement("div");
+  div.classList.add("message", type);
+  div.textContent = text;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
 
-
+// Send message on Enter key
+document.getElementById("messageInput").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") sendMessage();
 });
+
 </script>
 
 </body>

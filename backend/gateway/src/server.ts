@@ -16,9 +16,6 @@ async function start()
 {
 	try 
 	{
-		// await app.ready();
-		// app.swagger();
-
 		app.listen({port: port, host: host}, () => { console.log(`server listen on http://${host}:${port} ...`) })
 	} 
 	catch (error) 
@@ -35,8 +32,8 @@ async function start()
 
 export const ws = new WebSocket.Server({noServer: true})
 
-ws.on('connection', handleWsConnect);
 app.server.on('upgrade',handleHttpUpgrade);
+ws.on('connection', handleWsConnect);
 
 
 start()
