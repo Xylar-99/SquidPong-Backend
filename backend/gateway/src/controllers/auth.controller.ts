@@ -219,6 +219,7 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
       userJSON['avatar'] = userJSON.image.link;
       userJSON['username'] = userJSON.login;
     
+      console.log("11111111111111111111")
       const account = await createAccount(userJSON);
       await isTwoFactorEnabled(res , account , respond);
       
