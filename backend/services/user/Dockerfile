@@ -12,7 +12,7 @@ COPY ./src ./src
 
 COPY ./prisma ./prisma
 
-COPY ./.env .
+RUN npm install fastify-pagination
 
 RUN npx prisma generate
 

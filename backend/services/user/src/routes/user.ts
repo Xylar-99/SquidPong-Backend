@@ -20,8 +20,9 @@ const userRoutes: Route[] = [
   { method: 'PUT', url: '/api/user/me', handler: userController.updateProfileHandler, schema: updateProfileSchema },
   { method: 'DELETE', url: '/api/user/me', handler: userController.deleteProfileHandler, schema: deleteProfileSchema },
   { method: 'GET', url: '/api/user/me', handler: userController.getCurrentUserHandler, schema: getCurrentUserSchema },
+  { method: 'GET', url: '/api/user/:userId/friends', handler: userController.getFriendsOfUserHandler, schema: getFriendsListSchema },
   { method: 'GET', url: '/api/user/:id', handler: userController.getUserByIdHandler, schema: getUserByIdSchema },
-  { method: 'GET', url: '/api/user/', handler: userController.getAllUserHandler, schema: getAllUserSchema },
+  { method: 'GET', url: '/api/user/all', handler: userController.getAllUserHandler, schema: getAllUserSchema },
 ];
 
 
@@ -29,7 +30,7 @@ const friendRoutes: Route[] = [
   { method: 'POST', url: '/api/friend/request', handler: friendController.sendFriendRequestHandler, schema: sendFriendRequestSchema },
   { method: 'POST', url: '/api/friend/accept', handler: friendController.acceptFriendRequestHandler, schema: acceptFriendRequestSchema },
   { method: 'POST', url: '/api/friend/reject', handler: friendController.rejectFriendRequestHandler, schema: rejectFriendRequestSchema },
-  { method: 'GET', url: '/api/friend/', handler: friendController.getFriendsListHandler, schema: getFriendsListSchema },
+  { method: 'GET', url: '/api/friend/all', handler: friendController.getFriendsListHandler, schema: getFriendsListSchema },
   { method: 'DELETE', url: '/api/friend/:friendId', handler: friendController.removeFriendHandler, schema: removeFriendSchema },
   { method: 'GET', url: '/api/friend/pending', handler: friendController.getPendingRequestsHandler, schema: getPendingRequestsSchema },
   { method: 'POST', url: '/api/friend/blocked/:blockId', handler: blockController.blockUserHandler, schema: blockUserSchema },

@@ -138,6 +138,49 @@ export async function getCurrentUserHandler(req:FastifyRequest , res:FastifyRepl
 }
 
 
+export async function getFriendsOfUserHandler(req:FastifyRequest , res:FastifyReply)
+{
+
+  const params = req.params as any;
+  const userId = Number(params.userId);
+  console.log(userId);
+  const respond : ApiResponse<UserProfile[]> = {success : true  , message : 'get all users '}
+
+  try 
+  {
+
+  const friendships = await prisma.friendship.findMany({
+    where: 
+    {
+      status: 'accepted',
+      OR: [
+        { userId: userId},
+        { friendId: userId }
+        ]
+    }
+    });
+    
+    const friendIds = friendships.map((f:any) => {return (userId != f.userId) ? f.userId : f.friendId });
+    const profiles = await prisma.profile.findMany({ where: { id: { in: friendIds } } })
+    respond.data = profiles;
+  
+  }
+  catch (error) 
+    {
+      respond.success = false;
+      if (error instanceof Error)
+        {
+          respond.message = error.message;
+          return res.status(400).send(respond)
+        }
+    }
+  
+  return res.send(respond)
+}
+
+
+
+
 export async function getUserByIdHandler(req:FastifyRequest , res:FastifyReply)
 {
     const respond : ApiResponse<UserProfile | null> = {success : true  , message : 'user created success'}
