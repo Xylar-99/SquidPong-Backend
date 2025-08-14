@@ -143,7 +143,6 @@ export async function getFriendsOfUserHandler(req:FastifyRequest , res:FastifyRe
 
   const params = req.params as any;
   const userId = Number(params.userId);
-  console.log(userId);
   const respond : ApiResponse<UserProfile[]> = {success : true  , message : 'get all users '}
 
   try 

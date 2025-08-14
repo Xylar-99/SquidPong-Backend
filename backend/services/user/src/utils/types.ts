@@ -29,7 +29,6 @@
   
 
 export type UserProfile = {
-    id: number;
     userId: number;
     username: string;
     fname: string;

@@ -2,7 +2,6 @@ import { FastifyInstance } from 'fastify';
 import multipart from '@fastify/multipart';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
-import fastifyPagination from 'fastify-pagination';
 
 
 
@@ -38,8 +37,4 @@ app.register(fastifySwaggerUi, { routePrefix: '/api/user/docs', });
   }
 });
 
-app.register(fastifyPagination, {
-  defaultLimit: 3,
-  maxLimit: 50,
-});
 }

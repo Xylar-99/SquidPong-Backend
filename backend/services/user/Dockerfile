@@ -12,7 +12,6 @@ COPY ./src ./src
 
 COPY ./prisma ./prisma
 
-RUN npm install fastify-pagination
 
 RUN npx prisma generate
 

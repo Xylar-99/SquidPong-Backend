@@ -27,15 +27,16 @@ const userRoutes: Route[] = [
 
 
 const friendRoutes: Route[] = [
+  
   { method: 'POST', url: '/api/friend/request', handler: friendController.sendFriendRequestHandler, schema: sendFriendRequestSchema },
   { method: 'POST', url: '/api/friend/accept', handler: friendController.acceptFriendRequestHandler, schema: acceptFriendRequestSchema },
   { method: 'POST', url: '/api/friend/reject', handler: friendController.rejectFriendRequestHandler, schema: rejectFriendRequestSchema },
   { method: 'GET', url: '/api/friend/all', handler: friendController.getFriendsListHandler, schema: getFriendsListSchema },
   { method: 'DELETE', url: '/api/friend/:friendId', handler: friendController.removeFriendHandler, schema: removeFriendSchema },
   { method: 'GET', url: '/api/friend/pending', handler: friendController.getPendingRequestsHandler, schema: getPendingRequestsSchema },
-  { method: 'POST', url: '/api/friend/blocked/:blockId', handler: blockController.blockUserHandler, schema: blockUserSchema },
-  { method: 'DELETE', url: '/api/friend/blocked/:blockId', handler: blockController.unblockUserHandler, schema: unblockUserSchema },
-  { method: 'GET', url: '/api/friend/blocked/', handler: blockController.getBlockedUsersHandler, schema: getBlockedUsersSchema },
+  { method: 'POST', url: '/api/blocked/:blockId', handler: blockController.blockUserHandler, schema: blockUserSchema },
+  { method: 'DELETE', url: '/api/blocked/:blockId', handler: blockController.unblockUserHandler, schema: unblockUserSchema },
+  { method: 'GET', url: '/api/blocked/all', handler: blockController.getBlockedUsersHandler, schema: getBlockedUsersSchema },
 ];
 
 
