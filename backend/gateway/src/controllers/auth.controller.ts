@@ -160,10 +160,22 @@ export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyR
       }
   }
   
-  if(respond.data?.is2FAEnabled)
-    return res.redirect(`http://localhost:8080/pages/2faEnable.html?token=${respond.data?.token}`)
+  const FRONTEND_URL = 'http://localhost:5173/';
+  res.send(`
+    <script>
+      window.opener.postMessage(
+        { type: "google-auth-success", token: "tessttiiiiiiiing hhhafhashfj" },
+        "${FRONTEND_URL}"
+      );
+      window.close();
+    </script>
+  `);
 
-  return res.redirect(`http://localhost:8080/pages/profile.html`)
+
+  // if(respond.data?.is2FAEnabled)
+  //   return res.redirect(`http://localhost:8080/pages/2faEnable.html?token=${respond.data?.token}`)
+
+  // return res.redirect(`http://localhost:8080/pages/profile.html`)
 }
 
 
