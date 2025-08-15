@@ -25,22 +25,25 @@ function generateEmailHtml(code: string): string
 async function sendEmail(email: string, code: string) 
 {
 
-  try 
-  {
-    await transporter.sendMail({
-      from: '"ft_trandandan Bot" <abdoqoubai@gmail.com>',
-      to: email,
-      subject: 'Your two-factor code',
-      html: generateEmailHtml(code),
-    });
-    
-    console.log('Email sent to:', email);
-  } 
-  catch (error) 
-  {
-    console.error('Error sending email:', error);
-    throw error;
-  }
+  const url = "https://xylar.app.n8n.cloud/webhook/send-message";
+
+const data = {
+      email: email,
+      message: `this is code ${code}`
+    };
+
+const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-token": "MY_SECRET_TOKEN"
+            },
+            body: JSON.stringify(data)
+            })
+      
+
+  return ;
+
 }
 
 
@@ -61,7 +64,8 @@ export async function sendEmailMessage(data:any)
   const code: string = await generate6DigitCode();
   await redis.set(`2fa:${data.email}`, code, "EX", "260");
 
-  // await sendEmail(data.email , code);
+
+  await sendEmail(data.email , code);
 }
 
 
