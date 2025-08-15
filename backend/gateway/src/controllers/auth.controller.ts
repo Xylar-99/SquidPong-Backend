@@ -12,7 +12,6 @@ import redis from '../integration/redisClient';
 import prisma from '../db/database';
 import app from '../app';
 import { PasswordMessage ,EmailMessage , AuthError, UserProfileMessage } from '../utils/messages';
-import {  signupSchema, loginSchema, verifyEmailSchema, forgotPasswordSchema, resetPasswordSchema, changePasswordSchema, } from '../validators/authSchemas';
 
 
 declare module 'fastify' {
@@ -26,8 +25,7 @@ declare module 'fastify' {
 
 export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 {
-   return res.send(app.swagger());
-    // return res.send({msg : "hello ft_trandandan"})
+  return res.send({msg : "hello ft_trandandan"})
 }
 
 
@@ -163,12 +161,12 @@ export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyR
 
   const FRONTEND_URL = 'http://localhost:5173/';
   const newRespond = { ...respond, ...{type: "google-auth-success",} };
-  
+
   res.type('text/html').send(`
     <script>
       // Send to parent window
       window.opener.postMessage(${JSON.stringify(newRespond)}, "${FRONTEND_URL}");
-      
+
       // Close popup
       window.close();
     </script>

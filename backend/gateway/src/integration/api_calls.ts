@@ -6,9 +6,7 @@ export async function sendToService( url: string, method: string , id:any = null
   let type = 'application/json';
   const options:any = {
     method: method,
-    headers: {
-      'id': (!id ? '' : id),
-    },
+    headers: {},
   };
 
   if (body != null && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase()))
@@ -19,6 +17,7 @@ export async function sendToService( url: string, method: string , id:any = null
   }
 
   const res = await fetch(url, options);
+  console.log("hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
   return (await res.json());
 }
 

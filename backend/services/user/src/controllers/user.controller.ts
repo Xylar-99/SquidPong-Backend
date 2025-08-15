@@ -12,7 +12,9 @@ export async function createProfileHandler(req:FastifyRequest , res:FastifyReply
     
     try 
     {
+      console.log("is created ssss111")
       await prisma.profile.create({data : profile})
+      console.log("is created ssss222")
     } 
     catch (error) 
     {

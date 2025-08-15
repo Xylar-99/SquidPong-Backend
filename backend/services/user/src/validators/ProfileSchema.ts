@@ -32,7 +32,6 @@ export const createProfileSchema = {
         description: 'Avatar image URL'
       }
     },
-    required: ['id', 'fname', 'lname', 'username', 'avatar']
   },
   response: {
     200: {

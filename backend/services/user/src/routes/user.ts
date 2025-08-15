@@ -16,7 +16,7 @@ type Route = {
 
 
 const userRoutes: Route[] = [
-  { method: 'POST', url: '/api/user/me', handler: userController.createProfileHandler, schema: createProfileSchema },
+  { method: 'POST', url: '/api/user/me', handler: userController.createProfileHandler },
   { method: 'PUT', url: '/api/user/me', handler: userController.updateProfileHandler, schema: updateProfileSchema },
   { method: 'DELETE', url: '/api/user/me', handler: userController.deleteProfileHandler, schema: deleteProfileSchema },
   { method: 'GET', url: '/api/user/me', handler: userController.getCurrentUserHandler, schema: getCurrentUserSchema },
