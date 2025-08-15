@@ -160,22 +160,19 @@ export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyR
       }
   }
   
+
   const FRONTEND_URL = 'http://localhost:5173/';
-  res.send(`
+  const newRespond = { ...respond, ...{type: "google-auth-success",} };
+  
+  res.type('text/html').send(`
     <script>
-      window.opener.postMessage(
-        { type: "google-auth-success", token: "tessttiiiiiiiing hhhafhashfj" },
-        "${FRONTEND_URL}"
-      );
+      // Send to parent window
+      window.opener.postMessage(${JSON.stringify(newRespond)}, "${FRONTEND_URL}");
+      
+      // Close popup
       window.close();
     </script>
   `);
-
-
-  // if(respond.data?.is2FAEnabled)
-  //   return res.redirect(`http://localhost:8080/pages/2faEnable.html?token=${respond.data?.token}`)
-
-  // return res.redirect(`http://localhost:8080/pages/profile.html`)
 }
 
 
@@ -246,12 +243,19 @@ export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyRe
         }
     }
 
+const FRONTEND_URL = 'http://localhost:5173/';
+const newRespond = { ...respond, ...{type: "google-auth-success",} };
 
-  
-  if(respond.data?.is2FAEnabled)
-    return res.redirect(`http://localhost:8080/pages/2faEnable.html?token=${respond.data.token}`)
+res.type('text/html').send(`
+  <script>
+    // Send to parent window
+    window.opener.postMessage(${JSON.stringify(newRespond)}, "${FRONTEND_URL}");
+    
+    // Close popup
+    window.close();
+  </script>
+`);
 
-  return res.redirect(`http://localhost:8080/pages/profile.html`)
 }
 
 
