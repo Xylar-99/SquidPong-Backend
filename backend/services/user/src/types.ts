@@ -1,22 +1,50 @@
+
+
+export type rank_tier = "I" | "II" | "III";
+export type RankDivision =
+  | "Iron"
+  | "Bronze"
+  | "Silver"
+  | "Gold"
+  | "Platinum"
+  | "Diamond"
+  | "Ascendant"
+  | "Immortal"
+  | "Master";
+
 export type UserStatus = "online" | "offline" | "idle" | "doNotDisturb";
 
-export interface RankDivision {
-	friendRequests: boolean;
-	chatMessages: boolean;
-	gameInvites: boolean;
-	tournamentUpdates: boolean;
+
+
+
+export interface User {
+	id : string;
+	firstName: string;
+	lastName: string;
+	username: string;
+  status : UserStatus;
+	lastSeen: Date;
+	avatar : string;
+	banner?: string;
+	bio?: string;
+	createdAt: Date;
+	updatedAt: Date;
+  preferences: UserPreferences;
+	isVerified: boolean;
+	walletBalance: number; // In-game currency balance
+  // ranking
+	level: number;
+	rankDivision : RankDivision;
+  rankTier: rank_tier;
+	// Statistics
+	playerStats: PlayerStats;
+  // Character related
+  playerCharacters: string[]; // Array of character IDs owned by the player
+  playerSelectedCharacter: string | null; // Currently selected character ID
+  // Paddle related
+  playerPaddles: string[]; // Array of paddle IDs owned by the player
+  playerSelectedPaddle: string | null; // Currently selected paddle ID
 }
-
-
-export interface rank_tier {
-	friendRequests: boolean;
-	chatMessages: boolean;
-	gameInvites: boolean;
-	tournamentUpdates: boolean;
-}
-
-
-
 
 export interface UserPreferences {
 	soundEnabled: boolean;
@@ -83,35 +111,3 @@ export interface PlayerStats {
   bounceChallengeBestScore: number; 
   bounceChallengeGamesPlayed: number; 
 }
-
-
-export type UserProfile = {
-  id : string;
-  firstName: string;
-  lastName: string;
-  username: string;
-  status : UserStatus;
-  lastSeen: Date;
-  avatar : string;
-  banner?: string;
-  bio?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  preferences: UserPreferences;
-  isVerified: boolean;
-  walletBalance: number; // In-game currency balance
-  // ranking
-  level: number;
-  rankDivision : RankDivision;
-  rankTier: rank_tier;
-  // Statistics
-  playerStats: PlayerStats;
-  // Character related
-  playerCharacters: string[]; // Array of character IDs owned by the player
-  playerSelectedCharacter: string | null; // Currently selected character ID
-  // Paddle related
-  playerPaddles: string[]; // Array of paddle IDs owned by the player
-  playerSelectedPaddle: string | null; // Currently selected paddle ID
-
-};
-  
