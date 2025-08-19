@@ -1,335 +1,345 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import prisma from '../db/database';
-import { isFriendRequestExists } from '../utils/utils';
-import { ApiResponse } from '../utils/errorHandler';
-import { UserProfile } from '../utils/types';
+// import { FastifyRequest, FastifyReply } from 'fastify';
+// import prisma from '../db/database';
+// import { isFriendRequestExists } from '../utils/utils';
+// import { ApiResponse } from '../utils/errorHandler';
+// import { UserProfile } from '../utils/types';
 
-export async function sendFriendInvite(data:any) 
-{
-    delete data.type;
+// enum FriendshipStatus {
+//   PENDING = "PENDING",
+//   ACCEPTED = "ACCEPTED",
+//   DECLINED = "DECLINED",
+//   BLOCKED = "BLOCKED",
+// }
+
+// const {PENDING , BLOCKED , ACCEPTED , DECLINED} = FriendshipStatus;
+
+
+// export async function sendFriendInvite(data:any) 
+// {
+//     delete data.type;
     
-    try 
-    {
-      if(!await isFriendRequestExists(data))
-        await prisma.friendship.create({data : data})
-    } 
-    catch (error) 
-    {
-      console.log("error in invite friend")  
-    }
+//     try 
+//     {
+//       if(!await isFriendRequestExists(data))
+//         await prisma.friendship.create({data : data})
+//     } 
+//     catch (error) 
+//     {
+//       console.log("error in invite friend")  
+//     }
 
-}
+// }
 
 
-export async function getFriendsListHandler(req:FastifyRequest , res:FastifyReply)
-{
-  const respond : ApiResponse<UserProfile[]> = {success : true  , message : 'user created success'}
-  const headers = req.headers as any;
-  const userId = Number(headers['x-user-id'])
+// export async function getFriendsListHandler(req:FastifyRequest , res:FastifyReply)
+// {
+//   const respond : ApiResponse<UserProfile[]> = {success : true  , message : 'get frineds success'}
+//   const headers = req.headers as any;
+//   const receiverId = Number(headers['x-user-id'])
 
-  try 
-  {
+//   try 
+//   {
 
-  const friendships = await prisma.friendship.findMany({
-    where: 
-    {
-      status: 'accepted',
-      OR: [
-        { userId: userId},
-        { friendId: userId }
-        ]
-    }
-    });
+//   const friendships = await prisma.friendship.findMany({
+//     where: 
+//     {
+//       status: ACCEPTED,
+//       OR: [
+//         { receiverId: receiverId},
+//         { senderId: receiverId }
+//         ]
+//     }
+//     });
     
-    const friendIds = friendships.map((f:any) => {return (userId != f.userId) ? f.userId : f.friendId });
-    const profiles = await prisma.profile.findMany({ where: { id: { in: friendIds } } })
-    respond.data = profiles;
+//     const friendIds = friendships.map((f:any) => {return (receiverId != f.receiverId) ? f.receiverId : f.friendId });
+//     const profiles = await prisma.profile.findMany({ where: { receiverId: { in: friendIds } } })
+//     respond.data = profiles;
   
-  }
-  catch (error) 
-    {
-      respond.success = false;
-      if (error instanceof Error)
-        {
-          respond.message = error.message;
-          return res.status(400).send(respond)
-        }
-    }
+//   }
+//   catch (error) 
+//     {
+//       respond.success = false;
+//       if (error instanceof Error)
+//         {
+//           respond.message = error.message;
+//           return res.status(400).send(respond)
+//         }
+//     }
   
-  return res.send(respond)
-}
+//   return res.send(respond)
+// }
 
 
-export async function getPendingRequestsHandler(req:FastifyRequest , res:FastifyReply)
-{
-  const respond : ApiResponse<UserProfile[]> = {success : true  , message : 'user created success'}
+// export async function getPendingRequestsHandler(req:FastifyRequest , res:FastifyReply)
+// {
+//   const respond : ApiResponse<UserProfile[]> = {success : true  , message : 'user created success'}
 
-  const headers = req.headers as any;
-  const userId = Number(headers['x-user-id'])
+//   const headers = req.headers as any;
+//   const receiverId = Number(headers['x-user-id'])
   
-  try 
-  {
-    const friendships = await prisma.friendship.findMany({
-      where: {friendId : userId , status: 'pending'}
-    });
+//   try 
+//   {
+//     const friendships = await prisma.friendship.findMany({
+//       where: {senderId : receiverId , status: 'pending'}
+//     });
     
-    const friendIds:any = friendships.map((arg:any) => {return arg.userId});
+//     const friendIds:any = friendships.map((arg:any) => {return arg.receiverId});
   
-    const profiles = await prisma.profile.findMany({
-      where: {
-        id: { in: friendIds }
-      }
-    })
-    respond.data  = profiles
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error)
-      {
-        respond.message = error.message;
-        return res.status(400).send(respond)
-      }
-  }
+//     const profiles = await prisma.profile.findMany({
+//       where: {
+//         id: { in: friendIds }
+//       }
+//     })
+//     respond.data  = profiles
+//   } 
+//   catch (error) 
+//   {
+//     respond.success = false;
+//     if (error instanceof Error)
+//       {
+//         respond.message = error.message;
+//         return res.status(400).send(respond)
+//       }
+//   }
   
-  return res.send(respond);
-}
+//   return res.send(respond);
+// }
 
 
 
-export async function sendFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
-{
-  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+// export async function sendFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
+// {
+//   const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
 
-  const body = req.body as any;
-  const headers = req.headers as any;
-  const userId = Number(headers['x-user-id'])
+//   const body = req.body as any;
+//   const headers = req.headers as any;
+//   const receiverId = Number(headers['x-user-id'])
 
-  const friendata:any = {};
-  friendata['userId'] = userId;
-  friendata['friendId'] = body.friendId;
-  friendata['status'] = 'pending';
+//   const friendata:any = {};
+//   friendata['receiverId'] = receiverId;
+//   friendata['senderId'] = body.senderId;
+//   friendata['status'] = 'pending';
 
 
-  try 
-  {
-    if(await isFriendRequestExists(friendata))
-      throw new Error("ready exist friends")
+//   try 
+//   {
+//     if(await isFriendRequestExists(friendata))
+//       throw new Error("ready exist friends")
 
-    await prisma.friendship.create({data : friendata})
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error)
-      {
-        respond.message = error.message;
-        return res.status(400).send(respond)
-      }
-  }
+//     await prisma.friendship.create({data : friendata})
+//   } 
+//   catch (error) 
+//   {
+//     respond.success = false;
+//     if (error instanceof Error)
+//       {
+//         respond.message = error.message;
+//         return res.status(400).send(respond)
+//       }
+//   }
   
-  return res.send(respond)
-}
+//   return res.send(respond)
+// }
 
 
-export async function acceptFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
-{
-  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+// export async function acceptFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
+// {
+//   const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
   
-  const body = req.body as any;
-  const headers = req.headers as any;
-  const userId = Number(headers['x-user-id'])
+//   const body = req.body as any;
+//   const headers = req.headers as any;
+//   const receiverId = Number(headers['x-user-id'])
 
-  const friendata:any = {};
-  friendata['userId'] = userId;
-  friendata['friendId'] = body.friendId;
-  friendata['status'] = 'accepted';
+//   const friendata:any = {};
+//   friendata['receiverId'] = receiverId;
+//   friendata['senderId'] = body.senderId;
+//   friendata['status'] = 'accepted';
   
 
-  try 
-  {
-    if(await isFriendRequestExists(friendata))
-      throw new Error("ready exist friends")
+//   try 
+//   {
+//     if(await isFriendRequestExists(friendata))
+//       throw new Error("ready exist friends")
   
-    await prisma.friendship.updateMany({
-      where: {
-        OR: [
-          { userId: friendata.userId, friendId: friendata.friendId },
-          { userId: friendata.friendId, friendId: friendata.userId }
-        ]
-      },
-      data: { status: 'accepted' }
-    });
+//     await prisma.friendship.updateMany({
+//       where: {
+//         OR: [
+//           { receiverId: friendata.receiverId, senderId: friendata.senderId },
+//           { receiverId: friendata.senderId, senderId: friendata.receiverId }
+//         ]
+//       },
+//       data: { status: 'accepted' }
+//     });
     
-  }
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error)
-      {
-        respond.message = error.message;
-        return res.status(400).send(respond)
-      }
-  }
+//   }
+//   catch (error) 
+//   {
+//     respond.success = false;
+//     if (error instanceof Error)
+//       {
+//         respond.message = error.message;
+//         return res.status(400).send(respond)
+//       }
+//   }
   
-  return res.send(respond)
-}
+//   return res.send(respond)
+// }
 
 
-export async function rejectFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
-{
-  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
-  const body = req.body as any;
-  const headers = req.headers as any;
-  const userId = Number(headers['x-user-id'])
+// export async function rejectFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
+// {
+//   const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+//   const body = req.body as any;
+//   const headers = req.headers as any;
+//   const receiverId = Number(headers['x-user-id'])
 
-  const friendata:any = {};
-  friendata['userId'] = userId;
-  friendata['friendId'] = body.friendId;
-  friendata['status'] = 'pending';
-  
-
-  try 
-  {
-    if(!await isFriendRequestExists(friendata))
-      throw new Error("ready reject friends")
-  
-    await prisma.friendship.deleteMany({
-      where: {
-        OR: [
-          { userId: friendata.userId, friendId: friendata.friendId },
-          { userId: friendata.friendId, friendId: friendata.userId }
-        ]
-      }
-    });
-  }
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error)
-      {
-        respond.message = error.message;
-        return res.status(400).send(respond)
-      }
-  }
-  
-  return res.send(respond)
-}
-
-
-
-export async function removeFriendHandler(req:FastifyRequest , res:FastifyReply)
-{
-  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
-
-  const {friendId} = req.params as any;
-  const headers = req.headers as any;
-  const userId = Number(headers['x-user-id'])
-
-  const friendata:any = {};
-  friendata['userId'] = userId;
-  friendata['friendId'] = friendId;
-  friendata['status'] = 'accepted';
+//   const friendata:any = {};
+//   friendata['receiverId'] = receiverId;
+//   friendata['senderId'] = body.senderId;
+//   friendata['status'] = 'pending';
   
 
-  try 
-  {
-    if(!await isFriendRequestExists(friendata))
-      throw new Error("ready is not friends")
+//   try 
+//   {
+//     if(!await isFriendRequestExists(friendata))
+//       throw new Error("ready reject friends")
   
-    await prisma.friendship.deleteMany({
-      where: {
-        OR: [
-          { userId: friendata.userId, friendId: friendata.friendId },
-          { userId: friendata.friendId, friendId: friendata.userId }
-        ]
-      }
-    });
+//     await prisma.friendship.deleteMany({
+//       where: {
+//         OR: [
+//           { receiverId: friendata.receiverId, senderId: friendata.senderId },
+//           { receiverId: friendata.senderId, senderId: friendata.receiverId }
+//         ]
+//       }
+//     });
+//   }
+//   catch (error) 
+//   {
+//     respond.success = false;
+//     if (error instanceof Error)
+//       {
+//         respond.message = error.message;
+//         return res.status(400).send(respond)
+//       }
+//   }
+  
+//   return res.send(respond)
+// }
+
+
+
+// export async function removeFriendHandler(req:FastifyRequest , res:FastifyReply)
+// {
+//   const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+
+//   const {senderId} = req.params as any;
+//   const headers = req.headers as any;
+//   const receiverId = Number(headers['x-user-id'])
+
+//   const friendata:any = {};
+//   friendata['receiverId'] = receiverId;
+//   friendata['senderId'] = senderId;
+//   friendata['status'] = 'accepted';
+  
+
+//   try 
+//   {
+//     if(!await isFriendRequestExists(friendata))
+//       throw new Error("ready is not friends")
+  
+//     await prisma.friendship.deleteMany({
+//       where: {
+//         OR: [
+//           { receiverId: friendata.receiverId, senderId: friendata.senderId },
+//           { receiverId: friendata.senderId, senderId: friendata.receiverId }
+//         ]
+//       }
+//     });
     
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error)
-      {
-        respond.message = error.message;
-        return res.status(400).send(respond)
-      }
-  }
+//   } 
+//   catch (error) 
+//   {
+//     respond.success = false;
+//     if (error instanceof Error)
+//       {
+//         respond.message = error.message;
+//         return res.status(400).send(respond)
+//       }
+//   }
   
-  return res.send(respond)
-}
+//   return res.send(respond)
+// }
 
 
-export async function cancelFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
-{
-  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
-
-  
-
-  try 
-  {
-    
-    
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error)
-      {
-        respond.message = error.message;
-        return res.status(400).send(respond)
-      }
-  }
-  
-  return res.send(respond)
-}
-
-export async function getSentRequestsHandler(req:FastifyRequest , res:FastifyReply)
-{
-  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+// export async function cancelFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
+// {
+//   const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
 
   
 
-  try 
-  {
+//   try 
+//   {
     
     
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error)
-      {
-        respond.message = error.message;
-        return res.status(400).send(respond)
-      }
-  }
+//   } 
+//   catch (error) 
+//   {
+//     respond.success = false;
+//     if (error instanceof Error)
+//       {
+//         respond.message = error.message;
+//         return res.status(400).send(respond)
+//       }
+//   }
   
-  return res.send(respond)
-}
+//   return res.send(respond)
+// }
 
-
-export async function getReceivedRequestsHandler(req:FastifyRequest , res:FastifyReply)
-{
-  const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+// export async function getSentRequestsHandler(req:FastifyRequest , res:FastifyReply)
+// {
+//   const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
 
   
 
-  try 
-  {
+//   try 
+//   {
     
     
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error)
-      {
-        respond.message = error.message;
-        return res.status(400).send(respond)
-      }
-  }
+//   } 
+//   catch (error) 
+//   {
+//     respond.success = false;
+//     if (error instanceof Error)
+//       {
+//         respond.message = error.message;
+//         return res.status(400).send(respond)
+//       }
+//   }
   
-  return res.send(respond)
-}
+//   return res.send(respond)
+// }
+
+
+// export async function getReceivedRequestsHandler(req:FastifyRequest , res:FastifyReply)
+// {
+//   const respond : ApiResponse<null> = {success : true  , message : 'user created success'}
+
+  
+
+//   try 
+//   {
+    
+    
+//   } 
+//   catch (error) 
+//   {
+//     respond.success = false;
+//     if (error instanceof Error)
+//       {
+//         respond.message = error.message;
+//         return res.status(400).send(respond)
+//       }
+//   }
+  
+//   return res.send(respond)
+// }

@@ -1,6 +1,5 @@
 import amqp from "amqplib";
 
-import { sendFriendInvite } from "../controllers/friend.controller";
 
 let connection: any;
 let channel: any;
@@ -43,8 +42,7 @@ export async function receiveFromQueue(queue: string)
           const data = JSON.parse(msg.content.toString());
           channel.ack(msg);
           
-          if(data.status == 'pending')
-           await sendFriendInvite(data);
+         
         }
 
     });

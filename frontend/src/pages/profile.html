@@ -1410,8 +1410,8 @@
 
     function displayPlayerData(player) 
     {
-      document.getElementById('firstName').textContent = player.data.fname || 'Unknown';
-      document.getElementById('lastName').textContent = player.data.lname || 'Unknown';
+      document.getElementById('firstName').textContent = player.data.firstName || 'Unknown';
+      document.getElementById('lastName').textContent = player.data.lastName || 'Unknown';
       document.getElementById('username').textContent = player.data.username || 'Unknown';
       
       // Security status

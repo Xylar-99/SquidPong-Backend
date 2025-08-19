@@ -53,6 +53,7 @@ services:
       - ./backend/services/user/.env
     volumes:
       - ./frontend/src/uploads:/tmp/
+      # - ./database:/user/prisma/prisma/
     networks:
         - web
   # chat:
@@ -64,6 +65,7 @@ services:
   #   command: sh -c "sleep 15 && npx prisma migrate dev --name init && npm run start "
   #   networks: 
   #       - web
+
   notify:
     build: ./backend/services/notify
     image: notify-image

@@ -15,5 +15,5 @@ export function errorHandler( error: FastifyError, request: FastifyRequest, repl
 export type ApiResponse<T = any> = {
   success: boolean;
   message: string;
-  data?: T | undefined;
+  data?: T | any;
 };

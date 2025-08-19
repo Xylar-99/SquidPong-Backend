@@ -1,12 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite" // or "mysql", "sqlite", etc.
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -28,6 +25,7 @@ enum RankTier {
   GRANDMASTER
 }
 
+
 enum RankDivision {
   I
   II
@@ -36,220 +34,13 @@ enum RankDivision {
   V
 }
 
+
 enum AIDifficulty {
   EASY
   MEDIUM
   HARD
 }
 
-
-
-model Profile {
-  id        String   @id @default(cuid())
-  userId    Int   @unique
-  firstName String
-  lastName  String
-  username  String   @unique
-  status    UserStatus @default(ONLINE)
-  lastSeen  DateTime @default(now())
-  avatar    String
-  banner    String?
-  bio       String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Account details
-  isVerified    Boolean @default(false)
-  walletBalance Int     @default(0)
-  level         Int     @default(1)
-  rankDivision  RankDivision @default(V)
-  rankTier      RankTier @default(BRONZE)
-  
-  // Relationships
-  preferences       ProfilePreferences?
-  playerStats       PlayerStats?
-  ownedCharacters   ProfileCharacter[]
-  selectedCharacter GameCharacter? @relation("SelectedCharacter", fields: [selectedCharacterId], references: [id])
-  selectedCharacterId String?
-  
-  ownedPaddles   ProfilePaddle[]
-  selectedPaddle Paddle? @relation("SelectedPaddle", fields: [selectedPaddleId], references: [id])
-  selectedPaddleId String?
-  
-  // Social relationships
-  sentFriendRequests     Friendship[] @relation("FriendshipSender")
-  receivedFriendRequests Friendship[] @relation("FriendshipReceiver")
-  
-  // Game relationships
-  playerMatches    Match[] @relation("MatchPlayer")
-  createdMatches   Match[] @relation("MatchCreator")
-  matchHistory     ProfileMatchHistory[]
-  tournamentEntries TournamentEntry[]
-  
-  @@map("profiles")
-}
-
-// Profile preferences
-model ProfilePreferences {
-  id               String @id @default(cuid())
-  profileId        String @unique
-  soundEnabled     Boolean @default(true)
-  musicEnabled     Boolean @default(true)
-  twoFactorEnabled Boolean @default(false)
-  
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  notifications NotificationSettings?
-  
-  @@map("profile_preferences")
-}
-
-// Notification settings
-model NotificationSettings {
-  id                String @id @default(cuid())
-  preferencesId     String @unique
-  friendRequests    Boolean @default(true)
-  chatMessages      Boolean @default(true)
-  gameInvites       Boolean @default(true)
-  tournamentUpdates Boolean @default(true)
-  
-  preferences ProfilePreferences @relation(fields: [preferencesId], references: [id], onDelete: Cascade)
-  
-  @@map("notification_settings")
-}
-
-// Player statistics
-model PlayerStats {
-  id        String @id @default(cuid())
-  profileId String @unique
-  
-  // Basic stats
-  score Int @default(0)
-  rank  Int @default(0)
-  
-  // Game statistics (1v1)
-  gamesPlayed Int @default(0)
-  gamesWon    Int @default(0)
-  gamesLost   Int @default(0)
-  
-  // Tournament statistics
-  tournamentsPlayed Int @default(0)
-  tournamentsWon    Int @default(0)
-  tournamentsLost   Int @default(0)
-  
-  // Streak statistics
-  winStreak        Int @default(0)
-  loseStreak       Int @default(0)
-  longestWinStreak Int @default(0)
-  
-  // Performance metrics
-  averageGameDuration Int @default(0) // in seconds
-  totalPlayTime       Int @default(0) // in seconds
-  friendsCount        Int @default(0)
-  
-  // Bounce Challenge
-  bounceChallengeBestScore   Int @default(0)
-  bounceChallengeGamesPlayed Int @default(0)
-  
-  profile     Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  vsAIStats   VSAIStats[]
-  
-  @@map("player_stats")
-}
-
-// AI statistics
-model VSAIStats {
-  id            String @id @default(cuid())
-  playerStatsId String
-  difficulty    AIDifficulty
-  gamesPlayed   Int @default(0)
-  gamesWon      Int @default(0)
-  gamesLost     Int @default(0)
-  
-  playerStats PlayerStats @relation(fields: [playerStatsId], references: [id], onDelete: Cascade)
-  
-  @@unique([playerStatsId, difficulty])
-  @@map("vs_ai_stats")
-}
-
-// Game Character model
-model GameCharacter {
-  id          String @id @default(cuid())
-  name        String @unique
-  description String?
-  imageUrl    String
-  price       Int    @default(0)
-  isDefault   Boolean @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relationships
-  profileCharacters ProfileCharacter[]
-  selectedByProfiles Profile[] @relation("SelectedCharacter")
-  
-  @@map("game_characters")
-}
-
-// Junction table for profile-owned characters
-model ProfileCharacter {
-  id          String @id @default(cuid())
-  profileId   String
-  characterId String
-  purchasedAt DateTime @default(now())
-  
-  profile   Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  character GameCharacter @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  
-  @@unique([profileId, characterId])
-  @@map("profile_characters")
-}
-
-// Paddle model
-model Paddle {
-  id          String @id @default(cuid())
-  name        String @unique
-  description String?
-  imageUrl    String
-  price       Int    @default(0)
-  isDefault   Boolean @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  // Relationships
-  profilePaddles    ProfilePaddle[]
-  selectedByProfiles Profile[] @relation("SelectedPaddle")
-  
-  @@map("paddles")
-}
-
-// Junction table for profile-owned paddles
-model ProfilePaddle {
-  id          String @id @default(cuid())
-  profileId   String
-  paddleId    String
-  purchasedAt DateTime @default(now())
-  
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  paddle  Paddle  @relation(fields: [paddleId], references: [id], onDelete: Cascade)
-  
-  @@unique([profileId, paddleId])
-  @@map("profile_paddles")
-}
-
-// Friendship system
-model Friendship {
-  id         String @id @default(cuid())
-  senderId   String
-  receiverId String
-  status     FriendshipStatus @default(PENDING)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  
-  sender   Profile @relation("FriendshipSender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver Profile @relation("FriendshipReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  
-  @@unique([senderId, receiverId])
-  @@map("friendships")
-}
 
 enum FriendshipStatus {
   PENDING
@@ -258,24 +49,6 @@ enum FriendshipStatus {
   BLOCKED
 }
 
-// Match system
-model Match {
-  id          String @id @default(cuid())
-  creatorId   String
-  status      MatchStatus @default(WAITING)
-  gameMode    GameMode
-  startTime   DateTime?
-  endTime     DateTime?
-  winnerId    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  creator      Profile @relation("MatchCreator", fields: [creatorId], references: [id])
-  players      Profile[] @relation("MatchPlayer")
-  profileHistory ProfileMatchHistory[]
-  
-  @@map("matches")
-}
 
 enum MatchStatus {
   WAITING
@@ -291,6 +64,242 @@ enum GameMode {
   BOUNCE_CHALLENGE
 }
 
+
+enum MatchResult {
+  WIN
+  LOSS
+  DRAW
+}
+
+
+enum TournamentStatus {
+  REGISTRATION
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+
+// Main Profile model
+model Profile {
+  id        String       @id @default(cuid())
+
+  userId    Int          @unique
+  username  String       
+  firstName String
+  lastName  String
+
+  status    UserStatus   @default(ONLINE)
+  lastSeen  DateTime     @default(now())
+  avatar    String        @default("testing.png")
+  banner    String        @default("testing.png")
+  bio       String        @default("Just here to have fun, level up, and make some epic memories!")
+  
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  isVerified    Boolean    @default(false)
+  walletBalance Int        @default(0)
+  level         Int        @default(1)
+  rankDivision  RankDivision @default(V)
+  rankTier      RankTier   @default(BRONZE)
+
+
+
+  // Relationships
+  preferences       ProfilePreferences?
+  playerStats       PlayerStats?
+  ownedCharacters   ProfileCharacter[]
+  selectedCharacter GameCharacter? @relation("SelectedCharacter", fields: [selectedCharacterId], references: [id])
+  selectedCharacterId String?
+
+  ownedPaddles      ProfilePaddle[]
+  selectedPaddle    Paddle? @relation("SelectedPaddle", fields: [selectedPaddleId], references: [id])
+  selectedPaddleId  String?
+
+  playerMatches    Match[] @relation("MatchPlayer")
+  createdMatches   Match[] @relation("MatchCreator")
+  matchHistory     ProfileMatchHistory[]
+  tournamentEntries TournamentEntry[]
+
+  // Friendships
+  sentFriendRequests     Friendship[] @relation("SentFriendRequests")
+  receivedFriendRequests Friendship[] @relation("ReceivedFriendRequests")
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Profile preferences
+model ProfilePreferences {
+  id               String @id @default(cuid())
+  profileId        String @unique
+  soundEnabled     Boolean @default(true)
+  musicEnabled     Boolean @default(true)
+  twoFactorEnabled Boolean @default(false)
+
+  profile       Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  notifications NotificationSettings?
+}
+
+// Notification settings
+model NotificationSettings {
+  id                String @id @default(cuid())
+  preferencesId     String @unique
+  friendRequests    Boolean @default(true)
+  chatMessages      Boolean @default(true)
+  gameInvites       Boolean @default(true)
+  tournamentUpdates Boolean @default(true)
+
+  preferences ProfilePreferences @relation(fields: [preferencesId], references: [id], onDelete: Cascade)
+}
+
+// Player statistics
+model PlayerStats {
+  id        String @id @default(cuid())
+  profileId String @unique
+
+  score Int @default(0)
+  rank  Int @default(0)
+
+  gamesPlayed Int @default(0)
+  gamesWon    Int @default(0)
+  gamesLost   Int @default(0)
+
+  tournamentsPlayed Int @default(0)
+  tournamentsWon    Int @default(0)
+  tournamentsLost   Int @default(0)
+
+  winStreak        Int @default(0)
+  loseStreak       Int @default(0)
+  longestWinStreak Int @default(0)
+
+  averageGameDuration Int @default(0)
+  totalPlayTime       Int @default(0)
+  friendsCount        Int @default(0)
+
+  bounceChallengeBestScore   Int @default(0)
+  bounceChallengeGamesPlayed Int @default(0)
+
+  profile   Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  vsAIStats VSAIStats[]
+  
+  
+}
+
+// AI statistics
+model VSAIStats {
+  id            String @id @default(cuid())
+  playerStatsId String
+  difficulty    AIDifficulty
+  gamesPlayed   Int @default(0)
+  gamesWon      Int @default(0)
+  gamesLost     Int @default(0)
+
+  playerStats PlayerStats @relation(fields: [playerStatsId], references: [id], onDelete: Cascade)
+
+  @@unique([playerStatsId, difficulty])
+}
+
+// Game Character model
+model GameCharacter {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+  imageUrl    String
+  price       Int    @default(0)
+  isDefault   Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  profileCharacters ProfileCharacter[]
+  selectedByProfiles Profile[] @relation("SelectedCharacter")
+
+}
+
+// Junction table for profile-owned characters
+model ProfileCharacter {
+  id          String @id @default(cuid())
+  profileId   String
+  characterId String
+  purchasedAt DateTime @default(now())
+
+  profile   Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  character GameCharacter @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, characterId])
+}
+
+
+
+// Paddle model
+model Paddle {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+  imageUrl    String
+  price       Int    @default(0)
+  isDefault   Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  profilePaddles    ProfilePaddle[]
+  selectedByProfiles Profile[] @relation("SelectedPaddle")
+
+}
+
+// Junction table for profile-owned paddles
+model ProfilePaddle {
+  id          String @id @default(cuid())
+  profileId   String
+  paddleId    String
+  purchasedAt DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  paddle  Paddle  @relation(fields: [paddleId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, paddleId])
+}
+
+
+// Match system
+model Match {
+  id          String @id @default(cuid())
+  creatorId   String
+  status      MatchStatus @default(WAITING)
+  gameMode    GameMode
+  startTime   DateTime?
+  endTime     DateTime?
+  winnerId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator       Profile @relation("MatchCreator", fields: [creatorId], references: [id])
+  players       Profile[] @relation("MatchPlayer")
+  profileHistory ProfileMatchHistory[]
+
+}
+
 // Profile match history junction
 model ProfileMatchHistory {
   id        String @id @default(cuid())
@@ -298,18 +307,11 @@ model ProfileMatchHistory {
   matchId   String
   result    MatchResult
   score     Int @default(0)
-  
+
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   match   Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  
-  @@unique([profileId, matchId])
-  @@map("profile_match_history")
-}
 
-enum MatchResult {
-  WIN
-  LOSS
-  DRAW
+  @@unique([profileId, matchId])
 }
 
 // Tournament system
@@ -324,17 +326,9 @@ model Tournament {
   endTime     DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  entries TournamentEntry[]
-  
-  @@map("tournaments")
-}
 
-enum TournamentStatus {
-  REGISTRATION
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
+  entries TournamentEntry[]
+
 }
 
 model TournamentEntry {
@@ -343,10 +337,26 @@ model TournamentEntry {
   tournamentId String
   position     Int?
   joinedAt     DateTime @default(now())
-  
+
   profile    Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
   tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  
+
   @@unique([profileId, tournamentId])
-  @@map("tournament_entries")
+}
+
+
+
+// Friendship system
+model Friendship {
+  id        String @id @default(cuid())
+  senderId  String
+  receiverId String
+  status    FriendshipStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sender   Profile @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver Profile @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
 }
