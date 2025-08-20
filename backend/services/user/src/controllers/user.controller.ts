@@ -9,6 +9,7 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
   const body = req.body as any;
 
   // Map input body to schema fields
+  
   const profileData = {
     userId: body.id,
     username: body.username,
@@ -30,9 +31,9 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
   await prisma.profile.create({
   data: {
     ...profileData,
-    preferences: { create: {} },       // uses ProfilePreferences defaults
-    playerStats: { create: {} },       // uses PlayerStats defaults
-    ownedCharacters: { create: [] },   // optional: create empty array
+    preferences: { create: {} },
+    playerStats: { create: {} },
+    ownedCharacters: { create: [] },
   },
   });
 
@@ -56,15 +57,14 @@ export async function updateProfileHandler(req: FastifyRequest, res: FastifyRepl
   try 
   {
 
-    const body = req.body as any;
+    const body = await convertMultipartToJson(req);
     const headers = req.headers as any;
     const userId = Number(headers['x-user-id']);
 
-    console.log("update data : " , body)
-    // await prisma.profile.update({
-    //   where: { userId },
-    //   data: body,
-    // });
+    await prisma.profile.update({
+      where: { userId },
+      data: body,
+    });
   } 
   catch (error) 
   {
@@ -124,26 +124,26 @@ export async function getAllUserHandler(req: FastifyRequest, res: FastifyReply)
 
 
 
-// export async function deleteProfileHandler(req: FastifyRequest, res: FastifyReply) {
-//   const respond: ApiResponse<null> = { success: true, message: 'User deleted successfully' };
+export async function deleteProfileHandler(req: FastifyRequest, res: FastifyReply) {
+  const respond: ApiResponse<null> = { success: true, message: 'User deleted successfully' };
 
-//   try {
-//     const headers = req.headers as any;
-//     const userId = Number(headers['x-user-id']);
+  try {
+    const headers = req.headers as any;
+    const userId = Number(headers['x-user-id']);
 
-//     await prisma.profile.delete({
-//       where: { userId },
-//     });
-//   } catch (error) {
-//     respond.success = false;
-//     if (error instanceof Error) {
-//       respond.message = error.message;
-//       return res.status(400).send(respond);
-//     }
-//   }
+    await prisma.profile.delete({
+      where: { userId },
+    });
+  } catch (error) {
+    respond.success = false;
+    if (error instanceof Error) {
+      respond.message = error.message;
+      return res.status(400).send(respond);
+    }
+  }
 
-//   return res.send(respond);
-// }
+  return res.send(respond);
+}
 
 
 
@@ -196,60 +196,48 @@ export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyRep
 
 
 
-// export async function getFriendsOfUserHandler(req: FastifyRequest, res: FastifyReply) {
-//   const params = req.params as any;
-//   const userId = Number(params.userId);
-//   const respond: ApiResponse<UserProfile[]> = { success: true, message: 'Friends fetched' };
 
-//   try {
-//     const friendships = await prisma.friendship.findMany({
-//       where: {
-//         status: 'ACCEPTED',
-//         OR: [
-//           { senderId: userId },
-//           { receiverId: userId },
-//         ],
-//       },
-//     });
+export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply)
+{
+  const { id } = req.params as any;
+  const respond: ApiResponse<Profile | any> = { success: true, message: 'Current user fetched' };
 
-//     // Extract friend IDs except the user itself
-//     const friendIds = friendships.map(f =>
-//       f.senderId === userId ? f.receiverId : f.senderId
-//     );
+  try 
+  {
 
-//     const profiles = await prisma.profile.findMany({
-//       where: { id: { in: friendIds } },
-//     });
 
-//     respond.data = profiles;
-//   } catch (error) {
-//     respond.success = false;
-//     if (error instanceof Error) {
-//       respond.message = error.message;
-//       return res.status(400).send(respond);
-//     }
-//   }
+  const profile =  await prisma.profile.findUnique({
+    where: { userId : id },
+    include: {
+      preferences: { include: { notifications: true } },
+      playerStats: { include: { vsAIStats: true } },
+      ownedCharacters: { include: { character: true } },
+      ownedPaddles: { include: { paddle: true } },
+      playerMatches: true,
+      createdMatches: true,
+      matchHistory: true,
+      tournamentEntries: true,
+      sentFriendRequests: true,
+      receivedFriendRequests: true,
+      selectedCharacter: true,
+      selectedPaddle: true
+    }
+  })
 
-//   return res.send(respond);
-// }
+  respond.data = profile;
 
-// export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply) {
-//   const respond: ApiResponse<UserProfile | null> = { success: true, message: 'User fetched' };
-//   const { id } = req.params as any;
+  }
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error) 
+    {
+      respond.message = error.message;
+      return res.status(400).send(respond);
+    }
 
-//   try {
-//     const profile = await prisma.profile.findUnique({
-//       where: { userId: Number(id) },
-//     });
-//     respond.data = profile;
-//   } catch (error) {
-//     respond.success = false;
-//     if (error instanceof Error) {
-//       respond.message = error.message;
-//       return res.status(400).send(respond);
-//     }
-//   }
+  }
 
-//   return res.send(respond);
-// }
+  return res.send(respond);
+}
 

@@ -29,13 +29,15 @@ app.register(fastifySwagger, {
 app.register(fastifySwaggerUi, { routePrefix: '/api/user/docs', });
 
 
-   app.register(multipart, {
+  app.register(multipart, {
   limits: {
-    fileSize: 10 * 1024 * 1024,
-    files: 1,
-    fields: 3
+    fileSize: 4 * 1024 * 1024,
+    files: 2,
+    fields: 50
   },
   attachFieldsToBody: true,
-});
+  });
 
+
+  
 }
