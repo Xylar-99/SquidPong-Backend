@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../db/database';
-import { convertMultipartToJson } from '../utils/utils';
+import { convertParsedMultipartToJson } from '../utils/utils';
 import { ApiResponse } from '../utils/errorHandler';
 import { Profile } from '../utils/types';
 
@@ -20,13 +20,6 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
   try 
   {
 
-
-  const profileData = {
-          userId: body.id,
-          username: body.username,
-          firstName: body.fname,
-          lastName: body.lname,
-      };
 
   await prisma.profile.create({
   data: {
@@ -51,15 +44,16 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
 }
 
 
-export async function updateProfileHandler(req: FastifyRequest, res: FastifyReply) {
+export async function updateProfileHandler(req: FastifyRequest, res: FastifyReply)
+{
   const respond: ApiResponse<null> = { success: true, message: 'User updated successfully' };
 
   try 
   {
-
-    const body = await convertMultipartToJson(req);
+    const body = await convertParsedMultipartToJson(req);
     const headers = req.headers as any;
     const userId = Number(headers['x-user-id']);
+    console.log("update data body : " , body);
 
     await prisma.profile.update({
       where: { userId },
