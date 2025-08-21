@@ -2,7 +2,7 @@ FROM --platform=linux/amd64 node:20-slim
 
 RUN apt-get update && apt-get install -y openssl libssl-dev vim
 
-WORKDIR /gateway
+WORKDIR /auth
 
 COPY ./*.json .
 
@@ -16,6 +16,6 @@ RUN npx prisma generate
 
 RUN npm run build
 
-EXPOSE 4000
+EXPOSE 4444
 
 CMD ["npm" , "run" , "start"]

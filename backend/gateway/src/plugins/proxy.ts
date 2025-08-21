@@ -43,5 +43,20 @@ app.register(fastifyHttpProxy, {
 );
 
 
+app.register(fastifyHttpProxy, {
+
+  upstream: 'http://auth:4444',
+  prefix: '/api/auth',
+  rewritePrefix: '/api/auth',
+  http2: false,
+
+  preHandler: async (req:any, reply:any) => {
+    req.headers['x-user-id'] = req.id;
+  },
+
+}
+);
+
+
 
 }

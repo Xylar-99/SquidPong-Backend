@@ -12,7 +12,7 @@ import redis from '../integration/redisClient';
 import prisma from '../db/database';
 import app from '../app';
 import { PasswordMessage ,EmailMessage , AuthError, UserProfileMessage } from '../utils/messages';
-
+import { fetchIntraToken , fetchGoogleUser , fetchIntraUser , sendResponseToFrontend } from '../utils/oauthHelpers';
 
 
 declare module 'fastify' {
@@ -35,6 +35,7 @@ export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
     const respond : ApiResponse<null > = {success : true  , message : EmailMessage.EMAIL_VERIFICATION_SENT}
     const body = req.body as any;
 
+    console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh")
     try
     {
       await isUserAlreadyRegistered(body);
@@ -126,52 +127,26 @@ export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-
-
-
-export async function getGooglCallbackehandler(req:FastifyRequest , res:FastifyReply) 
+export async function getGooglCallbackehandler(req: FastifyRequest, res: FastifyReply)
 {
-  const respond : ApiResponse<{is2FAEnabled : boolean , token : string} > = {success : true  , message : 'login success'}
 
-  respond.data = {is2FAEnabled : false , token : ''}
-  try 
-  {
-    const tokengoogle:any = await app.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
-    const result = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokengoogle.token.access_token}` } });
-    const data = await result.json();
+  const respond: ApiResponse<{ is2FAEnabled: boolean; token: string }> = { success: true, message: 'login success', };
 
-    data['avatar'] = data.picture
-    data['username'] = data.email.split('@')[0];
-    data['fname'] = data.given_name;
-    data['lname'] = data.family_name;
-    
-    const user = await createAccount(data);
-    await isTwoFactorEnabled(res , user , respond);
+  respond.data = { is2FAEnabled: false, token: '' };
 
-  }
-  catch (error) 
-  {
+  try {
+    const googleData = await fetchGoogleUser(req);
+    const user = await createAccount(googleData);
+    await isTwoFactorEnabled(res, user, respond);
+  } catch (error) {
     respond.success = false;
-    if (error instanceof Error)
-      {
-        respond.message = error.message;
-        return res.status(400).send(respond)
-      }
+    if (error instanceof Error) {
+      respond.message = error.message;
+      return res.status(400).send(respond);
+    }
   }
-  
 
-  const FRONTEND_URL = 'http://localhost:5173/';
-  const newRespond = { ...respond, ...{type: "google-auth-success",} };
-
-  res.type('text/html').send(`
-    <script>
-      // Send to parent window
-      window.opener.postMessage(${JSON.stringify(newRespond)}, "${FRONTEND_URL}");
-
-      // Close popup
-      window.close();
-    </script>
-  `);
+  sendResponseToFrontend(res, respond);
 }
 
 
@@ -188,73 +163,33 @@ export async function getIntrahandler(req:FastifyRequest , res:FastifyReply)
 
 
 
-
-export async function getIntracallbackhandler(req:FastifyRequest , res:FastifyReply) 
+export async function getIntracallbackhandler(req: FastifyRequest, res: FastifyReply)
 {
+  const respond: ApiResponse<{ is2FAEnabled: boolean; token: string }> = { success: true, message: 'login success', };
 
-  const respond : ApiResponse<{is2FAEnabled : boolean , token : string} > = {success : true  , message : 'login success'}
-  const {code} = req.query as any;
-  
-  respond.data = {is2FAEnabled : false , token : ''}
+  respond.data = { is2FAEnabled: false, token: '' };
+  const { code } = req.query as any;
 
-  const body:object = {
-      grant_type: 'authorization_code',
-      client_id: process.env.IDINTRA,
-      client_secret: process.env.SECRETINTRA,
-      code: code,
-      redirect_uri: `${process.env.URL}/api/auth/intra/callback`,
+  try
+  {
+    const access_token = await fetchIntraToken(code);
+    const userJSON = await fetchIntraUser(access_token);
+
+    const account = await createAccount(userJSON);
+    await isTwoFactorEnabled(res, account, respond);
+  } 
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error) {
+      respond.message = error.message;
+      return res.status(400).send(respond);
     }
+  }
 
-
-    try 
-    {
-      const tokens = await fetch('https://api.intra.42.fr/oauth/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-    
-    
-      const tokensJSON = await tokens.json();
-      const access_token = tokensJSON.access_token;
-    
-      const user = await fetch('https://api.intra.42.fr/v2/me', {headers: {  Authorization: `Bearer ${access_token}`,}, });
-      const userJSON = await user.json();
-    
-      
-      userJSON['fname'] = userJSON.first_name;
-      userJSON['lname'] = userJSON.last_name;
-      userJSON['avatar'] = userJSON.image.link;
-      userJSON['username'] = userJSON.login;
-    
-      const account = await createAccount(userJSON);
-      await isTwoFactorEnabled(res , account , respond);
-      
-    } 
-    catch (error) 
-    {
-      respond.success = false;
-      if (error instanceof Error)
-        {
-          respond.message = error.message;
-          return res.status(400).send(respond)
-        }
-    }
-
-const FRONTEND_URL = 'http://localhost:5173/';
-const newRespond = { ...respond, ...{type: "google-auth-success",} };
-
-res.type('text/html').send(`
-  <script>
-    // Send to parent window
-    window.opener.postMessage(${JSON.stringify(newRespond)}, "${FRONTEND_URL}");
-    
-    // Close popup
-    window.close();
-  </script>
-`);
-
+  sendResponseToFrontend(res, respond);
 }
+
 
 
 
@@ -358,6 +293,8 @@ export async function postChangePasswordHandler(req: FastifyRequest, res: Fastif
 
   return res.send(respond);
 }
+
+
 
 
 

@@ -1,8 +1,6 @@
 import app from './app'
-import { WebSocket } from "ws";
 import dotenv from 'dotenv'
-import { handleWsConnect  , handleHttpUpgrade} from './events/websocketEvents';
-import { receiveFromQueue , initRabbitMQ } from './integration/rabbitmqClient'
+import {initRabbitMQ } from './integration/rabbitmqClient'
 
 
 dotenv.config()
@@ -25,15 +23,8 @@ async function start()
 	}
 
 	await initRabbitMQ()
-	await receiveFromQueue('chatservice')
 }
 
-
-
-export const ws = new WebSocket.Server({noServer: true})
-
-app.server.on('upgrade',handleHttpUpgrade);
-ws.on('connection', handleWsConnect);
 
 
 start()

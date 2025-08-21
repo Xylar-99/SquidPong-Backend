@@ -1,5 +1,4 @@
 import amqp from "amqplib";
-import { ws } from "../server";
 
 let connection: any;
 let channel: any;
@@ -59,9 +58,5 @@ function receiveAndDeliver(msg: any)
 function sendWsMessage(msg: any) 
 {
     const data = JSON.parse(msg.content.toString());
-
-    ws.clients.forEach((client: any) => {
-    if (client.userId == data.to) client.send(JSON.stringify(data));
-  });
 
 }
