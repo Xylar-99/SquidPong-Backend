@@ -4,12 +4,14 @@ import { convertParsedMultipartToJson } from '../utils/utils';
 import { ApiResponse } from '../utils/errorHandler';
 import { Profile } from '../utils/types';
 
-export async function createProfileHandler(req: FastifyRequest, res: FastifyReply) {
+
+
+export async function createProfileHandler(req: FastifyRequest, res: FastifyReply)
+{
+  
   const respond: ApiResponse<null> = { success: true, message: 'User created successfully' };
   const body = req.body as any;
 
-  // Map input body to schema fields
-  
   const profileData = {
     userId: body.id,
     username: body.username,
@@ -19,7 +21,6 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
 
   try 
   {
-
 
   await prisma.profile.create({
   data: {
@@ -42,6 +43,9 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
 
   return res.send(respond);
 }
+
+
+
 
 
 export async function updateProfileHandler(req: FastifyRequest, res: FastifyReply)

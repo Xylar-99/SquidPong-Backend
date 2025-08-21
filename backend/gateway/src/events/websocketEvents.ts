@@ -4,48 +4,74 @@ import { ws } from '../server';
 import app from '../app';
 
 
-function getCookie(req: any, name: string)
- {
-  const cookies = req.headers.cookie?.split(';').map((c:any) => c.trim()) || [];
-  const match = cookies.find((c:any) => c.startsWith(name + '='));
-  return match?.split('=')[1];
+
+async function sendSingleMultipartVoid(url: string, fieldName: string, value: string | File | Blob , userId : string )
+{
+  const formData = new FormData();
+  formData.append(fieldName, value);
+
+  try 
+  {
+    await fetch(url, { method: "PUT", body: formData , headers: { "x-user-id": userId}});
+  }
+  catch (err) 
+  {
+    console.error("Error sending multipart data:", err);
+  }
+
 }
 
 
-export async function handleWsConnect(ws: any, req: FastifyRequest) 
+// handel
+
+interface UserSocket {
+  socket: any;
+  type: 'game' | 'chat-notification';
+}
+
+const onlineUsers = new Map<string, UserSocket[]>();
+
+
+
+
+export async function handleWsConnect(ws: any, req: FastifyRequest)
 {
+
   try 
   {
-    // (ws as any).connectionId = generateConnectionId();  later for 
-    
-    console.log(`User ${ws.userId} connected via WebSocket url is ${req.url}`);
+    const type = req.url === '/game' ? 'game' : 'chat-notification';
 
-    if(req.url == '/game')
+    // added online user 
+    if (!onlineUsers.has(ws.userId))
+      onlineUsers.set(ws.userId, []);
+    onlineUsers.get(ws.userId)!.push({ socket: ws, type });
+    ////////////////
+
+    // update data in user-service  is online
+    await sendSingleMultipartVoid( 'http://user:4001/api/user/me', "status", "DO_NOT_DISTURB", ws.userId );
+
+    console.log(`User ${ws.userId} connected via ${type} socket`);
+
+    if (type === 'game')
       ws.on("message", onGameMessage);
-    else if(req.url == '/chat')
-      ws.on("message", onChatMessage);
-    else if(req.url == '/notification')
-      ws.on("message", onNotificationMessage);
+    else
+      ws.on("message", onChatNotificationMessage);
 
+    ws.on("close", () => { onClientDisconnect(ws)});
 
-    ws.on("close", onClientDisconnect);
-    
-    // ws.send(JSON.stringify({
-    //   type: 'connected',
-    //   userId: ws.userId,
-    // }));
-    
-  }
-  catch (error) 
+  } 
+  catch (error)
   {
     console.error('WebSocket connection setup failed:', error);
     ws.close(1008, 'Connection setup failed');
   }
 
-
 }
 
-async function onGameMessage(this:WebSocket , message: any) 
+
+
+
+async function onGameMessage(this:WebSocket , message: any)
 {
   
     const dataString: string = Buffer.from(message).toString("utf8");
@@ -55,52 +81,48 @@ async function onGameMessage(this:WebSocket , message: any)
 
     console.log(dataJson , id);
 
-    if (dataJson.type == "chat")
-        await sendDataToQueue(dataJson, "chat");
-    if (dataJson.type == "email")
-        await sendDataToQueue(dataJson, "emailhub");
-
 }
 
 
-async function onChatMessage(this:WebSocket , message: any) 
+
+async function onChatNotificationMessage(this:WebSocket , message: any)
 {
-    const dataString: string = Buffer.from(message).toString("utf8");
-    const dataJson = JSON.parse(dataString);
+    const data = JSON.parse(message.toString());
+    console.log(data);
 
-    const id = (this as any).userId; 
-
-    console.log(dataJson , id);
-
-    if (dataJson.type == "chat")
-        await sendDataToQueue(dataJson, "chat");
-    if (dataJson.type == "email")
-        await sendDataToQueue(dataJson, "emailhub");
-
-}
-
-
-async function onNotificationMessage(this:WebSocket , message: any) 
-{
-    const dataString: string = Buffer.from(message).toString("utf8");
-    const dataJson = JSON.parse(dataString);
-
-    const id = (this as any).userId; 
-
-    console.log(dataJson , id);
-
-    if (dataJson.type == "chat")
-        await sendDataToQueue(dataJson, "chat");
-    if (dataJson.type == "email")
-        await sendDataToQueue(dataJson, "emailhub");
+    
+    if (data.type == "chat")
+      console.log("handler of chat")
+    else if (data.type == "notification")
+      console.log("handler of notification")
 
 }
 
 
 
-async function onClientDisconnect() 
+
+
+async function onClientDisconnect(ws:any) 
 {
-    console.log("client disconnected")
+
+  const userId : string = ws.userId;
+  const sockets = onlineUsers.get(userId);
+
+  if (sockets)
+  {
+    // remove all socket first
+    for (const { socket } of sockets)
+    {
+        if (socket.readyState === ws.OPEN) socket.close();
+    }
+
+    onlineUsers.delete(userId);
+  }
+
+  // update data in user-service  is offline
+  sendSingleMultipartVoid('http://user:4001/api/user/me' , "status" , "OFFLINE" , ws.userId)
+  
+  console.log(`client ${ws.userId} disconnected`)
 }
 
 
@@ -110,7 +132,7 @@ async function onClientDisconnect()
 
 export function handleHttpUpgrade(req: any, socket: any, head: any) 
 {
-  const includesURL = ['/chat', '/game', '/notification'];
+  const includesURL = ['/game', '/chat-notification'];
 
 
     try 
@@ -118,7 +140,7 @@ export function handleHttpUpgrade(req: any, socket: any, head: any)
       if (!includesURL.includes(req.url))
           throw new Error('No endpoint found');
 
-      const token = getCookie(req, 'accessToken');
+      const token = req.headers.cookie.split('=')[1]
       console.log(token)
       if (!token) throw new Error('No accessToken found');
 

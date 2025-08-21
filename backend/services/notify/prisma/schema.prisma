@@ -1,5 +1,3 @@
-
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,13 +8,48 @@ datasource db {
 }
 
 
-model User {
-  id            Int     @id @default(autoincrement())
-  name          String  @unique
-  email         String  @unique
-  auth_provider String  @default("local")
-  ver_code      String  @default("999")
-  is_verified   Boolean @default(false)  
-  password      String  
 
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+  DELETED
+}
+
+enum NotificationType {
+  INFO         // general information
+  SUCCESS      // success messages
+  WARNING      // warnings
+  ERROR        // errors
+  ALERT        // urgent notifications
+  FRIEND       // friend request, friend accepted
+  TOURNAMENT   // tournament updates
+  CHAT         // chat messages
+}
+
+
+enum NotificationTitle {
+  FRIEND_REQUEST        // "New Friend Request"
+  FRIEND_ACCEPTED       // "Friend Request Accepted"
+  CHAT_MESSAGE          // "New Chat Message"
+  TOURNAMENT_REGISTERED // "Registered in Tournament"
+  TOURNAMENT_STARTED    // "Tournament Started"
+  TOURNAMENT_FINISHED   // "Tournament Finished"
+  MATCH_STARTED         // "Match Started"
+  MATCH_FINISHED        // "Match Finished"
+}
+
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+
+  userId    Int       
+  title     NotificationTitle
+  message   String
+
+  type      NotificationType   @default(INFO)
+  status    NotificationStatus @default(UNREAD)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

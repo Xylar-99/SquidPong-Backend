@@ -1,18 +1,20 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import app from '../app';
+import { ApiResponse } from '../utils/errorHandler';
 
 
 
-export async function authenticateUser(req: FastifyRequest, reply: FastifyReply) 
+export async function authenticateUser(req: FastifyRequest, res: FastifyReply) 
 {
-  console.log(req.url)
+  const respond : ApiResponse<null > = {success : false  , message : 'Unauthorized'}
+  
   const publicURIs: string[] = [
     '/', '/favicon.ico',
     '/api/auth/signup', '/api/auth/login', '/api/auth/verify-email',
     '/api/auth/reset-password', '/api/auth/forgot-password',
-    '/api/auth/intra', '/api/2fa/verify',
+    '/api/auth/intra',
     '/api/auth/intra/callback',
-    '/pages/signup.html', '/api/user/docs/json' ,  '/pages/verification.html', '/pages/login.html',
+    '/pages/signup.html', '/api/auth/refresh' ,  '/api/user/docs/json' ,  '/pages/verification.html', '/pages/login.html',
   ];
 
   const isPublic = publicURIs.includes(req.url) || req.url.startsWith('/docs') || req.url.startsWith('/api/auth/');
@@ -23,11 +25,12 @@ export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
 
     const cookie = req.headers.cookie;
     if(!cookie)
-        throw new Error("not allowed")
-
-    const token = cookie.split('=')[1].split(';')[0]
+      throw new Error("not allowed")
+    
+    const token = cookie.split('=')[1];
+    console.log(token)
     if (!token) 
-      return reply.status(401).send({ message: 'Missing access token' });
+      throw new Error("Missing access token")
 
     const payload:any = await app.jwt.verify(token);
 
@@ -35,8 +38,10 @@ export async function authenticateUser(req: FastifyRequest, reply: FastifyReply)
     req.id = payload.userId;
 
   } 
-  catch (err) 
+  catch (error) 
   {
-    return reply.status(401).send({ message: 'Unauthorized' });
+    return res.status(400).send(respond)
   }
+
+
 }

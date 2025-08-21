@@ -1331,6 +1331,28 @@
   </div>
 
   <script>
+
+
+
+
+async function customFetch(url, options) 
+{
+  const response = await fetch(url, { ...options, credentials: "include" });
+
+  if (response.status === 401)
+  {
+    const refresh = await fetch("http://localhost:4000/api/auth/refresh", {
+      method: "POST",
+      credentials: "include"
+    });
+
+    if (refresh.ok)
+      return fetch(url, { ...options, credentials: "include" });
+  }
+
+  return response;
+}
+
     let playerData = null;
     let friends = [];
     let settings = {
@@ -1350,9 +1372,10 @@
     async function loadPlayerData() {
       try {
         
-        const response = await fetch('http://localhost:4000/api/user/me', {
+        const response = await customFetch("http://localhost:4000/api/user/me", {
           credentials: 'include',
         });
+
         if (response.ok) 
         {
           playerData = await response.json();
