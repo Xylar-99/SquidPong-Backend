@@ -10,7 +10,7 @@ export async function initRabbitMQ()
   connection = await amqp.connect("amqp://rabbitmq:5672");
   channel = await connection.createChannel();
   
-  await channel.assertQueue("friend");
+  await channel.assertQueue("friends");
 
   console.log("Connected to RabbitMQ");
 }
@@ -20,6 +20,7 @@ export async function sendDataToQueue(data: any, queue: string)
 {
   try 
   {
+    console.log("heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
     const msgBuffer = Buffer.from(JSON.stringify(data));
     channel.sendToQueue(queue, msgBuffer);
   } 

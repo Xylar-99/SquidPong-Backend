@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { pipeline } from 'stream/promises';
 import { FastifyRequest } from 'fastify';
-
+import prisma from '../db/database';
 
 
 
@@ -25,4 +25,18 @@ export async function convertParsedMultipartToJson(req: FastifyRequest): Promise
   }
 
   return { ...data };
+}
+
+
+
+// Helper to get profile ID from userId
+export async function getProfileId(userId: number): Promise<string> 
+{
+
+  const profile = await prisma.profile.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+  if (!profile) throw new Error(`Profile not found for userId ${userId}`);
+  return profile.id;
 }

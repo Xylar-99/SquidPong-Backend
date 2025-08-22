@@ -25,7 +25,7 @@ async function start()
 	}
 
 	await initRabbitMQ()
-	await receiveFromQueue('chatservice')
+	await receiveFromQueue('friends')
 }
 
 

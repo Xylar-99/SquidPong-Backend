@@ -1,5 +1,6 @@
 import amqp from "amqplib";
-import { ws } from "../server";
+
+import { sendWsMessage } from "../events/websocketEvents";
 
 let connection: any;
 let channel: any;
@@ -10,7 +11,7 @@ export async function initRabbitMQ()
   connection = await amqp.connect("amqp://rabbitmq:5672");
   channel = await connection.createChannel();
   
-  await channel.assertQueue("friend");
+  await channel.assertQueue("friends");
   await channel.assertQueue("chat");
   await channel.assertQueue("emailhub");
   await channel.assertQueue("chatservice");
@@ -41,11 +42,11 @@ export async function receiveFromQueue(queue: string)
 }
 
 
-
-
 function receiveAndDeliver(msg: any) 
 {
 
+
+  console.log("i call him from gateway ")
   if (msg !== null) 
     {
     sendWsMessage(msg); 
@@ -56,12 +57,13 @@ function receiveAndDeliver(msg: any)
 
 
 
-function sendWsMessage(msg: any) 
-{
-    const data = JSON.parse(msg.content.toString());
+// function sendWsMessage(msg: any) 
+// {
+//     const data = JSON.parse(msg.content.toString());
 
-    ws.clients.forEach((client: any) => {
-    if (client.userId == data.to) client.send(JSON.stringify(data));
-  });
+//     ws.clients.forEach((client: any) => {
+//     if (client.userId == data.to) client.send(JSON.stringify(data));
+//   });
 
-}
+// }
+

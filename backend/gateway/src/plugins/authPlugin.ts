@@ -32,8 +32,8 @@ const jwt_config:any = {
         origin: ['http://localhost:8080', 'http://localhost:5173' , 'http://localhost:9090'],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type']
-        });
+        allowedHeaders: ["Content-Type", "x-user-id"]
+      });
 
      app.register(cookie);
      app.register(session, session_option);

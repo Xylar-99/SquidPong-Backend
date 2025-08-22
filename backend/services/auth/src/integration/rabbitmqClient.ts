@@ -24,7 +24,7 @@ export async function sendDataToQueue(data: any, queue: string)
   {
     const msgBuffer = Buffer.from(JSON.stringify(data));
     channel.sendToQueue(queue, msgBuffer);
-  } 
+  }
   catch (error) 
   {
     console.log("Error in rabbit connection:", error);

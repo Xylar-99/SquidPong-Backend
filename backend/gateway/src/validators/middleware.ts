@@ -28,7 +28,6 @@ export async function authenticateUser(req: FastifyRequest, res: FastifyReply)
       throw new Error("not allowed")
     
     const token = cookie.split('=')[1];
-    console.log(token)
     if (!token) 
       throw new Error("Missing access token")
 

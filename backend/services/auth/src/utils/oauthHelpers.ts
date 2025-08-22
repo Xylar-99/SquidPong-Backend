@@ -50,6 +50,7 @@ export function sendResponseToFrontend(res: FastifyReply, respond: any)
       window.close();
     </script>
   `);
+
 }
 
 

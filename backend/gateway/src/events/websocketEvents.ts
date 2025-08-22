@@ -29,7 +29,7 @@ interface UserSocket {
   type: 'game' | 'chat-notification';
 }
 
-const onlineUsers = new Map<string, UserSocket[]>();
+export const onlineUsers = new Map<string, UserSocket[]>();
 
 
 
@@ -92,7 +92,7 @@ async function onChatNotificationMessage(this:WebSocket , message: any)
 
     
     if (data.type == "chat")
-      console.log("handler of chat")
+      await sendDataToQueue(data , 'chat');
     else if (data.type == "notification")
       console.log("handler of notification")
 
@@ -159,3 +159,46 @@ export function handleHttpUpgrade(req: any, socket: any, head: any)
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+export function sendWsMessage(msg: any) 
+{
+  try 
+  {
+
+    const data = JSON.parse(msg.content.toString());
+
+    console.log("gateway servcie data is : " , data);
+    const { to } = data;
+
+    console.log("hi to is : " , to)
+    if (!to) return;
+
+    if (onlineUsers.size > 0) {
+      console.log("There are online users" , onlineUsers.size);
+    } else {
+      console.log("No users online");
+    }
+    
+    onlineUsers.get(to)?.filter(({ type }) => type === 'chat-notification')
+  .forEach(({ socket }) => {
+    if (socket.readyState === socket.OPEN) socket.send(JSON.stringify(data));
+  });
+
+  } 
+  catch (err) 
+  {
+    console.error('Failed to send WS message:', err);
+  }
+}

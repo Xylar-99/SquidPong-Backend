@@ -2,6 +2,9 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../db/database';
 import { ApiResponse } from '../utils/errorHandler';
 import { Profile } from '../utils/types';
+import { getProfileId } from '../utils/utils';
+import { sendDataToQueue } from '../integration/rabbitmqClient';
+
 
 enum FriendshipStatus {
   PENDING = "PENDING",
@@ -10,23 +13,22 @@ enum FriendshipStatus {
   BLOCKED = "BLOCKED",
 }
 
-const {PENDING , BLOCKED , ACCEPTED , DECLINED} = FriendshipStatus;
+const {PENDING, ACCEPTED} = FriendshipStatus;
 
-
-
-
+// ----------------- GET FRIENDS -----------------
 export async function getFriendsListHandler(req: FastifyRequest, res: FastifyReply)
 {
 
   const respond: ApiResponse<Profile[]> = { success: true, message: 'get friends success' };
   const headers = req.headers as any;
-  const userId = Number(headers['x-user-id']);
 
   try 
   {
+    const userId = Number(headers['x-user-id']);
+    const profileId = await getProfileId(userId);
 
     const profile = await prisma.profile.findUnique({
-      where: { userId },
+      where: { id: profileId },
       include: {
         sentFriendRequests: {
           where: { status: ACCEPTED },
@@ -39,12 +41,11 @@ export async function getFriendsListHandler(req: FastifyRequest, res: FastifyRep
       },
     });
 
-
     if (!profile) throw new Error('Profile not found');
 
     const friends = [
-      ...profile.sentFriendRequests.map((f:any) => f.receiver),
-      ...profile.receivedFriendRequests.map((f:any) => f.sender),
+      ...profile.sentFriendRequests.map(f => f.receiver),
+      ...profile.receivedFriendRequests.map(f => f.sender),
     ];
 
     respond.data = friends;
@@ -59,24 +60,20 @@ export async function getFriendsListHandler(req: FastifyRequest, res: FastifyRep
   return res.send(respond);
 }
 
-
-
-
-
-
-
-
-export async function getPendingRequestsHandler(req:FastifyRequest , res:FastifyReply)
+// ----------------- GET PENDING REQUESTS -----------------
+export async function getPendingRequestsHandler(req: FastifyRequest, res: FastifyReply) 
 {
-  const respond: ApiResponse<Profile[]> = { success: true, message: 'get friends success' };
+
+  const respond: ApiResponse<Profile[]> = { success: true, message: 'get pending requests success' };
   const headers = req.headers as any;
-  const userId = Number(headers['x-user-id']);
 
   try 
   {
+    const userId = Number(headers['x-user-id']);
+    const profileId = await getProfileId(userId);
 
     const profile = await prisma.profile.findUnique({
-      where: { userId },
+      where: { id: profileId },
       include: {
         sentFriendRequests: {
           where: { status: PENDING },
@@ -89,15 +86,14 @@ export async function getPendingRequestsHandler(req:FastifyRequest , res:Fastify
       },
     });
 
-
     if (!profile) throw new Error('Profile not found');
 
-    const friends = [
-      ...profile.sentFriendRequests.map((f:any) => f.receiver),
-      ...profile.receivedFriendRequests.map((f:any) => f.sender),
+    const requests = [
+      ...profile.sentFriendRequests.map(f => f.receiver),
+      ...profile.receivedFriendRequests.map(f => f.sender),
     ];
 
-    respond.data = friends;
+    respond.data = requests;
   } 
   catch (error) 
   {
@@ -109,32 +105,23 @@ export async function getPendingRequestsHandler(req:FastifyRequest , res:Fastify
   return res.send(respond);
 }
 
-
-
-
-
-
-
-
-
-
-
+// ----------------- SEND FRIEND REQUEST -----------------
 export async function sendFriendRequestHandler(req: FastifyRequest, res: FastifyReply)
 {
-
   const respond: ApiResponse<null> = { success: true, message: 'friend request sent' };
   const headers = req.headers as any;
-
-  const {receiverId} = (req.body as any);
-  const senderId = (headers['x-user-id']);
+  const { receiverId: receiverUserId } = req.body as any;
 
   try 
   {
+    const senderId = await getProfileId(Number(headers['x-user-id']));
+    const receiverId = await getProfileId(Number(receiverUserId));
+
     const exists = await prisma.friendship.findFirst({
       where: {
         OR: [
           { senderId, receiverId },
-          { senderId: receiverId, receiverId: senderId  , status: PENDING },
+          { senderId: receiverId, receiverId: senderId },
         ],
       },
     });
@@ -144,6 +131,7 @@ export async function sendFriendRequestHandler(req: FastifyRequest, res: Fastify
     await prisma.friendship.create({
       data: { senderId, receiverId, status: PENDING },
     });
+
   } 
   catch (error) 
   {
@@ -152,87 +140,65 @@ export async function sendFriendRequestHandler(req: FastifyRequest, res: Fastify
     return res.status(400).send(respond);
   }
 
+  await sendDataToQueue({from : headers['x-user-id'] , to : receiverUserId , message  : "send request friends" } , 'friends');
   return res.send(respond);
 }
 
-
-
-
-
-
-
-
-
-
-export async function acceptFriendRequestHandler(req:FastifyRequest , res:FastifyReply)
+// ----------------- ACCEPT FRIEND REQUEST -----------------
+export async function acceptFriendRequestHandler(req: FastifyRequest, res: FastifyReply)
 {
-
- const respond: ApiResponse<null> = { success: true, message: 'friend request sent' };
+  const respond: ApiResponse<null> = { success: true, message: 'friend request accepted' };
   const headers = req.headers as any;
-
-  const {receiverId} = (req.body as any);
-  const senderId = (headers['x-user-id']);
+  const { senderId: senderUserId } = req.body as any;
 
   try 
   {
-    const exists = await prisma.friendship.findFirst({
-      where: {
-        OR: [
-          { senderId, receiverId },
-          { senderId: receiverId, receiverId: senderId , status: ACCEPTED },
-        ],
-      },
+    const receiverId = await getProfileId(Number(headers['x-user-id']));
+    const senderId = await getProfileId(Number(senderUserId));
+
+    const friendship = await prisma.friendship.findFirst({
+      where: { senderId, receiverId, status: PENDING },
     });
 
-    if (exists) throw new Error('Friend request already exists');
+    if (!friendship) throw new Error('No pending friend request found');
 
-    await prisma.friendship.create({ data: { senderId, receiverId, status: PENDING } });
-  
-    } 
+    await prisma.friendship.update({
+      where: { id: friendship.id },
+      data: { status: ACCEPTED },
+    });
+
+  } 
   catch (error) 
   {
     respond.success = false;
     respond.message = error instanceof Error ? error.message : 'Unknown error';
     return res.status(400).send(respond);
   }
-
+  
+  await sendDataToQueue({from : headers['x-user-id'] , to : senderUserId , message  : "accept request friends" } , 'friends');
   return res.send(respond);
 }
 
-
-
-
-
-
+// ----------------- REJECT FRIEND REQUEST -----------------
 export async function rejectFriendRequestHandler(req: FastifyRequest, res: FastifyReply)
 {
-
-  const respond: ApiResponse<null> = { success: true, message: 'Friend request rejected' };
-  
-  const body = req.body as any;
+  const respond: ApiResponse<null> = { success: true, message: 'friend request rejected' };
   const headers = req.headers as any;
-  const receiverId = (headers['x-user-id']);
-  const senderId = (body.senderId);
+  const { senderId: senderUserId } = req.body as any;
 
-  try 
-  {
-    const exists = await prisma.friendship.findFirst({
-    where: {
-    senderId,
-    receiverId,
-    status: PENDING,
-    },
+  try {
+    const receiverId = await getProfileId(Number(headers['x-user-id']));
+    const senderId = await getProfileId(Number(senderUserId));
+
+    const friendship = await prisma.friendship.findFirst({
+      where: { senderId, receiverId, status: PENDING },
     });
 
-    if (!exists) throw new Error('No pending friend request found to reject');
+    if (!friendship) throw new Error('No pending friend request found to reject');
 
-    await prisma.friendship.delete({
-        where: { id: exists.id },
-        });
+    await prisma.friendship.delete({ where: { id: friendship.id } });
 
-  } 
-  catch (error)
-  {
+  } catch (error) {
     respond.success = false;
     respond.message = error instanceof Error ? error.message : 'Unknown error';
     return res.status(400).send(respond);
@@ -241,27 +207,18 @@ export async function rejectFriendRequestHandler(req: FastifyRequest, res: Fasti
   return res.send(respond);
 }
 
-
-
-
-
-
-
-
-
-
-
-
+// ----------------- REMOVE FRIEND -----------------
 export async function removeFriendHandler(req: FastifyRequest, res: FastifyReply)
 {
   const respond: ApiResponse<null> = { success: true, message: 'Friend removed successfully' };
-  
-  const { senderId } = req.params as any;
   const headers = req.headers as any;
-  const receiverId = (headers['x-user-id']);
+  const { senderId: senderUserId } = req.params as any;
 
   try 
   {
+    const receiverId = await getProfileId(Number(headers['x-user-id']));
+    const senderId = await getProfileId(Number(senderUserId));
+
     const friendship = await prisma.friendship.findFirst({
       where: {
         OR: [
@@ -271,10 +228,9 @@ export async function removeFriendHandler(req: FastifyRequest, res: FastifyReply
       },
     });
 
-    if (!friendship)
-      throw new Error('You are not friends with this user');
+    if (!friendship) throw new Error('You are not friends with this user');
 
-    await prisma.friendship.delete({ where: { id: friendship.id }});
+    await prisma.friendship.delete({ where: { id: friendship.id } });
 
   } 
   catch (error) 
@@ -287,38 +243,25 @@ export async function removeFriendHandler(req: FastifyRequest, res: FastifyReply
   return res.send(respond);
 }
 
-
-
-
-
-
-
-
-
-
-
+// ----------------- CANCEL FRIEND REQUEST -----------------
 export async function cancelFriendRequestHandler(req: FastifyRequest, res: FastifyReply) 
 {
   const respond: ApiResponse<null> = { success: true, message: 'Friend request canceled' };
-  
   const headers = req.headers as any;
-  const senderId = (headers['x-user-id']);
-  const { receiverId } = req.body as any;
+  const { receiverId: receiverUserId } = req.body as any;
 
   try 
   {
+    const senderId = await getProfileId(Number(headers['x-user-id']));
+    const receiverId = await getProfileId(Number(receiverUserId));
+
     const friendship = await prisma.friendship.findFirst({
-      where: {
-        senderId,
-        receiverId,
-        status: PENDING,
-      },
+      where: { senderId, receiverId, status: PENDING },
     });
 
-    if (!friendship)
-      throw new Error('No pending friend request found to cancel');
+    if (!friendship) throw new Error('No pending friend request found to cancel');
 
-    await prisma.friendship.delete({ where: { id: friendship.id }});
+    await prisma.friendship.delete({ where: { id: friendship.id } });
 
   } 
   catch (error) 
@@ -330,5 +273,3 @@ export async function cancelFriendRequestHandler(req: FastifyRequest, res: Fasti
 
   return res.send(respond);
 }
-
-

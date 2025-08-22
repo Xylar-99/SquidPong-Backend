@@ -35,7 +35,6 @@ export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
     const respond : ApiResponse<null > = {success : true  , message : EmailMessage.EMAIL_VERIFICATION_SENT}
     const body = req.body as any;
 
-    console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh")
     try
     {
       await isUserAlreadyRegistered(body);
@@ -131,14 +130,17 @@ export async function getGooglCallbackehandler(req: FastifyRequest, res: Fastify
 {
 
   const respond: ApiResponse<{ is2FAEnabled: boolean; token: string }> = { success: true, message: 'login success', };
-
   respond.data = { is2FAEnabled: false, token: '' };
 
-  try {
+  try 
+  {
     const googleData = await fetchGoogleUser(req);
+    console.log(googleData);
     const user = await createAccount(googleData);
     await isTwoFactorEnabled(res, user, respond);
-  } catch (error) {
+  } 
+  catch (error) 
+  {
     respond.success = false;
     if (error instanceof Error) {
       respond.message = error.message;

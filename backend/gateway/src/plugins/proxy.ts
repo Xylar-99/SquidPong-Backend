@@ -59,4 +59,37 @@ app.register(fastifyHttpProxy, {
 
 
 
+
+app.register(fastifyHttpProxy, {
+
+  upstream: 'http://user:4001',
+  prefix: '/api/friend',
+  rewritePrefix: '/api/friend',
+  http2: false,
+
+  preHandler: async (req:any, reply:any) => {
+    req.headers['x-user-id'] = req.id;
+  },
+
+}
+);
+
+
+app.register(fastifyHttpProxy, {
+
+  upstream: 'http://user:4001',
+  prefix: '/api/blocked',
+  rewritePrefix: '/api/blocked',
+  http2: false,
+
+  preHandler: async (req:any, reply:any) => {
+    req.headers['x-user-id'] = req.id;
+  },
+
+}
+);
+
+
+
+
 }
