@@ -121,6 +121,16 @@ export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
   res.clearCookie('accessToken', { path : '/' , httpOnly: true });
   res.clearCookie('refreshToken', { path : '/api/auth/refresh' , httpOnly: true });
 
+
+  
+  const token = req.cookies['accessToken'];
+
+  if (!token) throw new Error("Not allowed");
+  await redis.del(token);
+
+
+  // console.log("token in logout is : " , token);
+
   return res.send(respond)
 }
 
@@ -218,6 +228,9 @@ export async function postRefreshTokenHandler(req: FastifyRequest, res: FastifyR
       sameSite: "lax",
       secure: false,
     });
+
+  await redis.set(newAccessToken, "valid", "EX", 60 * 15);
+
 
   } 
   catch (error) 
