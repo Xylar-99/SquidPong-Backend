@@ -122,17 +122,18 @@ export async function getAllUserHandler(req: FastifyRequest, res: FastifyReply)
 
 
 
-export async function deleteProfileHandler(req: FastifyRequest, res: FastifyReply) {
+export async function deleteProfileHandler(req: FastifyRequest, res: FastifyReply) 
+{
   const respond: ApiResponse<null> = { success: true, message: 'User deleted successfully' };
+  const headers = req.headers as any;
+  const userId = Number(headers['x-user-id']);
 
-  try {
-    const headers = req.headers as any;
-    const userId = Number(headers['x-user-id']);
-
-    await prisma.profile.delete({
-      where: { userId },
-    });
-  } catch (error) {
+  try 
+  {
+    await prisma.profile.delete({ where: { userId }});
+  } 
+  catch (error) 
+  {
     respond.success = false;
     if (error instanceof Error) {
       respond.message = error.message;
@@ -239,3 +240,32 @@ export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply)
   return res.send(respond);
 }
 
+
+
+
+// export async function deleteAccountHandler(req: FastifyRequest, res: FastifyReply) 
+// {
+//   const respond: ApiResponse<null> = { success: false, message: "Account deletion failed" };
+//   const headers = req.headers as any;
+//   const userId = Number(headers['x-user-id']);
+
+//   try 
+//   {
+
+//     await prisma.profile.delete({ where: { userId } });
+
+//     respond.success = true;
+//     respond.message = "Account deleted successfully";
+    
+//   } 
+//   catch (error) 
+//   {
+//     if (error instanceof Error) {
+//       respond.message = error.message;
+//       return res.status(400).send(respond);
+//     }
+//     return res.status(500).send(respond);
+//   }
+
+//   return res.send(respond);
+// }

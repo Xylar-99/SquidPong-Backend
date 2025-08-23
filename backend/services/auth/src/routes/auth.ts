@@ -87,6 +87,12 @@ const authRoutes: Route[] = [
     url: "/api/auth/refresh",
     handler: authController.postRefreshTokenHandler,
   },
+
+  {
+    method: "DELETE",
+    url: "/api/auth/delete-account",
+    handler: authController.deleteAccountHandler,
+  },
 ];
 
 

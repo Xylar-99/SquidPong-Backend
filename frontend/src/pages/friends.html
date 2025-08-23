@@ -612,13 +612,14 @@ function initializeWebSocket() {
       showNotification('Real-time notifications enabled! 🎉', 'websocket');
     };
     
-    websocket.onmessage = function(event) {
+    websocket.onmessage = function(event) 
+    {
       try 
       {
         const data = JSON.parse(event.data);
         alert(JSON.stringify(data));
         handleWebSocketMessage(data);
-      } 
+      }
       catch (error) 
       {
         console.error('Failed to parse WebSocket message:', error);

@@ -87,7 +87,8 @@ export enum AuthMessage {
     VERIFICATION_TOKEN_EXPIRED = 'Email verification token expired.',
   }
   
-  export enum UserProfileMessage {
+  export enum UserProfileMessage
+  {
     EMAIL_ALREADY_USED = 'Email is already registered.',
     USERNAME_ALREADY_USED = 'Username is already taken.',
     WEAK_PASSWORD = 'Password is too weak.',

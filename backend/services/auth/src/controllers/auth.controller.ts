@@ -13,7 +13,7 @@ import prisma from '../db/database';
 import app from '../app';
 import { PasswordMessage ,EmailMessage , AuthError, UserProfileMessage } from '../utils/messages';
 import { fetchIntraToken , fetchGoogleUser , fetchIntraUser , sendResponseToFrontend } from '../utils/oauthHelpers';
-
+import { simpleErrorHandler } from '../utils/errorHandler';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -42,12 +42,8 @@ export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
     }
     catch (error) 
     {
-      respond.success = false;
-      if (error instanceof Error)
-        {
-          respond.message = error.message;
-          return res.status(400).send(respond)
-        }
+      simpleErrorHandler(error , respond);
+      return res.status(400).send(respond);
     }
     
   return res.send(respond)
@@ -58,7 +54,7 @@ export async function postSignupHandler(req:FastifyRequest , res:FastifyReply)
 export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
 {
   const respond : ApiResponse<null > = {success : true  , message : EmailMessage.EMAIL_VERIFIED_SUCCESSFULLY}
-    const body = req.body as any;
+  const body = req.body as any;
 
     try 
     {
@@ -71,12 +67,8 @@ export async function verifyEmailHandler(req:FastifyRequest , res:FastifyReply)
     }
     catch (error) 
     {
-      respond.success = false;
-      if (error instanceof Error)
-        {
-          respond.message = error.message;
-          return res.status(400).send(respond)
-        }
+      simpleErrorHandler(error , respond);
+      return res.status(400).send(respond);
     }
     
   return res.send(respond)
@@ -101,12 +93,8 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
     }
     catch (error) 
     {
-      respond.success = false;
-      if (error instanceof Error)
-        {
-          respond.message = error.message;
-          return res.status(400).send(respond)
-        }
+      simpleErrorHandler(error , respond);
+      return res.status(400).send(respond);
     }
     
   return res.send(respond)
@@ -117,21 +105,70 @@ export async function postLoginHandler(req:FastifyRequest , res:FastifyReply)
 export async function postLogoutHandler(req:FastifyRequest , res:FastifyReply)
 {
   const respond : ApiResponse<null > = {success : true  , message : 'logout success'}
-
-  res.clearCookie('accessToken', { path : '/' , httpOnly: true });
-  res.clearCookie('refreshToken', { path : '/api/auth/refresh' , httpOnly: true });
-
-
   
-  const token = req.cookies['accessToken'];
-
-  if (!token) throw new Error("Not allowed");
-  await redis.del(token);
-
-
-  // console.log("token in logout is : " , token);
+  try
+  {
+  
+    res.clearCookie('accessToken', { path : '/' , httpOnly: true });
+    res.clearCookie('refreshToken', { path : '/api/auth/refresh' , httpOnly: true });
+  
+    const token = req.cookies['accessToken'] as any;
+    await redis.del(token);
+    
+  } 
+  catch (error) 
+  {
+    simpleErrorHandler(error , respond);
+    return res.status(400).send(respond);
+  }
 
   return res.send(respond)
+}
+
+
+
+export async function deleteAccountHandler(req: FastifyRequest, res: FastifyReply) 
+{
+  const respond: ApiResponse<null> = { success: false, message: "Account deletion failed" };
+  const headers = req.headers as any;
+  const userId = Number(headers['x-user-id']);
+
+  try 
+  {
+
+    const user = await prisma.user.findUnique({ where: { id : userId } });
+    if (!user) throw new Error("User not found");
+
+    await prisma.user.delete({ where: { id  : userId } });
+
+    const token = req.cookies['accessToken'] as any;
+    await redis.del(token);
+  
+
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+
+    // send delete profile
+    fetch(`http://user:4001/api/user/me`, {
+      method: "DELETE",
+      headers : {"x-user-id": `${userId}`}
+    })
+
+    respond.success = true;
+    respond.message = "Account deleted successfully";
+    
+  } 
+  catch (error) 
+  {
+    if (error instanceof Error) {
+      respond.message = error.message;
+      return res.status(400).send(respond);
+    }
+    return res.status(500).send(respond);
+  }
+
+  return res.send(respond);
 }
 
 
@@ -145,17 +182,14 @@ export async function getGooglCallbackehandler(req: FastifyRequest, res: Fastify
   try 
   {
     const googleData = await fetchGoogleUser(req);
-    console.log(googleData);
+    
     const user = await createAccount(googleData);
     await isTwoFactorEnabled(res, user, respond);
   } 
   catch (error) 
   {
-    respond.success = false;
-    if (error instanceof Error) {
-      respond.message = error.message;
-      return res.status(400).send(respond);
-    }
+    simpleErrorHandler(error , respond);
+    return res.status(400).send(respond);
   }
 
   sendResponseToFrontend(res, respond);
@@ -189,14 +223,12 @@ export async function getIntracallbackhandler(req: FastifyRequest, res: FastifyR
 
     const account = await createAccount(userJSON);
     await isTwoFactorEnabled(res, account, respond);
-  } 
+
+  }
   catch (error) 
   {
-    respond.success = false;
-    if (error instanceof Error) {
-      respond.message = error.message;
-      return res.status(400).send(respond);
-    }
+    simpleErrorHandler(error , respond);
+    return res.status(400).send(respond);
   }
 
   sendResponseToFrontend(res, respond);
@@ -281,19 +313,21 @@ export async function postForgotPasswordHandler(req: FastifyRequest, res: Fastif
 export async function postChangePasswordHandler(req: FastifyRequest, res: FastifyReply) 
 {
   const respond : ApiResponse<null > = {success : true  , message : 'login success'}
-  const id = req.id as any;
+  const headers = req.headers as any;
+  
+  const userId = Number(headers['x-user-id'])
   const {oldPassword , newPassword} = req.body as any;
 
   try 
   {
-    const user = await prisma.user.findFirst({ where: { id: Number(id) , password : {not : null} }})
+    const user = await prisma.user.findFirst({ where: { id : userId , password : {not : null} }})
     
     if(!user)
       throw new Error(UserProfileMessage.USER_NOT_FOUND)
     if(await VerifyPassword(oldPassword , user.password) == false)
       throw new Error(PasswordMessage.PASSWORD_SAME_AS_OLD)
 
-    await prisma.user.update({ where: { id: Number(id)}  , data : {password : await hashPassword(newPassword)} })
+    await prisma.user.update({ where: { id : userId}  , data : {password : await hashPassword(newPassword)} })
 
   } 
   catch (error) 

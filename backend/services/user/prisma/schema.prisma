@@ -294,11 +294,11 @@ model Match {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  creator       Profile @relation("MatchCreator", fields: [creatorId], references: [id])
+  creator       Profile @relation("MatchCreator", fields: [creatorId], references: [id], onDelete: Cascade)
   players       Profile[] @relation("MatchPlayer")
   profileHistory ProfileMatchHistory[]
-
 }
+
 
 // Profile match history junction
 model ProfileMatchHistory {

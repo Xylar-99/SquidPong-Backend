@@ -40,13 +40,24 @@ export async function isUserAllowedToLogin(body:any , user:any | null)
 
 export async function isUserAlreadyRegistered(body:any)
 {
-    const user = await prisma.user.findUnique({ where: { email: body.email , username : body.username}})
+    const UserByemail     = await prisma.user.findUnique({ where: { email: body.email}})
+    const UserByUsername  = await prisma.user.findUnique({ where: { username: body.username}})
 
-    if(!user)
+    if(!UserByemail && !UserByUsername)
       return;
 
-    if(user.password)
+    if(UserByemail?.password)
       throw new Error(UserProfileMessage.USER_ALREADY_EXISTS);
+    else if(!UserByemail?.password)
+        return;
+
+
+    if(UserByemail != UserByUsername)
+    {
+      if(UserByemail)
+        throw new Error(UserProfileMessage.EMAIL_ALREADY_USED);
+      throw new Error(UserProfileMessage.USERNAME_ALREADY_USED);
+    }
 
 }
 
