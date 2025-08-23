@@ -131,15 +131,17 @@ export async function deleteAccountHandler(req: FastifyRequest, res: FastifyRepl
 {
   const respond: ApiResponse<null> = { success: false, message: "Account deletion failed" };
   const headers = req.headers as any;
-  const userId = Number(headers['x-user-id']);
+  const id:number = Number(headers['x-user-id']);
 
+  console.log("deledddddddddddddddddddddddddddddddddddddddddddddddddddddd")
   try 
   {
 
-    const user = await prisma.user.findUnique({ where: { id : userId } });
+    console.log(typeof id , id)
+    const user = await prisma.user.findUnique({ where: {id} });
     if (!user) throw new Error("User not found");
 
-    await prisma.user.delete({ where: { id  : userId } });
+    await prisma.user.delete({ where: { id } });
 
     const token = req.cookies['accessToken'] as any;
     await redis.del(token);
@@ -149,10 +151,9 @@ export async function deleteAccountHandler(req: FastifyRequest, res: FastifyRepl
     res.clearCookie("refreshToken");
 
 
-    // send delete profile
     fetch(`http://user:4001/api/user/me`, {
       method: "DELETE",
-      headers : {"x-user-id": `${userId}`}
+      headers : {"x-user-id": `${id}`}
     })
 
     respond.success = true;
@@ -161,11 +162,8 @@ export async function deleteAccountHandler(req: FastifyRequest, res: FastifyRepl
   } 
   catch (error) 
   {
-    if (error instanceof Error) {
-      respond.message = error.message;
-      return res.status(400).send(respond);
-    }
-    return res.status(500).send(respond);
+    simpleErrorHandler(error , respond);
+    return res.status(400).send(respond);
   }
 
   return res.send(respond);

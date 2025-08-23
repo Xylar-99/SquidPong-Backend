@@ -1918,9 +1918,6 @@ async function customFetch(url, options)
         const response = await fetch('http://localhost:4000/api/auth/delete-account', {
           method: 'DELETE',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
         });
         
         if (response.ok) {

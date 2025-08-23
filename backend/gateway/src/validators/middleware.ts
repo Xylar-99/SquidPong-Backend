@@ -4,44 +4,63 @@ import { ApiResponse } from '../utils/errorHandler';
 import redis from '../integration/redisClient';
 
 
-export async function authenticateUser(req: FastifyRequest, res: FastifyReply)
+export async function authenticateUser(req: FastifyRequest, res: FastifyReply) 
 {
 
   const respond: ApiResponse<null> = { success: false, message: 'Unauthorized' };
+  const url = req.url;
 
   const publicURIs: string[] = [
     '/', '/favicon.ico',
-    '/api/auth/signup', '/api/auth/login', '/api/auth/verify-email',
-    '/api/auth/reset-password', '/api/auth/forgot-password',
-    '/api/auth/intra',
-    '/api/auth/intra/callback',
-    '/pages/signup.html', '/api/auth/refresh', '/api/user/docs/json', '/pages/verification.html', '/pages/login.html',
+    '/api/user/docs/json',
+    '/api/auth/docs/json',
+    '/api/auth/signup', 
+    '/api/auth/login', 
+    '/api/auth/verify-email', 
+    '/api/auth/intra', 
+    '/api/auth/google', 
+    '/api/auth/refresh'
   ];
 
-  const isPublic = publicURIs.includes(req.url) || req.url.startsWith('/docs') || req.url.startsWith('/api/auth/');
-  if (isPublic) return;
+
+  const publicCallbackPrefixes: string[] = [
+    '/api/auth/google/callback',
+    '/api/auth/intra/callback',
+  ];
+
+  const isExactPublic = publicURIs.includes(url);
+  const isCallbackPublic = publicCallbackPrefixes.some(prefix => url.startsWith(prefix));
+
+  if ((isExactPublic || isCallbackPublic)) 
+    return;
 
   try 
   {
+
     const cookie = req.headers.cookie;
     if (!cookie) throw new Error("Not allowed");
 
     const token = cookie.split('=')[1];
     if (!token) throw new Error("Missing access token");
 
-    // 1️⃣ Check token in Redis
+    console.log( url  , "token is : " , token)
     const tokenExists = await redis.get(token);
     if (!tokenExists) throw new Error("Token expired or invalid");
 
-    // 2️⃣ Verify JWT
     const payload: any = await app.jwt.verify(token);
 
-    console.log('url:', req.url, 'userId:', payload.userId);
+    console.log('Authenticated URL:', url, 'User ID:', payload.userId);
     req.id = payload.userId;
 
   } 
   catch (error) 
   {
-    return res.status(401).send(respond);
+    respond.success = false;
+    if (error instanceof Error)
+      respond.message = error.message;
+
+    return res.status(400).send(respond);
   }
+
+
 }
