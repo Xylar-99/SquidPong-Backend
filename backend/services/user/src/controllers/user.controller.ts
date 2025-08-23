@@ -269,3 +269,46 @@ export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply)
 
 //   return res.send(respond);
 // }
+
+
+
+export async function searchUsersHandler(req: FastifyRequest, res: FastifyReply) 
+{
+  const respond: ApiResponse<any> = { success: true, message: 'Search results fetched' };
+
+  try 
+  {
+    const query = req.query as any;
+    const search = query.q as string;
+
+    if (!search)
+      throw new Error("Search query is required")
+
+
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: search, mode: 'insensitive' } },
+          { fname: { contains: search, mode: 'insensitive' } }
+        ]
+      },
+      select: {
+        id: true,
+        username: true,
+        fname: true,
+        lname: true,
+        email: true,
+      },
+    });
+
+    respond.data = users;
+  } 
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error) respond.message = error.message;
+    return res.status(400).send(respond);
+  }
+
+  return res.send(respond);
+}

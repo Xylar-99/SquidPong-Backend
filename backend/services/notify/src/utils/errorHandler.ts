@@ -9,3 +9,11 @@ export function errorHandler( error: FastifyError, request: FastifyRequest, repl
     reply.status(500).send({ message: 'Internal Server Error' });
   }
 }
+
+
+
+export type ApiResponse<T = any> = {
+  success: boolean;
+  message: string;
+  data?: T | any;
+};

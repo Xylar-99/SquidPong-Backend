@@ -273,3 +273,54 @@ export async function cancelFriendRequestHandler(req: FastifyRequest, res: Fasti
 
   return res.send(respond);
 }
+
+
+
+export async function searchFriendsByUsernameHandler(req: FastifyRequest, res: FastifyReply) 
+{
+  const headers = req.headers as any;
+  const userId = headers['x-user-id'] as string;
+  const respond: ApiResponse<any> = { success: true, message: 'Friends search results fetched' };
+
+  try 
+  {
+    const query = req.query as any;
+    const search = query.q as string;
+
+    if (!search)
+      throw new Error("Search query is required")
+
+    const friends = await prisma.friendship.findMany({
+      where: {
+        status: 'ACCEPTED',
+        OR: [
+          { senderId: userId },
+          { receiverId: userId }
+        ]
+      },
+      include: {
+        sender: true,
+        receiver: true
+      }
+    });
+
+
+    const filtered = friends.map((f:any) => {
+      return f.senderId === userId ? f.receiver : f.sender;
+    }).filter((u:any) => 
+      u.username.toLowerCase().includes(search.toLowerCase()) ||
+      u.firstName.toLowerCase().includes(search.toLowerCase())
+    );
+
+    respond.data = filtered.slice(0, 20);
+  
+  } 
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error) respond.message = error.message;
+    return res.status(400).send(respond);
+  }
+
+  return res.send(respond);
+}

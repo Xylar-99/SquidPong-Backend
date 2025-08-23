@@ -617,7 +617,7 @@ function initializeWebSocket() {
       try 
       {
         const data = JSON.parse(event.data);
-        alert(JSON.stringify(data));
+        alert(JSON.stringify(data.message));
         handleWebSocketMessage(data);
       }
       catch (error) 
@@ -674,8 +674,10 @@ function updateConnectionStatus(status) {
   }
 }
 
-function handleWebSocketMessage(data) {
+function handleWebSocketMessage(data) 
+{
   alert('Received WebSocket message:', data);
+  handleFriendRequestNotification(data);
   
   switch (data.type) {
     case 'friend_request':
@@ -701,8 +703,9 @@ function handleWebSocketMessage(data) {
   }
 }
 
-function handleFriendRequestNotification(data) {
-  showNotification(`🎉 ${data.senderUsername || `User ${data.senderId}`} sent you a friend request!`, 'websocket');
+function handleFriendRequestNotification(data) 
+{
+  showNotification(`🎉 ${`User ${data.from}`} sent you a ${data.message}`, 'websocket');
   
   // Refresh pending requests to show the new request
   loadPendingRequests();

@@ -133,7 +133,6 @@ export async function deleteAccountHandler(req: FastifyRequest, res: FastifyRepl
   const headers = req.headers as any;
   const id:number = Number(headers['x-user-id']);
 
-  console.log("deledddddddddddddddddddddddddddddddddddddddddddddddddddddd")
   try 
   {
 

@@ -1,5 +1,7 @@
 import { sendDataToQueue  } from '../integration/rabbitmqClient'
 import { FastifyRequest } from "fastify";
+import { WebSocket } from "ws";
+
 import { ws } from '../server';
 import app from '../app';
 
@@ -42,15 +44,15 @@ export async function handleWsConnect(ws: any, req: FastifyRequest)
     const type = req.url === '/game' ? 'game' : 'chat-notification';
 
     // added online user 
-    if (!onlineUsers.has(ws.userId))
-      onlineUsers.set(ws.userId, []);
-    onlineUsers.get(ws.userId)!.push({ socket: ws, type });
+    if (!onlineUsers.has(String(ws.userId)))
+      onlineUsers.set(String(ws.userId), []);
+    onlineUsers.get(String(ws.userId))!.push({ socket: ws, type });
     ////////////////
 
     // update data in user-service  is online
     await sendSingleMultipartVoid( 'http://user:4001/api/user/me', "status", "DO_NOT_DISTURB", ws.userId );
 
-    console.log(`User ${ws.userId} connected via ${type} socket`);
+    console.log(`User type of ${typeof ws.userId} **** ws.id :  ${ws.userId} connected via ${type} socket`);
 
     if (type === 'game')
       ws.on("message", onGameMessage);
@@ -170,35 +172,39 @@ export function handleHttpUpgrade(req: any, socket: any, head: any)
 
 
 
-
-
 export function sendWsMessage(msg: any) 
 {
+
+  console.log(onlineUsers)
   try 
   {
 
     const data = JSON.parse(msg.content.toString());
 
-    console.log("gateway servcie data is : " , data);
+    console.log("gateway service data is:", data);
     const { to } = data;
-
-    console.log("hi to is : " , to)
     if (!to) return;
 
-    if (onlineUsers.size > 0) {
-      console.log("There are online users" , onlineUsers.size);
-    } else {
+    if (onlineUsers.size > 0) 
+      console.log("There are online users:", onlineUsers.size);
+    else
       console.log("No users online");
+
+    const sockets = onlineUsers.get(to);
+    if (!sockets) 
+      {
+      console.log(`User ${to} not online`);
+      return;
     }
-    
-    onlineUsers.get(to)?.filter(({ type }) => type === 'chat-notification')
-  .forEach(({ socket }) => {
-    if (socket.readyState === socket.OPEN) socket.send(JSON.stringify(data));
-  });
+
+      const socket = sockets[0].socket;
+      if (socket.readyState === WebSocket.OPEN)
+        socket.send(JSON.stringify(data));
+
 
   } 
   catch (err) 
   {
-    console.error('Failed to send WS message:', err);
+    console.error("Failed to send WS message:", err);
   }
 }
