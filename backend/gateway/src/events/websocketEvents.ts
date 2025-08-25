@@ -1,7 +1,7 @@
 import { sendDataToQueue  } from '../integration/rabbitmqClient'
 import { FastifyRequest } from "fastify";
 import { WebSocket } from "ws";
-
+import redis from '../integration/redisClient';
 import { ws } from '../server';
 import app from '../app';
 
@@ -24,51 +24,54 @@ async function sendSingleMultipartVoid(url: string, fieldName: string, value: st
 }
 
 
-// handel
 
-interface UserSocket {
-  socket: any;
-  type: 'game' | 'chat-notification';
-}
-
-export const onlineUsers = new Map<string, UserSocket[]>();
+export const onlineUsers = new Map<string, WebSocket>();
 
 
 
 
-export async function handleWsConnect(ws: any, req: FastifyRequest)
+
+export async function handleWsConnect(ws: any, req: FastifyRequest) 
 {
-
   try 
   {
     const type = req.url === '/game' ? 'game' : 'chat-notification';
+    const userId = ws.userId;
 
-    // added online user 
-    if (!onlineUsers.has(String(ws.userId)))
-      onlineUsers.set(String(ws.userId), []);
-    onlineUsers.get(String(ws.userId))!.push({ socket: ws, type });
-    ////////////////
+    const socketKey = `user:${userId}:sockets:${type}`;
+    await redis.set(socketKey, `${ws.userId}`);
+    onlineUsers.set(socketKey , ws)
+    
 
-    // update data in user-service  is online
-    await sendSingleMultipartVoid( 'http://user:4001/api/user/me', "status", "DO_NOT_DISTURB", ws.userId );
+    console.log(`User ${userId} connected via ${type} socket (ws.id: ${ws.userId})`);
 
-    console.log(`User type of ${typeof ws.userId} **** ws.id :  ${ws.userId} connected via ${type} socket`);
-
-    if (type === 'game')
+    // Handle messages per type
+    if (type === 'game') 
       ws.on("message", onGameMessage);
-    else
+    else 
       ws.on("message", onChatNotificationMessage);
 
-    ws.on("close", () => { onClientDisconnect(ws)});
+    ws.on("close", async () => {
+      onClientDisconnect(ws);
+    });
+
+    // Notify user-service that user is online
+    await sendSingleMultipartVoid(
+      'http://user:4001/api/user/me',
+      "status",
+      "DO_NOT_DISTURB",
+      userId
+    );
 
   } 
-  catch (error)
+  catch (error) 
   {
     console.error('WebSocket connection setup failed:', error);
     ws.close(1008, 'Connection setup failed');
   }
-
 }
+
+
 
 
 
@@ -102,32 +105,33 @@ async function onChatNotificationMessage(this:WebSocket , message: any)
 
 
 
-
-
-async function onClientDisconnect(ws:any) 
+async function onClientDisconnect(ws: any) 
 {
+  const userId: string = String(ws.userId);
 
-  const userId : string = ws.userId;
-  const sockets = onlineUsers.get(userId);
-
-  if (sockets)
+  try 
   {
-    // remove all socket first
-    for (const { socket } of sockets)
+    const socketTypes = ['game', 'chat-notification'];
+    for (const type of socketTypes) 
     {
-        if (socket.readyState === ws.OPEN) socket.close();
+      const socketKey = `user:${userId}:sockets:${type}`;
+      await redis.del(socketKey);
+      onlineUsers.delete(socketKey);
+
+      if (ws.readyState === ws.OPEN)
+        ws.close();
     }
 
-    onlineUsers.delete(userId);
+    // Notify user-service that user is offline
+    sendSingleMultipartVoid( 'http://user:4001/api/user/me', "status", "OFFLINE", userId);
+
+    console.log(`Client ${userId} disconnected (ws.id: ${ws.id})`);
+  } 
+  catch (error) 
+  {
+    console.error(`Error handling disconnect for user ${userId}:`, error);
   }
-
-  // update data in user-service  is offline
-  sendSingleMultipartVoid('http://user:4001/api/user/me' , "status" , "OFFLINE" , ws.userId)
-  
-  console.log(`client ${ws.userId} disconnected`)
 }
-
-
 
 
 
@@ -135,7 +139,6 @@ async function onClientDisconnect(ws:any)
 export function handleHttpUpgrade(req: any, socket: any, head: any) 
 {
   const includesURL = ['/game', '/chat-notification'];
-
 
     try 
     {
@@ -185,22 +188,16 @@ export function sendWsMessage(msg: any)
     const { to } = data;
     if (!to) return;
 
-    if (onlineUsers.size > 0) 
-      console.log("There are online users:", onlineUsers.size);
-    else
-      console.log("No users online");
-
-    const sockets = onlineUsers.get(to);
-    if (!sockets) 
-      {
+    const socketKey = `user:${to}:sockets:chat-notification`;
+    const socket = onlineUsers.get(socketKey);
+    if (!socket) 
+    {
       console.log(`User ${to} not online`);
       return;
     }
 
-      const socket = sockets[0].socket;
-      if (socket.readyState === WebSocket.OPEN)
-        socket.send(JSON.stringify(data));
-
+    if (socket.readyState === WebSocket.OPEN)
+      socket.send(JSON.stringify(data));
 
   } 
   catch (err) 

@@ -596,7 +596,8 @@ function initializeWebSocket() {
   {
     websocket = new WebSocket(WS_URL);
     
-    websocket.onopen = function(event) {
+    websocket.onopen = function(event) 
+    {
       console.log('WebSocket connected');
       updateConnectionStatus('connected');
       reconnectAttempts = 0;
@@ -609,7 +610,7 @@ function initializeWebSocket() {
       //   }));
       // }
       
-      showNotification('Real-time notifications enabled! 🎉', 'websocket');
+      // showNotification('Real-time notifications enabled! 🎉', 'websocket');
     };
     
     websocket.onmessage = function(event) 
@@ -617,7 +618,7 @@ function initializeWebSocket() {
       try 
       {
         const data = JSON.parse(event.data);
-        alert(JSON.stringify(data.message));
+        alert(data.message);
         handleWebSocketMessage(data);
       }
       catch (error) 
@@ -676,9 +677,9 @@ function updateConnectionStatus(status) {
 
 function handleWebSocketMessage(data) 
 {
-  alert('Received WebSocket message:', data);
   handleFriendRequestNotification(data);
   
+  return ;
   switch (data.type) {
     case 'friend_request':
       handleFriendRequestNotification(data);

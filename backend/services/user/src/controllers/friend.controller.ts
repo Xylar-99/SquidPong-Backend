@@ -179,6 +179,8 @@ export async function acceptFriendRequestHandler(req: FastifyRequest, res: Fasti
   return res.send(respond);
 }
 
+
+
 // ----------------- REJECT FRIEND REQUEST -----------------
 export async function rejectFriendRequestHandler(req: FastifyRequest, res: FastifyReply)
 {
@@ -206,6 +208,7 @@ export async function rejectFriendRequestHandler(req: FastifyRequest, res: Fasti
 
   return res.send(respond);
 }
+
 
 // ----------------- REMOVE FRIEND -----------------
 export async function removeFriendHandler(req: FastifyRequest, res: FastifyReply)
@@ -242,6 +245,7 @@ export async function removeFriendHandler(req: FastifyRequest, res: FastifyReply
 
   return res.send(respond);
 }
+
 
 // ----------------- CANCEL FRIEND REQUEST -----------------
 export async function cancelFriendRequestHandler(req: FastifyRequest, res: FastifyReply) 
@@ -319,6 +323,52 @@ export async function searchFriendsByUsernameHandler(req: FastifyRequest, res: F
   {
     respond.success = false;
     if (error instanceof Error) respond.message = error.message;
+    return res.status(400).send(respond);
+  }
+
+  return res.send(respond);
+}
+
+
+
+
+// ----------------- VERIFY FRIENDSHIP -----------------
+export async function verifyFriendshipHandler(req: FastifyRequest, res: FastifyReply) 
+{
+  const respond: ApiResponse<{ areFriends: boolean }> = { success: true, message: 'Friendship verified', data: { areFriends: false },};
+
+  try 
+  {
+    const headers = req.headers as any;
+    const userId = headers['x-user-id'];
+    const { friendId: friendIdRaw } = req.query as any;
+
+
+
+    if (!friendIdRaw)
+      throw new Error('Missing friendId query parameter');
+
+    const currentUserId = await getProfileId(Number(userId));
+    const friendId = await getProfileId(Number(friendIdRaw));
+
+    if (!currentUserId || !friendId)
+      throw new Error('User(s) not found');
+
+    const friendship = await prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { senderId: currentUserId, receiverId: friendId, status: ACCEPTED },
+          { senderId: friendId, receiverId: currentUserId, status: ACCEPTED },
+        ],
+      },
+    });
+
+    respond.data.areFriends = Boolean(friendship);
+  } 
+  catch (error) 
+  {
+    respond.success = false;
+    respond.message = error instanceof Error ? error.message : 'Unknown error';
     return res.status(400).send(respond);
   }
 

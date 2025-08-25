@@ -4,13 +4,15 @@ import prisma from "../db/database";
 
 export async function createNotification(data: any) 
 {
+
+  console.log('create new notification')
   return prisma.notification.create({
     data: {
       userId: data.userId,
       title: data.title,
       message: data.message,
-      type: data.type ?? 'INFO',
-      status: data.status ?? 'UNREAD',
+      // type: data.type ?? 'INFO',
+      // status: data.status ?? 'UNREAD',
     },
   });
 }

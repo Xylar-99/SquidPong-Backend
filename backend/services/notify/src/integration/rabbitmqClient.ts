@@ -4,7 +4,7 @@ import { sendEmailMessage } from "../utils/verification_messenger";
 import { createNotification , updateNotification , deleteNotification } from "../controllers/helps.controller";
 let connection: any;
 let channel: any;
-
+import { isUserOnline } from "../utils/utils";
 
 export async function initRabbitMQ() 
 {
@@ -13,7 +13,6 @@ export async function initRabbitMQ()
   
   await channel.assertQueue("emailhub");
   await channel.assertQueue("friends");
-  await channel.assertQueue("test");
 
   console.log("Connected to RabbitMQ");
 }
@@ -34,7 +33,6 @@ export async function sendDataToQueue(data: any, queue: string)
 
 // Consumer function for RabbitMQ
 
-
 export async function receiveFromQueue(queue: string) 
 {
   try 
@@ -45,28 +43,27 @@ export async function receiveFromQueue(queue: string)
       const data = JSON.parse(msg.content.toString());
       channel.ack(msg);
 
-      // Example: message must have "action" field: create, update, delete
-      switch (data.action) 
-      {
-        case 'create':
-          await createNotification(data.payload);
-          console.log('Notification created:', data.payload);
-          break;
-        case 'update':
-          await updateNotification(data.payload);
-          console.log('Notification updated:', data.payload);
-          break;
-        case 'delete':
-          await deleteNotification(data.payload.id);
-          console.log('Notification deleted:', data.payload.id);
-          break;
-        default:
-          console.warn('Unknown action for notification:', data);
-      }
+      if(queue == 'friends')
+        await notifyFromFriendsQueue(data);
+
     });
-  } 
+  }
   catch (err: any) 
   {
     console.error('RabbitMQ error:', err.message);
   }
+}
+
+
+async function notifyFromFriendsQueue(data:any) 
+{
+  
+  
+  if(await isUserOnline(data.to))
+    await sendDataToQueue(data , 'test');
+  else
+    console.log(`from notify user ${data.to} is not online `)
+  
+  await createNotification({userId : Number(data.to) , title : "FRIEND_REQUEST" , message : data.message , type : "FRIEND"})
+  
 }

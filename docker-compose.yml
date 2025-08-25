@@ -80,18 +80,20 @@ services:
     container_name: notify
     env_file:
       - ./backend/services/notify/.env
-    command: sh -c "sleep 10 && npm run start "
+    command: sh -c "sleep 6 && npx prisma migrate dev --name init && npm run start "
     networks: 
         - web
-  # game:
-  #   build: ./backend/services/game
-  #   image: game-image
-  #   container_name: game
-  #   env_file:
-  #       - ./backend/services/game/.env
-  #   command: sh -c "npx prisma migrate dev --name init && npm run start "
-  #   networks: 
-  #       - web
+  game:
+    build: ./backend/services/game
+    image: game-image
+    container_name: game
+    env_file:
+        - ./backend/services/game/.env
+    ports:
+      - "3000:3000"
+    command: sh -c "npx prisma migrate dev --name init && npm run dev "
+    networks: 
+        - web
 
 networks:
   web:

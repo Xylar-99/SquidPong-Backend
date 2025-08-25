@@ -34,6 +34,9 @@ const friendRoutes: Route[] = [
   { method: 'POST', url: '/api/friend/reject', handler: friendController.rejectFriendRequestHandler },
   { method: 'DELETE', url: '/api/friend/:friendId', handler: friendController.removeFriendHandler },
 
+  { method: 'GET', url: '/api/friend/verify', handler: friendController.verifyFriendshipHandler },
+
+
   { method: 'GET', url: '/api/friend/search', handler: friendController.searchFriendsByUsernameHandler },
 
   { method: 'POST', url: '/api/blocked/:blockId', handler: blockController.blockUserHandler },

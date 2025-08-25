@@ -20,7 +20,6 @@ export async function sendDataToQueue(data: any, queue: string)
 {
   try 
   {
-    console.log("heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
     const msgBuffer = Buffer.from(JSON.stringify(data));
     channel.sendToQueue(queue, msgBuffer);
   } 

@@ -12,12 +12,10 @@ COPY ./src ./src
 
 COPY ./prisma ./prisma
 
-COPY ./.env .
-
 RUN npx prisma generate
 
 RUN npm run build
 
-EXPOSE 4003
+EXPOSE 3000
 
-CMD ["npm" , "run" , "start"]
+CMD ["npm" , "run" , "dev"]

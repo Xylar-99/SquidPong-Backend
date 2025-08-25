@@ -4,7 +4,7 @@ import { sendNotificationSchema } from '../validators/notifySchemas';
 
 
 type Route = {
-    method  : 'GET' | 'POST' | 'DELETE'; 
+    method  : 'GET' | 'POST' | 'DELETE' | 'PATCH'; 
     url     : string;
     handler : RouteHandlerMethod;
     schema? : FastifySchema;

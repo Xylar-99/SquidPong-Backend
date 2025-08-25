@@ -278,30 +278,31 @@ export async function searchUsersHandler(req: FastifyRequest, res: FastifyReply)
 
   try 
   {
-    const query = req.query as any;
-    const search = query.q as string;
+    // const query = req.query as any;
+    // const search = query.q as string;
 
-    if (!search)
-      throw new Error("Search query is required")
+    // if (!search)
+    //   throw new Error("Search query is required")
 
 
-    const users = await prisma.user.findMany({
-      where: {
-        OR: [
-          { username: { contains: search, mode: 'insensitive' } },
-          { fname: { contains: search, mode: 'insensitive' } }
-        ]
-      },
-      select: {
-        id: true,
-        username: true,
-        fname: true,
-        lname: true,
-        email: true,
-      },
-    });
+    // const users = await prisma.profile.findMany({
+    //   where: {
+    //     OR: [
+    //       { username: { contains: search, mode: 'insensitive' } },
+    //       { fname: { contains: search, mode: 'insensitive' } }
+    //     ]
+    //   },
+    //   select: {
+    //     id: true,
+    //     username: true,
+    //     fname: true,
+    //     lname: true,
+    //     email: true,
+    //   },
+    // });
 
-    respond.data = users;
+    // respond.data = users;
+
   } 
   catch (error) 
   {
