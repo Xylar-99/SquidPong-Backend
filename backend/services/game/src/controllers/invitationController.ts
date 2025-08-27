@@ -22,19 +22,11 @@ export function generateInviteCode(): string {
 }
 
 // Create an invitation
-export async function createInvitation(
-  request: FastifyRequest<{ Body: CreateInvitationBody }>,
-  reply: FastifyReply
-) {
-  const {
-    receiverId,
-    allowPowerUps,
-    expiresAt,
-    pauseTime,
-    requiredCurrency,
-    scoreLimit,
-    message,
-  } = request.body;
+export async function createInvitation( request: FastifyRequest, reply: FastifyReply) 
+{
+
+  const { receiverId, allowPowerUps, expiresAt, pauseTime, requiredCurrency, scoreLimit, message, } = request.body as any;
+
 
   const fakeUserData = {
     id: "fakeUserId",
@@ -171,11 +163,9 @@ export async function createInvitation(
 }
 
 // Get an invitation by ID
-export async function getInvitation(
-  request: FastifyRequest<{ Params: { id: string } }>,
-  reply: FastifyReply
-) {
-  const { id } = request.params;
+export async function getInvitation(  request: FastifyRequest,  reply: FastifyReply) 
+{
+  const { id } = request.params as any;
 
   try {
     const invitation = await prisma.invitation.findUnique({
@@ -216,7 +206,7 @@ export async function getInvitation(
 
 // Accept an invitation by ID
 export async function AcceptInvitation(
-  request: FastifyRequest<{ Params: { id: string } }>,
+  request: FastifyRequest,
   reply: FastifyReply
 ) {
   // Implementation for accepting an invitation
@@ -224,18 +214,17 @@ export async function AcceptInvitation(
 
 // Decline an invitation by ID
 export async function DeclineInvitation(
-  request: FastifyRequest<{ Params: { id: string } }>,
+  request: FastifyRequest,
   reply: FastifyReply
 ) {
   // Implementation for declining an invitation
 }
 
 // Cancel an invitation by ID (sender only)
-export async function CancelInvitation(
-  request: FastifyRequest<{ Params: { id: string }; Body: { userId: string } }>,
-  reply: FastifyReply
-) {
-  const { id } = request.params;
+export async function CancelInvitation(request: FastifyRequest,reply: FastifyReply) 
+{
+  const { id } = request.params as any;
+  const body = request.body as any;
 
   try {
     const invitation = await prisma.invitation.findUnique({
@@ -252,7 +241,7 @@ export async function CancelInvitation(
         .send({ error: "Only pending invitations can be cancelled" });
     }
 
-    if (invitation.senderId !== request.body.userId) {
+    if (invitation.senderId !== body.userId) {
       return reply
         .status(403)
         .send({ error: "You can only cancel your own invitations" });
@@ -273,13 +262,12 @@ export async function CancelInvitation(
 }
 
 // List all invitations for a user
-export async function listInvitations(
-  request: FastifyRequest<{ Params: { userId: string } }>,
-  reply: FastifyReply
-) {
-  const { userId } = request.params;
+export async function listInvitations( request: FastifyRequest, reply: FastifyReply) 
+{
+  const { userId } = request.params as any;
 
-  try {
+  try 
+  {
     const invitations = await prisma.invitation.findMany({
       where: {
         OR: [{ senderId: userId }, { receiverId: userId }],
@@ -297,7 +285,7 @@ export async function listInvitations(
       return reply.status(404).send({ error: "No invitations found" });
     } else {
       return reply.status(200).send(
-        invitations.map((invitation) => ({
+        invitations.map((invitation:any) => ({
           id: invitation.id,
           inviteCode: invitation.inviteCode,
           type: invitation.receiverId ? "PRIVATE" : "PUBLIC",
@@ -327,18 +315,18 @@ export async function listInvitations(
         }))
       );
     }
-  } catch (error) {
+  } 
+  catch (error) 
+  {
     console.error("=============ERROR :", error);
     return reply.status(400).send({ error: "Error while listing invitations" });
   }
 }
 
 // Delete an invitation by ID (admin only)
-export async function deleteInvitation(
-  request: FastifyRequest<{ Params: { id: string } }>,
-  reply: FastifyReply
-) {
-  const { id } = request.params;
+export async function deleteInvitation( request: FastifyRequest, reply: FastifyReply) 
+{
+  const { id } = request.params as any;
 
   try {
     const invitation = await prisma.invitation.findUnique({

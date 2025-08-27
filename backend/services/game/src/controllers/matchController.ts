@@ -10,10 +10,8 @@ import {
 } from "../generated/prisma";
 import { CreateMatchBody } from "../types/match";
 
-export async function createMatch(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+export async function createMatch( request: FastifyRequest, reply: FastifyReply ) 
+{
   const { mode, opponentId, gameSettings } = request.body as CreateMatchBody;
 
   // -----------------------------
@@ -218,11 +216,9 @@ export async function createMatch(
   }
 }
 
-export async function getMatch(
-  request: FastifyRequest<{ Params: { matchId: string } }>,
-  reply: FastifyReply
-) {
-  const { matchId } = request.params;
+export async function getMatch( request: FastifyRequest, reply: FastifyReply) 
+{
+  const { matchId } = request.params as any;
 
   try {
     const match = await prisma.match.findUnique({

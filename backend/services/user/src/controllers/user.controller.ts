@@ -3,7 +3,9 @@ import prisma from '../db/database';
 import { convertParsedMultipartToJson } from '../utils/utils';
 import { ApiResponse } from '../utils/errorHandler';
 import { Profile } from '../utils/types';
+import redis from '../utils/redis';
 
+const CACHE_TTL = 60;
 
 
 export async function createProfileHandler(req: FastifyRequest, res: FastifyReply)
@@ -45,11 +47,9 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
 }
 
 
-
-
-
-export async function updateProfileHandler(req: FastifyRequest, res: FastifyReply)
+export async function updateProfileHandler(req: FastifyRequest, res: FastifyReply) 
 {
+
   const respond: ApiResponse<null> = { success: true, message: 'User updated successfully' };
 
   try 
@@ -57,25 +57,58 @@ export async function updateProfileHandler(req: FastifyRequest, res: FastifyRepl
     const body = await convertParsedMultipartToJson(req);
     const headers = req.headers as any;
     const userId = Number(headers['x-user-id']);
-    console.log("update data body : " , body);
 
-    await prisma.profile.update({
-      where: { userId },
-      data: body,
-    });
+    const cacheKey = `profile:${userId}`;
+    const cached = await redis.get(cacheKey);
+
+    if (cached) 
+      {
+      const profile = JSON.parse(cached);
+      const updatedProfile = { ...profile, ...body };
+      await redis.set(cacheKey, JSON.stringify(updatedProfile), 'EX', CACHE_TTL);
+      console.log("Updated profile in Redis cache only");
+    } 
+    else 
+    {
+      await prisma.profile.update({
+        where: { userId },
+        data: body,
+      });
+
+      const updatedProfile = await prisma.profile.findUnique({
+        where: { userId },
+        include: {
+          preferences: { include: { notifications: true } },
+          playerStats: { include: { vsAIStats: true } },
+          ownedCharacters: { include: { character: true } },
+          ownedPaddles: { include: { paddle: true } },
+          playerMatches: true,
+          createdMatches: true,
+          matchHistory: true,
+          tournamentEntries: true,
+          sentFriendRequests: true,
+          receivedFriendRequests: true,
+          selectedCharacter: true,
+          selectedPaddle: true
+        }
+      });
+
+      await redis.set(cacheKey, JSON.stringify(updatedProfile), 'EX', 60);
+    }
+
   } 
   catch (error) 
   {
     respond.success = false;
-    if (error instanceof Error) {
+    if (error instanceof Error) 
+      {
       respond.message = error.message;
       return res.status(400).send(respond);
-    }
+      }
   }
 
   return res.send(respond);
 }
-
 
 
 export async function getAllUserHandler(req: FastifyRequest, res: FastifyReply)
@@ -131,6 +164,8 @@ export async function deleteProfileHandler(req: FastifyRequest, res: FastifyRepl
   try 
   {
     await prisma.profile.delete({ where: { userId }});
+    await redis.del(`profile:${userId}`);
+
   } 
   catch (error) 
   {
@@ -146,48 +181,52 @@ export async function deleteProfileHandler(req: FastifyRequest, res: FastifyRepl
 
 
 
-
-export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyReply)
+export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyReply) 
 {
-
   const headers = req.headers as any;
   const userId = Number(headers['x-user-id']);
   const respond: ApiResponse<Profile | any> = { success: true, message: 'Current user fetched' };
 
   try 
   {
+    const cacheKey = `profile:${userId}`;
+    const cached = await redis.get(cacheKey);
 
+    if (cached) 
+      {
+      respond.data = JSON.parse(cached);
+      return res.send(respond);
+      }
 
-  const profile =  await prisma.profile.findUnique({
-    where: { userId },
-    include: {
-      preferences: { include: { notifications: true } },
-      playerStats: { include: { vsAIStats: true } },
-      ownedCharacters: { include: { character: true } },
-      ownedPaddles: { include: { paddle: true } },
-      playerMatches: true,
-      createdMatches: true,
-      matchHistory: true,
-      tournamentEntries: true,
-      sentFriendRequests: true,
-      receivedFriendRequests: true,
-      selectedCharacter: true,
-      selectedPaddle: true
-    }
-  })
+    const profile = await prisma.profile.findUnique({
+      where: { userId },
+      include: {
+        preferences: { include: { notifications: true } },
+        playerStats: { include: { vsAIStats: true } },
+        ownedCharacters: { include: { character: true } },
+        ownedPaddles: { include: { paddle: true } },
+        playerMatches: true,
+        createdMatches: true,
+        matchHistory: true,
+        tournamentEntries: true,
+        sentFriendRequests: true,
+        receivedFriendRequests: true,
+        selectedCharacter: true,
+        selectedPaddle: true
+      }
+    });
 
-  respond.data = profile;
+    respond.data = profile;
+    await redis.set(cacheKey, JSON.stringify(profile), 'EX', CACHE_TTL);
 
-  }
+  } 
   catch (error) 
   {
     respond.success = false;
-    if (error instanceof Error) 
-    {
+    if (error instanceof Error) {
       respond.message = error.message;
       return res.status(400).send(respond);
     }
-
   }
 
   return res.send(respond);
@@ -195,51 +234,54 @@ export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyRep
 
 
 
-
-export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply)
+export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply) 
 {
   const { id } = req.params as any;
-  const respond: ApiResponse<Profile | any> = { success: true, message: 'Current user fetched' };
+  const respond: ApiResponse<Profile | any> = { success: true, message: 'User fetched' };
 
   try 
   {
+    const cacheKey = `profile:${id}`;
+    const cached = await redis.get(cacheKey);
 
-
-  const profile =  await prisma.profile.findUnique({
-    where: { userId : id },
-    include: {
-      preferences: { include: { notifications: true } },
-      playerStats: { include: { vsAIStats: true } },
-      ownedCharacters: { include: { character: true } },
-      ownedPaddles: { include: { paddle: true } },
-      playerMatches: true,
-      createdMatches: true,
-      matchHistory: true,
-      tournamentEntries: true,
-      sentFriendRequests: true,
-      receivedFriendRequests: true,
-      selectedCharacter: true,
-      selectedPaddle: true
+    if (cached) {
+      respond.data = JSON.parse(cached);
+      return res.send(respond);
     }
-  })
 
-  respond.data = profile;
+    const profile = await prisma.profile.findUnique({
+      where: { userId: id },
+      include: {
+        preferences: { include: { notifications: true } },
+        playerStats: { include: { vsAIStats: true } },
+        ownedCharacters: { include: { character: true } },
+        ownedPaddles: { include: { paddle: true } },
+        playerMatches: true,
+        createdMatches: true,
+        matchHistory: true,
+        tournamentEntries: true,
+        sentFriendRequests: true,
+        receivedFriendRequests: true,
+        selectedCharacter: true,
+        selectedPaddle: true
+      }
+    });
 
-  }
+    respond.data = profile;
+    await redis.set(cacheKey, JSON.stringify(profile), 'EX', CACHE_TTL);
+
+  } 
   catch (error) 
   {
     respond.success = false;
-    if (error instanceof Error) 
-    {
+    if (error instanceof Error) {
       respond.message = error.message;
       return res.status(400).send(respond);
     }
-
   }
 
   return res.send(respond);
 }
-
 
 
 

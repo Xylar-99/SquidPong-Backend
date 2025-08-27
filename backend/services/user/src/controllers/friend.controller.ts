@@ -60,6 +60,7 @@ export async function getFriendsListHandler(req: FastifyRequest, res: FastifyRep
   return res.send(respond);
 }
 
+
 // ----------------- GET PENDING REQUESTS -----------------
 export async function getPendingRequestsHandler(req: FastifyRequest, res: FastifyReply) 
 {
@@ -105,6 +106,7 @@ export async function getPendingRequestsHandler(req: FastifyRequest, res: Fastif
   return res.send(respond);
 }
 
+
 // ----------------- SEND FRIEND REQUEST -----------------
 export async function sendFriendRequestHandler(req: FastifyRequest, res: FastifyReply)
 {
@@ -143,6 +145,7 @@ export async function sendFriendRequestHandler(req: FastifyRequest, res: Fastify
   await sendDataToQueue({from : headers['x-user-id'] , to : receiverUserId , message  : "send request friends" } , 'friends');
   return res.send(respond);
 }
+
 
 // ----------------- ACCEPT FRIEND REQUEST -----------------
 export async function acceptFriendRequestHandler(req: FastifyRequest, res: FastifyReply)
@@ -188,7 +191,8 @@ export async function rejectFriendRequestHandler(req: FastifyRequest, res: Fasti
   const headers = req.headers as any;
   const { senderId: senderUserId } = req.body as any;
 
-  try {
+  try 
+  {
     const receiverId = await getProfileId(Number(headers['x-user-id']));
     const senderId = await getProfileId(Number(senderUserId));
 
@@ -200,7 +204,9 @@ export async function rejectFriendRequestHandler(req: FastifyRequest, res: Fasti
 
     await prisma.friendship.delete({ where: { id: friendship.id } });
 
-  } catch (error) {
+  } 
+  catch (error) 
+  {
     respond.success = false;
     respond.message = error instanceof Error ? error.message : 'Unknown error';
     return res.status(400).send(respond);

@@ -3,12 +3,12 @@ import { authenticateUser } from './validators/middleware';
 import { errorHandler } from './utils/errorHandler';
 import registerPlugins from './plugins/plugins';
 
-
 const app: FastifyInstance = fastify();
 export default app;
 
 
 registerPlugins(app);
+
 
 
 
