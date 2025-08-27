@@ -90,6 +90,35 @@ app.register(fastifyHttpProxy, {
 );
 
 
+app.register(fastifyHttpProxy, {
+
+  upstream: 'http://game:3000',
+  prefix: '/api/game',
+  rewritePrefix: '/api/game',
+  http2: false,
+
+  preHandler: async (req:any, reply:any) => {
+    req.headers['x-user-id'] = req.id;
+  },
+
+}
+);
+
+
+
+app.register(fastifyHttpProxy, {
+
+  upstream: 'http://game:3000',
+  prefix: '/api/room',
+  rewritePrefix: '/api/room',
+  http2: false,
+
+  preHandler: async (req:any, reply:any) => {
+    req.headers['x-user-id'] = req.id;
+  },
+
+}
+);
 
 
 }
