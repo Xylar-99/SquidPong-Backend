@@ -50,6 +50,7 @@ services:
     command: sh -c "sleep 6 && npm run start"
     volumes:
       - ./frontend/src/uploads:/tmp/
+      - ./backend/gateway/src:/gateway/src   # ✅ live reload
     env_file:
       - ./backend/gateway/.env
     networks:
@@ -63,6 +64,8 @@ services:
     command: sh -c "sleep 6 && npx prisma migrate dev --name init && npm run start"
     env_file:
       - ./backend/services/auth/.env
+    volumes:
+      - ./backend/services/auth/src:/auth/src   # ✅ live reload
     networks:
       - web
 
@@ -76,6 +79,7 @@ services:
       - ./backend/services/user/.env
     volumes:
       - ./frontend/src/uploads:/tmp/
+      - ./backend/services/user/src:/user/src   # ✅ live reload
     networks:
       - web
 
@@ -87,6 +91,8 @@ services:
     env_file:
       - ./backend/services/notify/.env
     command: sh -c "sleep 6 && npx prisma migrate dev --name init && npm run start"
+    volumes:
+      - ./backend/services/notify/src:/notify/src   # ✅ live reload
     networks: 
       - web
 
@@ -99,7 +105,9 @@ services:
       - ./backend/services/game/.env
     ports:
       - "3000:3000"
-    command: sh -c "npx prisma migrate dev --name init && npm run dev"
+    volumes:
+      - ./backend/services/game/src:/game/src   # ✅ live reload
+    command: sh -c "sleep 6  && npx prisma migrate dev --name init && npm run dev"
     networks: 
       - web
 

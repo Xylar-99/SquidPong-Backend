@@ -11,9 +11,9 @@ import { createInvitationValidator } from "../validators/invitationValidators";
 
 
 
-async function test (req:any, res:any)
+async function test(req:any, res:any)
 {
-  res.send({ msg: "test game is workkkkkkkkkkkkkkkkkkiiiiiiiiiiiiiiiiing" });
+  res.send({ msg: "test game is workkkkkkssssfsdfasd" });
 }
 
 

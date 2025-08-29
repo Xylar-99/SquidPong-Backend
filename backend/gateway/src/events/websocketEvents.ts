@@ -95,11 +95,13 @@ async function onChatNotificationMessage(this:WebSocket , message: any)
     const data = JSON.parse(message.toString());
     console.log(data);
 
-    
-    if (data.type == "chat")
-      await sendDataToQueue(data , 'chat');
-    else if (data.type == "notification")
-      console.log("handler of notification")
+    await sendDataToQueue(data , data.type);
+
+    // if (data.type == "chat")
+    //   await sendDataToQueue(data , 'chat');
+    // else if (data.type == "notification")
+    //   console.log("handler of notification")
+
 
 }
 

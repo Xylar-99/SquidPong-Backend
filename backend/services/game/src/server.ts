@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import app from './app';
-
+import { initRabbitMQ , receiveFromQueue } from './integration/rabbitmqClient';
 dotenv.config();
 
 const port = Number(process.env.PORT);
@@ -18,6 +18,10 @@ async function StartServer()
         console.log("error in server")
         process.exit(1);
     }
+
+    await initRabbitMQ();
+    await receiveFromQueue('game');
+
 }
 
 
