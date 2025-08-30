@@ -22,7 +22,6 @@ enum RankTier {
   PLATINUM
   DIAMOND
   MASTER
-  GRANDMASTER
 }
 
 
@@ -30,8 +29,6 @@ enum RankDivision {
   I
   II
   III
-  IV
-  V
 }
 
 
@@ -80,6 +77,21 @@ enum TournamentStatus {
 }
 
 
+enum PlayerCharacter {
+  WARRIOR
+  MAGE
+  ARCHER
+  ASSASSIN
+}
+
+enum PlayerPaddle {
+  WOODEN
+  METAL
+  GOLDEN
+  DIAMOND
+}
+
+
 // Main Profile model
 model Profile {
   id        String       @id @default(cuid())
@@ -102,26 +114,21 @@ model Profile {
   isVerified    Boolean    @default(false)
   walletBalance Int        @default(0)
   level         Int        @default(1)
-  rankDivision  RankDivision @default(V)
+  rankDivision  RankDivision @default(I)
   rankTier      RankTier   @default(BRONZE)
 
 
 
   // Relationships
-  preferences       ProfilePreferences?
-  playerStats       PlayerStats?
-  ownedCharacters   ProfileCharacter[]
-  selectedCharacter GameCharacter? @relation("SelectedCharacter", fields: [selectedCharacterId], references: [id])
-  selectedCharacterId String?
+  preferences         ProfilePreferences?
+  playerStats         PlayerStats?
+  playerCharacters   Json
+ 
+  playerSelectedCharacter String
+  playerPaddles Json @default("[\"WOODEN\"]")
 
-  ownedPaddles      ProfilePaddle[]
-  selectedPaddle    Paddle? @relation("SelectedPaddle", fields: [selectedPaddleId], references: [id])
-  selectedPaddleId  String?
+  playerSelectedPaddle    String
 
-  playerMatches    Match[] @relation("MatchPlayer")
-  createdMatches   Match[] @relation("MatchCreator")
-  matchHistory     ProfileMatchHistory[]
-  tournamentEntries TournamentEntry[]
 
   // Friendships
   sentFriendRequests     Friendship[] @relation("SentFriendRequests")
@@ -154,6 +161,7 @@ model Profile {
 model ProfilePreferences {
   id               String @id @default(cuid())
   profileId        String @unique
+
   soundEnabled     Boolean @default(true)
   musicEnabled     Boolean @default(true)
   twoFactorEnabled Boolean @default(false)
@@ -166,6 +174,7 @@ model ProfilePreferences {
 model NotificationSettings {
   id                String @id @default(cuid())
   preferencesId     String @unique
+
   friendRequests    Boolean @default(true)
   chatMessages      Boolean @default(true)
   gameInvites       Boolean @default(true)
@@ -178,6 +187,7 @@ model NotificationSettings {
 model PlayerStats {
   id        String @id @default(cuid())
   profileId String @unique
+
 
   score Int @default(0)
   rank  Int @default(0)
@@ -221,65 +231,8 @@ model VSAIStats {
   @@unique([playerStatsId, difficulty])
 }
 
-// Game Character model
-model GameCharacter {
-  id          String @id @default(cuid())
-  name        String @unique
-  description String?
-  imageUrl    String
-  price       Int    @default(0)
-  isDefault   Boolean @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  profileCharacters ProfileCharacter[]
-  selectedByProfiles Profile[] @relation("SelectedCharacter")
-
-}
-
-// Junction table for profile-owned characters
-model ProfileCharacter {
-  id          String @id @default(cuid())
-  profileId   String
-  characterId String
-  purchasedAt DateTime @default(now())
-
-  profile   Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  character GameCharacter @relation(fields: [characterId], references: [id], onDelete: Cascade)
-
-  @@unique([profileId, characterId])
-}
 
 
-
-// Paddle model
-model Paddle {
-  id          String @id @default(cuid())
-  name        String @unique
-  description String?
-  imageUrl    String
-  price       Int    @default(0)
-  isDefault   Boolean @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  profilePaddles    ProfilePaddle[]
-  selectedByProfiles Profile[] @relation("SelectedPaddle")
-
-}
-
-// Junction table for profile-owned paddles
-model ProfilePaddle {
-  id          String @id @default(cuid())
-  profileId   String
-  paddleId    String
-  purchasedAt DateTime @default(now())
-
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  paddle  Paddle  @relation(fields: [paddleId], references: [id], onDelete: Cascade)
-
-  @@unique([profileId, paddleId])
-}
 
 
 // Match system
@@ -294,8 +247,6 @@ model Match {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  creator       Profile @relation("MatchCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  players       Profile[] @relation("MatchPlayer")
   profileHistory ProfileMatchHistory[]
 }
 
@@ -308,7 +259,6 @@ model ProfileMatchHistory {
   result    MatchResult
   score     Int @default(0)
 
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   match   Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
 
   @@unique([profileId, matchId])
@@ -338,7 +288,6 @@ model TournamentEntry {
   position     Int?
   joinedAt     DateTime @default(now())
 
-  profile    Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
   tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 
   @@unique([profileId, tournamentId])

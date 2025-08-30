@@ -14,12 +14,13 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
   const respond: ApiResponse<null> = { success: true, message: 'User created successfully' };
   const body = req.body as any;
 
-  const profileData = {
+  const profileData:any = {
     userId: body.id,
     username: body.username,
     firstName: body.fname,
     lastName: body.lname,
   };
+
 
   try 
   {
@@ -29,9 +30,9 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
     ...profileData,
     preferences: { create: {} },
     playerStats: { create: {} },
-    ownedCharacters: { create: [] },
   },
   });
+
 
   } 
   catch (error) 
@@ -80,16 +81,6 @@ export async function updateProfileHandler(req: FastifyRequest, res: FastifyRepl
         include: {
           preferences: { include: { notifications: true } },
           playerStats: { include: { vsAIStats: true } },
-          ownedCharacters: { include: { character: true } },
-          ownedPaddles: { include: { paddle: true } },
-          playerMatches: true,
-          createdMatches: true,
-          matchHistory: true,
-          tournamentEntries: true,
-          sentFriendRequests: true,
-          receivedFriendRequests: true,
-          selectedCharacter: true,
-          selectedPaddle: true
         }
       });
 
@@ -124,16 +115,6 @@ export async function getAllUserHandler(req: FastifyRequest, res: FastifyReply)
     include: {
       preferences: { include: { notifications: true } },
       playerStats: { include: { vsAIStats: true } },
-      ownedCharacters: { include: { character: true } },
-      ownedPaddles: { include: { paddle: true } },
-      playerMatches: true,
-      createdMatches: true,
-      matchHistory: true,
-      tournamentEntries: true,
-      sentFriendRequests: true,
-      receivedFriendRequests: true,
-      selectedCharacter: true,
-      selectedPaddle: true
     }
   })
 
@@ -203,16 +184,6 @@ export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyRep
       include: {
         preferences: { include: { notifications: true } },
         playerStats: { include: { vsAIStats: true } },
-        ownedCharacters: { include: { character: true } },
-        ownedPaddles: { include: { paddle: true } },
-        playerMatches: true,
-        createdMatches: true,
-        matchHistory: true,
-        tournamentEntries: true,
-        sentFriendRequests: true,
-        receivedFriendRequests: true,
-        selectedCharacter: true,
-        selectedPaddle: true
       }
     });
 
@@ -254,16 +225,7 @@ export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply)
       include: {
         preferences: { include: { notifications: true } },
         playerStats: { include: { vsAIStats: true } },
-        ownedCharacters: { include: { character: true } },
-        ownedPaddles: { include: { paddle: true } },
-        playerMatches: true,
-        createdMatches: true,
-        matchHistory: true,
-        tournamentEntries: true,
-        sentFriendRequests: true,
-        receivedFriendRequests: true,
-        selectedCharacter: true,
-        selectedPaddle: true
+        
       }
     });
 
