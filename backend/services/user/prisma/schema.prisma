@@ -122,12 +122,12 @@ model Profile {
   // Relationships
   preferences         ProfilePreferences?
   playerStats         PlayerStats?
-  playerCharacters   Json
+  playerCharacters   Json @default("[\"WOODEN\"]")
  
-  playerSelectedCharacter String
+  playerSelectedCharacter String @default("testiiiiing")
   playerPaddles Json @default("[\"WOODEN\"]")
 
-  playerSelectedPaddle    String
+  playerSelectedPaddle    String @default("tesiiiing")
 
 
   // Friendships

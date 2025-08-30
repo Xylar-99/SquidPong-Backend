@@ -24,15 +24,13 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
 
   try 
   {
+    console.log("222222222222222222222222222")
 
   await prisma.profile.create({
-  data: {
-    ...profileData,
-    preferences: { create: {} },
-    playerStats: { create: {} },
-  },
+  data: {...profileData},
   });
 
+  console.log("1111111111111111111111111")
 
   } 
   catch (error) 
@@ -166,7 +164,7 @@ export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyRep
 {
   const headers = req.headers as any;
   const userId = Number(headers['x-user-id']);
-  const respond: ApiResponse<Profile | any> = { success: true, message: 'Current user fetched' };
+  const respond: ApiResponse< any> = { success: true, message: 'Current user fetched' };
 
   try 
   {

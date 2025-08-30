@@ -1,392 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Game Notifications</title>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../css/chat.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+    />
+    <title>WebSocket Chat</title>
+  </head>
+  <body>
+    <div class="chat-container" role="main" aria-label="Chat application">
+      <header class="chat-header">
+        <h1>Chat Room</h1>
+        <div class="online-status" aria-live="polite" aria-atomic="true">🟢 Connected</div>
+      </header>
 
-    .game-container {
-      max-width: 500px;
-      width: 90%;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-      backdrop-filter: blur(10px);
-    }
+      <!-- Messages container with role="list" for accessibility -->
+      <ul id="messages" role="list" aria-live="polite" aria-relevant="additions"></ul>
 
-    .header {
-      background: linear-gradient(45deg, #4CAF50, #45a049);
-      color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-    }
-
-    .notifications {
-      padding: 20px;
-      height: 300px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: #f8f9fa;
-    }
-
-    .notification {
-      padding: 15px;
-      border-radius: 10px;
-      border-left: 4px solid #007bff;
-      background: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      animation: slideIn 0.3s ease-out;
-    }
-
-    .notification.sent {
-      border-left-color: #28a745;
-      background: #d4edda;
-    }
-
-    .notification.received {
-      border-left-color: #17a2b8;
-      background: #d1ecf1;
-    }
-
-    .notification-title {
-      font-weight: bold;
-      margin-bottom: 5px;
-      color: #333;
-    }
-
-    .notification-content {
-      color: #666;
-      font-size: 14px;
-    }
-
-    .controls {
-      display: flex;
-      gap: 15px;
-      padding: 20px;
-      background: #fff;
-      border-top: 1px solid #eee;
-    }
-
-    .btn {
-      flex: 1;
-      padding: 15px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .btn-receive {
-      background: linear-gradient(45deg, #17a2b8, #138496);
-      color: white;
-    }
-
-    .btn-receive:hover {
-      background: linear-gradient(45deg, #138496, #0f6674);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(23, 162, 184, 0.3);
-    }
-
-    .btn-send {
-      background: linear-gradient(45deg, #28a745, #218838);
-      color: white;
-    }
-
-    .btn-send:hover {
-      background: linear-gradient(45deg, #218838, #1e7e34);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .status {
-      padding: 10px 20px;
-      background: #e9ecef;
-      text-align: center;
-      font-size: 14px;
-      color: #6c757d;
-    }
-
-    .status.connected {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .status.disconnected {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateX(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: #6c757d;
-    }
-
-    .empty-state h3 {
-      margin: 0 0 10px 0;
-      color: #495057;
-    }
-  </style>
-</head>
-<body>
-
-<div class="game-container">
-  <div class="header">🎮 Game Notifications</div>
-  
-  <div class="status" id="connectionStatus">Connecting...</div>
-  
-  <div class="notifications" id="notifications">
-    <div class="empty-state">
-      <h3>No Notifications Yet</h3>
-      <p>Click the buttons below to send or receive game notifications!</p>
+      <form id="form" action="" aria-label="Send message form">
+        <div class="input-container">
+          <input
+            id="input"
+            type="text"
+            autocomplete="off"
+            placeholder="Type a message..."
+            aria-label="Message input"
+            required
+            spellcheck="false"
+          />
+          <button type="submit" aria-label="Send message">
+            <svg
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              fill="currentColor"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+            </svg>
+          </button>
+        </div>
+      </form>
     </div>
-  </div>
-  
-  <div class="controls">
-    <button class="btn btn-receive" onclick="receiveNotification()">
-      📨 Receive Notification
-    </button>
-    <button class="btn btn-send" onclick="sendNotification()">
-      🚀 Send Notification
-    </button>
-  </div>
-</div>
 
-<input type="hidden" id="userId" value="1" />
-<input type="hidden" id="recipientId" value="2" />
-
-<script>
-let from = document.getElementById("userId").value;
-let to = document.getElementById("recipientId").value;
-let ws;
-let wss;
-
-// Game notification types
-const notificationTypes = {
-  achievements: [
-    "🏆 Achievement Unlocked: First Victory!",
-    "⭐ Achievement Unlocked: Level 10 Reached!",
-    "🎯 Achievement Unlocked: Perfect Score!",
-    "🔥 Achievement Unlocked: Winning Streak!",
-    "💎 Achievement Unlocked: Rare Item Found!"
-  ],
-  gameEvents: [
-    "⚔️ Boss Battle Available!",
-    "🎁 Daily Reward Ready!",
-    "🌟 Special Event Started!",
-    "💰 Treasure Chest Discovered!",
-    "🎪 Tournament Beginning!"
-  ],
-  social: [
-    "👥 Friend Request Received!",
-    "🤝 Player Joined Your Guild!",
-    "💬 New Message from Teammate!",
-    "🏅 Challenge Invitation!",
-    "🎮 Game Invitation Received!"
-  ]
-};
-
-// Get user info first
-fetch('http://localhost:4000/api/user/me')
-  .then(res => res.json())
-  .then((data) => {
-
-    document.getElementById("userId").value = String(data.userId);
-    document.getElementById("recipientId").value = (data.userId == 2 ? "1" : "2");
-    from = String(data.userId);
-    to = (data.userId == 2 ? "1" : "2");
-    updateConnectionStatus("connected");
-  })
-  .catch(() => {
-    // If API fails, continue with default values
-    initializeWebSocket();
-  });
-
-function initializeWebSocket() 
-{
-  // Create WebSocket connections
-  ws = new WebSocket('ws://localhost:4000/chat-notification');
-  wss = new WebSocket('ws://localhost:4000/game');
-
-  ws.onopen = () => {
-    console.log("Notification WebSocket connected");
-    updateConnectionStatus("connected");
-  };
-
-  ws.onclose = () => {
-    console.log("WebSocket disconnected. Try reconnecting...");
-    updateConnectionStatus("disconnected");
-    
-    // Optional: auto-reconnect after 3 seconds
-    setTimeout(() => {
-      initializeWebSocket();
-    }, 3000);
-  };
-
-  ws.onerror = (err) => {
-    console.error("WebSocket error:", err);
-    updateConnectionStatus("disconnected");
-  };
-
-  ws.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      addNotification(data.content || data.message, 'received');
-    } catch (e) {
-      console.error("Error parsing message:", e);
-    }
-  };
-
-  // Game WebSocket handlers
-  wss.onopen = () => {
-    console.log("Game WebSocket connected");
-  };
-
-  wss.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      addNotification(data.content || data.message, 'received');
-    } catch (e) {
-      console.error("Error parsing game message:", e);
-    }
-  };
-}
-
-// Initialize WebSocket
-initializeWebSocket();
-
-function updateConnectionStatus(status) {
-  const statusEl = document.getElementById("connectionStatus");
-  statusEl.className = `status ${status}`;
-  
-  if (status === "connected")
-  {
-    statusEl.textContent = "🟢 Connected to Game Server";
-  } 
-  else if (status === "disconnected") 
-  {
-    statusEl.textContent = "🔴 Disconnected - Reconnecting...";
-  } 
-  else 
-  {
-    statusEl.textContent = "🟡 Connecting...";
-  }
-}
-
-
-function getRandomNotification() {
-  const categories = Object.keys(notificationTypes);
-  const randomCategory = categories[Math.floor(Math.random() * categories.length)];
-  const notifications = notificationTypes[randomCategory];
-  return notifications[Math.floor(Math.random() * notifications.length)];
-}
-
-
-
-function receiveNotification() {
-  const notification = getRandomNotification();
-  addNotification(notification, 'received');
-  
-  // Simulate receiving from server
-  console.log("Simulated received notification:", notification);
-}
-
-
-function sendNotification()
-{
-  const notification = getRandomNotification();
-  
-  if (ws && ws.readyState === WebSocket.OPEN)
-  {
-    const data = { 
-      type: "game_notification", 
-      from, 
-      to, 
-      content: notification,
-      timestamp: new Date().toISOString()
-    };
-    
-    ws.send(JSON.stringify(data));
-    addNotification(notification, 'sent');
-    console.log("Sent notification:", notification);
-  } 
-  else 
-  {
-    // If WebSocket is not connected, still show the notification locally
-    addNotification(notification, 'sent');
-    console.log("WebSocket not connected, showing local notification:", notification);
-  }
-}
-
-function addNotification(text, type) {
-  const container = document.getElementById("notifications");
-  
-  // Remove empty state if it exists
-  const emptyState = container.querySelector('.empty-state');
-  if (emptyState) {
-    emptyState.remove();
-  }
-  
-  const div = document.createElement("div");
-  div.classList.add("notification", type);
-  
-  const title = document.createElement("div");
-  title.classList.add("notification-title");
-  title.textContent = type === 'sent' ? '📤 Sent Notification' : '📬 Received Notification';
-  
-  const content = document.createElement("div");
-  content.classList.add("notification-content");
-  content.textContent = text;
-  
-  div.appendChild(title);
-  div.appendChild(content);
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-  
-  // Limit notifications to prevent memory issues
-  const notifications = container.querySelectorAll('.notification');
-  if (notifications.length > 50) {
-    notifications[0].remove();
-  }
-}
-
-</script>
-
-</body>
+    <script type="module" src="../js/chat.js"></script>
+  </body>
 </html>

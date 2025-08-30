@@ -12,7 +12,6 @@ COPY ./src ./src
 
 COPY ./prisma ./prisma
 
-COPY ./.env .
 
 RUN npx prisma generate
 

@@ -79,7 +79,7 @@
         msgBox.appendChild(div);
 
         // Show browser notification if type == "game"
-        if (data.type === "game" && Notification.permission === "granted") {
+        if (data.type === "chat" && Notification.permission === "granted") {
           new Notification("🎮 Game Notification", {
             body: data.message || "New game update!",
           });
@@ -94,7 +94,7 @@
       const message = inputMsg.value.trim();
       if (message && socket.readyState === WebSocket.OPEN) {
         const payload = {
-          type: "game",
+          type: "chat",
           message: message,
         };
         socket.send(JSON.stringify(payload));

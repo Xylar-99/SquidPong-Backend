@@ -142,7 +142,7 @@ export async function sendFriendRequestHandler(req: FastifyRequest, res: Fastify
     return res.status(400).send(respond);
   }
 
-  await sendDataToQueue({from : headers['x-user-id'] , to : receiverUserId , message  : "send request friends" } , 'friends');
+  // await sendDataToQueue({from : headers['x-user-id'] , to : receiverUserId , message  : "send request friends" } , 'friends');
   return res.send(respond);
 }
 
@@ -178,7 +178,7 @@ export async function acceptFriendRequestHandler(req: FastifyRequest, res: Fasti
     return res.status(400).send(respond);
   }
   
-  await sendDataToQueue({from : headers['x-user-id'] , to : senderUserId , message  : "accept request friends" } , 'friends');
+  // await sendDataToQueue({from : headers['x-user-id'] , to : senderUserId , message  : "accept request friends" } , 'friends');
   return res.send(respond);
 }
 
