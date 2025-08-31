@@ -12,7 +12,6 @@ COPY ./src ./src
 
 COPY ./prisma ./prisma
 
-
 RUN npx prisma generate
 
 RUN npm run build

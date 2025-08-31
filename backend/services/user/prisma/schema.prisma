@@ -214,7 +214,6 @@ model PlayerStats {
   profile   Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
   vsAIStats VSAIStats[]
   
-  
 }
 
 // AI statistics

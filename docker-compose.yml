@@ -50,7 +50,7 @@ services:
     command: sh -c "sleep 6 && npm run start"
     volumes:
       - ./frontend/src/uploads:/tmp/
-      - ./backend/gateway/src:/gateway/src   # ✅ live reload
+      - ./backend/gateway/src:/gateway/src
     env_file:
       - ./backend/gateway/.env
     networks:
@@ -61,11 +61,13 @@ services:
     image: auth-image
     container_name: auth
     restart: always
-    command: sh -c "sleep 6 && npx prisma migrate dev --name init && npm run start"
+    command: sh -c "sleep 6 && npx prisma migrate dev --name init && npx prisma studio --port 5555 & npm run start"
     env_file:
       - ./backend/services/auth/.env
+    ports:
+      - "9001:5555"
     volumes:
-      - ./backend/services/auth/src:/auth/src   # ✅ live reload
+      - ./backend/services/auth/src:/auth/src
     networks:
       - web
 
@@ -74,12 +76,14 @@ services:
     image: user-image
     container_name: user
     restart: always
-    command: sh -c "sleep 6 && npx prisma migrate dev --name init && npm run start"
+    command: sh -c "sleep 6 && npx prisma migrate dev --name init && npx prisma studio --port 5555 & npm run start"
     env_file:
       - ./backend/services/user/.env
+    ports:
+      - "9000:5555"
     volumes:
       - ./frontend/src/uploads:/tmp/
-      - ./backend/services/user/src:/user/src   # ✅ live reload
+      - ./backend/services/user/src:/user/src
     networks:
       - web
 
@@ -88,37 +92,44 @@ services:
     image: notify-image
     container_name: notify
     restart: always
+    command: sh -c "sleep 6 && npx prisma migrate dev --name init && npx prisma studio --port 5555 & npm run start"
     env_file:
       - ./backend/services/notify/.env
-    command: sh -c "sleep 6 && npx prisma migrate dev --name init && npm run start"
+    ports:
+      - "9002:5555"
     volumes:
-      - ./backend/services/notify/src:/notify/src   # ✅ live reload
+      - ./backend/services/notify/src:/notify/src
     networks: 
       - web
+
   chat:
     build: ./backend/services/chat
     image: chat-image
     container_name: chat
     restart: always
+    command: sh -c "sleep 6 && npx prisma migrate dev --name init && npx prisma studio --port 5555 & npm run start"
     env_file:
       - ./backend/services/chat/.env
-    command: sh -c "sleep 6 && npx prisma migrate dev --name init && npm run start"
+    ports:
+      - "9003:5555"
     volumes:
-      - ./backend/services/chat/src:/chat/src   # ✅ live reload
+      - ./backend/services/chat/src:/chat/src
     networks: 
       - web
+
   game:
     build: ./backend/services/game
     image: game-image
     container_name: game
     restart: always
+    command: sh -c "sleep 6 && npx prisma migrate dev --name init && npx prisma studio --port 5555 & npm run dev"
     env_file:
       - ./backend/services/game/.env
     ports:
       - "3000:3000"
+      - "9004:5555"
     volumes:
-      - ./backend/services/game/src:/game/src   # ✅ live reload
-    command: sh -c "sleep 6  && npx prisma migrate dev --name init && npm run dev"
+      - ./backend/services/game/src:/game/src
     networks: 
       - web
 

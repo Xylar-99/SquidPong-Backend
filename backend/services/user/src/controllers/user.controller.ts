@@ -19,18 +19,21 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
     username: body.username,
     firstName: body.fname,
     lastName: body.lname,
+    avatar : body.avatar,
   };
 
 
   try 
   {
-    console.log("222222222222222222222222222")
 
-  await prisma.profile.create({
-  data: {...profileData},
+    await prisma.profile.create({
+    data: {
+      ...profileData,
+      preferences: { create: { notifications: { create: {} } } },
+      playerStats: { create: {}},
+    },
+
   });
-
-  console.log("1111111111111111111111111")
 
   } 
   catch (error) 
@@ -44,6 +47,8 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
 
   return res.send(respond);
 }
+
+
 
 
 export async function updateProfileHandler(req: FastifyRequest, res: FastifyReply) 
