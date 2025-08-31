@@ -78,17 +78,21 @@ enum TournamentStatus {
 
 
 enum PlayerCharacter {
-  WARRIOR
-  MAGE
-  ARCHER
-  ASSASSIN
+  Zero
+  Taizen
+  Kira
+  Ryu
+  Akira
+  Sora_F2
+  Sora_M3
+  Sora_F3
 }
 
 enum PlayerPaddle {
-  WOODEN
-  METAL
-  GOLDEN
-  DIAMOND
+  Boss
+  Survivor
+  Guard
+  Army
 }
 
 
@@ -122,12 +126,14 @@ model Profile {
   // Relationships
   preferences         ProfilePreferences?
   playerStats         PlayerStats?
-  playerCharacters   Json @default("[\"WOODEN\"]")
- 
-  playerSelectedCharacter String @default("testiiiiing")
-  playerPaddles Json @default("[\"WOODEN\"]")
 
-  playerSelectedPaddle    String @default("tesiiiing")
+ 
+  playerCharacters   Json @default("[\"Zero\"]")
+  playerSelectedCharacter PlayerCharacter @default(Zero)
+
+  playerPaddles Json @default("[\"Boss\"]")
+  playerSelectedPaddle    PlayerPaddle @default(Boss)
+
 
 
   // Friendships
