@@ -210,6 +210,7 @@ export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyRep
 
 export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply) 
 {
+
   const { id } = req.params as any;
   const respond: ApiResponse<Profile | any> = { success: true, message: 'User fetched' };
 
@@ -218,13 +219,14 @@ export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply)
     const cacheKey = `profile:${id}`;
     const cached = await redis.get(cacheKey);
 
-    if (cached) {
+    if (cached) 
+      {
       respond.data = JSON.parse(cached);
       return res.send(respond);
-    }
+      }
 
     const profile = await prisma.profile.findUnique({
-      where: { userId: id },
+      where: { userId: Number(id) },
       include: {
         preferences: { include: { notifications: true } },
         playerStats: { include: { vsAIStats: true } },
@@ -232,6 +234,8 @@ export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply)
       }
     });
 
+    if(!profile)
+      throw new Error("User not found in the database.");
     respond.data = profile;
     await redis.set(cacheKey, JSON.stringify(profile), 'EX', CACHE_TTL);
 

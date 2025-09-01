@@ -20,9 +20,9 @@ services:
     restart: always
     networks:
       - web
-    volumes:
-      - ./data/redis:/data
-    command: ["redis-server", "--appendonly", "yes", "--dir", "/data", "--appendfilename", "appendonly.aof"]
+    # volumes:
+    #   - ./data/redis:/data
+    # command: ["redis-server", "--appendonly", "yes", "--dir", "/data", "--appendfilename", "appendonly.aof"]
 
   rabbitmq:
     image: rabbitmq
