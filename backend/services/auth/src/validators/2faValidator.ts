@@ -20,7 +20,7 @@ function generateToken(length = 10)
 
 export async function setJwtTokens(res: FastifyReply, user: any | null) 
 {
-  const accessToken = await app.jwt.sign({ userId: user.id }, { expiresIn: "15m" });
+  const accessToken = await app.jwt.sign({ userId: user.id }, { expiresIn: "7d" });
   const refreshToken = await app.jwt.sign({ userId: user.id }, { expiresIn: "7d" });
 
   res.setCookie("accessToken", accessToken, { httpOnly: true, path: "/", sameSite: "lax", secure: false });
@@ -30,7 +30,7 @@ export async function setJwtTokens(res: FastifyReply, user: any | null)
     maxAge: 7 * 24 * 60 * 60,
   });
 
-  await redis.set(accessToken, "valid", "EX", 60 * 15);
+  await redis.set(accessToken, "valid", "EX", 60 * 24 * 7 * 60);
 
 }
 
