@@ -1,7 +1,12 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { prisma } from "../lib/prisma";
 import { CreateMatchBody } from "../types/match";
-import { Invitation, Match, MatchPlayer, Prisma } from "../generated/prisma";
+import {
+  Invitation,
+  Match,
+  MatchPlayer,
+  Prisma,
+} from "../generated/prisma";
 import { User } from "../types/users";
 
 export async function createMatch(
@@ -53,7 +58,6 @@ export async function MatchFromInvitation(invitation: any): Promise<Match> {
     allowPowerUps,
     requiredCurrency,
   } = invitation;
-  console.log(invitation);
 
   if (!senderId || !receiverId) {
     throw new Error("Invalid invitation data");
@@ -84,16 +88,22 @@ export async function MatchFromInvitation(invitation: any): Promise<Match> {
         opponent2Id: guestPlayer.id,
         duration: 0,
       },
+      include: {
+        opponent1: true,
+        opponent2: true,
+        matchSetting: true,
+        invitation: true,
+      },
     });
 
     await createMatchSetting(
       match.id,
       "ONE_VS_ONE",
       {
-        pauseTime: invitation.pauseTime ?? 60,
-        scoreLimit: invitation.scoreLimit ?? 10,
-        allowPowerUps: invitation.allowPowerUps ?? true,
-        requiredCurrency: invitation.requiredCurrency ?? 0,
+        pauseTime: pauseTime ?? 60,
+        scoreLimit: scoreLimit ?? 10,
+        allowPowerUps: allowPowerUps ?? true,
+        requiredCurrency: requiredCurrency ?? 0,
       },
       tx
     );
@@ -122,9 +132,10 @@ export async function createMatchPlayer(
       isAI,
       characterId: userData.playerSelectedCharacter,
       paddleId: userData.playerSelectedPaddle,
-      playerName: userData.username,
-      finalScore: 0,
-      isReady: false,
+      avatarUrl: userData.avatar,
+      rankDivision: userData.rankDivision,
+      rankTier: userData.rankTier,
+      username: userData.username,
     },
   });
 }

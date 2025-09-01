@@ -66,7 +66,8 @@ export async function createInvitation(
       if (!res.ok)
         return reply.status(404).send({ error: "Receiver not found" });
 
-      receiverData = (await res.json()) as any;
+      const receiverResp = await res.json();
+      receiverData = receiverResp.data;
 
       if (receiverData?.walletBalance < requiredCurrency) {
         return reply.status(400).send({
@@ -108,26 +109,26 @@ export async function createInvitation(
     const result = await prisma.$transaction(async (tx) => {
       // Ensure sender exist locally
       await tx.user.upsert({
-        where: { username: userData.username },
-        update: { id: userData.id }, // optionally sync id if needed
+        where: { id: userData.id },
+        update: {
+          userId: userData.userId,
+        },
         create: {
           id: userData.id,
           userId: userData.userId,
-          username: userData.username,
         },
       });
 
-      // Ensure receiver exist locally if provided
+      // Ensure receiver exists locally if provided
       if (receiverData) {
-        const user: User = receiverData.data;
-
         await tx.user.upsert({
-          where: { id: user.id },
-          update: { username: user.username },
+          where: { id: receiverData.id },
+          update: {
+            userId: receiverData.userId,
+          },
           create: {
-            id: user.id,
-            userId: user.userId,
-            username: user.username,
+            id: receiverData.id,
+            userId: receiverData.userId,
           },
         });
       }
@@ -137,7 +138,7 @@ export async function createInvitation(
       const invitation = await tx.invitation.create({
         data: {
           senderId: userData.id,
-          receiverId: receiverId ? receiverData.data.id : null,
+          receiverId: receiverId ? receiverData.id : null,
           expiresAt,
           scoreLimit,
           pauseTime,
@@ -158,9 +159,11 @@ export async function createInvitation(
         try {
           await sendDataToQueue(
             {
-              to: String(receiverData.data.userId),
+              to: String(receiverData.userId),
               event: "game-invitation",
-              data: invitation,
+              data: {
+                invitation: invitation,
+              },
             },
             "test"
           );
@@ -276,11 +279,12 @@ export async function AcceptInvitation(
   // Ensure receiver exist locally
   await prisma.user.upsert({
     where: { id: userData.id },
-    update: { username: userData.username },
+    update: {
+      userId: userData.userId,
+    },
     create: {
       id: userData.id,
       userId: userData.userId,
-      username: userData.username,
     },
   });
 
@@ -304,7 +308,10 @@ export async function AcceptInvitation(
         {
           to: String(acceptedInvitation.sender?.userId),
           event: "game-invitation",
-          data: { invitation: acceptedInvitation, match },
+          data: {
+            invitation: acceptedInvitation,
+            match,
+          },
         },
         "test"
       );
@@ -315,8 +322,7 @@ export async function AcceptInvitation(
     return reply.status(200).send({
       message: "Invitation accepted and match created successfully",
       data: {
-        invitation: acceptedInvitation,
-        match: match,
+        match,
       },
     });
   } catch (error) {
@@ -385,7 +391,9 @@ export async function DeclineInvitation(
         {
           to: String(declinedInvitation.sender?.userId),
           event: "game-invitation",
-          data: declinedInvitation,
+          data: {
+            invitation: declinedInvitation,
+          },
         },
         "test"
       );
@@ -454,7 +462,9 @@ export async function CancelInvitation(
           {
             to: String(cancelledInvitation.receiver?.userId),
             event: "game-invitation",
-            data: cancelledInvitation,
+            data: {
+              invitation: cancelledInvitation,
+            },
           },
           "test"
         );

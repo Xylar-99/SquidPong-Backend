@@ -44,25 +44,6 @@ enum BetStatus {
   CANCELLED
 }
 
-// ***** Rankings *****
-enum RankTier {
-  I
-  II
-  III
-}
-
-enum RankDivision {
-  IRON
-  BRONZE
-  SILVER
-  GOLD
-  PLATINUM
-  DIAMOND
-  ASCENDANT
-  IMMORTAL
-  MASTER
-}
-
 // ***** Invitations *****
 enum InvitationStatus {
   PENDING
@@ -89,16 +70,25 @@ model MatchSpectator {
 }
 
 model MatchPlayer {
-  id          String  @id @default(cuid())
-  userId      String? // Nullable, since AI doesn't have a User record
-  playerName  String
-  isAI        Boolean @default(false)
-  finalScore  Int     @default(0)
-  isReady     Boolean @default(false)
-  isHost      Boolean @default(false)
-  characterId String
-  paddleId    String
-  rankChange  Int?
+  id     String  @id @default(cuid())
+  userId String? // Nullable, since AI doesn't have a User record
+
+  // PlayerInfos
+  username  String
+  avatarUrl String?
+
+  // Player match info
+  isAI       Boolean @default(false)
+  finalScore Int     @default(0)
+  isReady    Boolean @default(false)
+  isHost     Boolean @default(false)
+
+  // player metadata
+  characterId  String
+  paddleId     String
+  rankTier     String
+  rankDivision String
+  rankChange   Int?
 
   // Relations
   matchAsOpponent1 Match? @relation("Opponent1")
@@ -144,8 +134,7 @@ model MatchSetting {
 
 model User {
   id       String @id
-  userId   Int    @unique
-  username String @unique
+  userId   Int    @unique // id from auth system
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

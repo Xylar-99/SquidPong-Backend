@@ -127,13 +127,16 @@ exports.Prisma.MatchSpectatorScalarFieldEnum = {
 exports.Prisma.MatchPlayerScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  playerName: 'playerName',
+  username: 'username',
+  avatarUrl: 'avatarUrl',
   isAI: 'isAI',
   finalScore: 'finalScore',
   isReady: 'isReady',
   isHost: 'isHost',
   characterId: 'characterId',
   paddleId: 'paddleId',
+  rankTier: 'rankTier',
+  rankDivision: 'rankDivision',
   rankChange: 'rankChange'
 };
 
@@ -163,7 +166,6 @@ exports.Prisma.MatchSettingScalarFieldEnum = {
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  username: 'username',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

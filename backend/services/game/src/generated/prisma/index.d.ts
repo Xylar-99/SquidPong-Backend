@@ -93,30 +93,6 @@ export const BetStatus: {
 export type BetStatus = (typeof BetStatus)[keyof typeof BetStatus]
 
 
-export const RankTier: {
-  I: 'I',
-  II: 'II',
-  III: 'III'
-};
-
-export type RankTier = (typeof RankTier)[keyof typeof RankTier]
-
-
-export const RankDivision: {
-  IRON: 'IRON',
-  BRONZE: 'BRONZE',
-  SILVER: 'SILVER',
-  GOLD: 'GOLD',
-  PLATINUM: 'PLATINUM',
-  DIAMOND: 'DIAMOND',
-  ASCENDANT: 'ASCENDANT',
-  IMMORTAL: 'IMMORTAL',
-  MASTER: 'MASTER'
-};
-
-export type RankDivision = (typeof RankDivision)[keyof typeof RankDivision]
-
-
 export const InvitationStatus: {
   PENDING: 'PENDING',
   ACCEPTED: 'ACCEPTED',
@@ -152,14 +128,6 @@ export const AIDifficulty: typeof $Enums.AIDifficulty
 export type BetStatus = $Enums.BetStatus
 
 export const BetStatus: typeof $Enums.BetStatus
-
-export type RankTier = $Enums.RankTier
-
-export const RankTier: typeof $Enums.RankTier
-
-export type RankDivision = $Enums.RankDivision
-
-export const RankDivision: typeof $Enums.RankDivision
 
 export type InvitationStatus = $Enums.InvitationStatus
 
@@ -2704,39 +2672,48 @@ export namespace Prisma {
   export type MatchPlayerMinAggregateOutputType = {
     id: string | null
     userId: string | null
-    playerName: string | null
+    username: string | null
+    avatarUrl: string | null
     isAI: boolean | null
     finalScore: number | null
     isReady: boolean | null
     isHost: boolean | null
     characterId: string | null
     paddleId: string | null
+    rankTier: string | null
+    rankDivision: string | null
     rankChange: number | null
   }
 
   export type MatchPlayerMaxAggregateOutputType = {
     id: string | null
     userId: string | null
-    playerName: string | null
+    username: string | null
+    avatarUrl: string | null
     isAI: boolean | null
     finalScore: number | null
     isReady: boolean | null
     isHost: boolean | null
     characterId: string | null
     paddleId: string | null
+    rankTier: string | null
+    rankDivision: string | null
     rankChange: number | null
   }
 
   export type MatchPlayerCountAggregateOutputType = {
     id: number
     userId: number
-    playerName: number
+    username: number
+    avatarUrl: number
     isAI: number
     finalScore: number
     isReady: number
     isHost: number
     characterId: number
     paddleId: number
+    rankTier: number
+    rankDivision: number
     rankChange: number
     _all: number
   }
@@ -2755,39 +2732,48 @@ export namespace Prisma {
   export type MatchPlayerMinAggregateInputType = {
     id?: true
     userId?: true
-    playerName?: true
+    username?: true
+    avatarUrl?: true
     isAI?: true
     finalScore?: true
     isReady?: true
     isHost?: true
     characterId?: true
     paddleId?: true
+    rankTier?: true
+    rankDivision?: true
     rankChange?: true
   }
 
   export type MatchPlayerMaxAggregateInputType = {
     id?: true
     userId?: true
-    playerName?: true
+    username?: true
+    avatarUrl?: true
     isAI?: true
     finalScore?: true
     isReady?: true
     isHost?: true
     characterId?: true
     paddleId?: true
+    rankTier?: true
+    rankDivision?: true
     rankChange?: true
   }
 
   export type MatchPlayerCountAggregateInputType = {
     id?: true
     userId?: true
-    playerName?: true
+    username?: true
+    avatarUrl?: true
     isAI?: true
     finalScore?: true
     isReady?: true
     isHost?: true
     characterId?: true
     paddleId?: true
+    rankTier?: true
+    rankDivision?: true
     rankChange?: true
     _all?: true
   }
@@ -2881,13 +2867,16 @@ export namespace Prisma {
   export type MatchPlayerGroupByOutputType = {
     id: string
     userId: string | null
-    playerName: string
+    username: string
+    avatarUrl: string | null
     isAI: boolean
     finalScore: number
     isReady: boolean
     isHost: boolean
     characterId: string
     paddleId: string
+    rankTier: string
+    rankDivision: string
     rankChange: number | null
     _count: MatchPlayerCountAggregateOutputType | null
     _avg: MatchPlayerAvgAggregateOutputType | null
@@ -2913,13 +2902,16 @@ export namespace Prisma {
   export type MatchPlayerSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    playerName?: boolean
+    username?: boolean
+    avatarUrl?: boolean
     isAI?: boolean
     finalScore?: boolean
     isReady?: boolean
     isHost?: boolean
     characterId?: boolean
     paddleId?: boolean
+    rankTier?: boolean
+    rankDivision?: boolean
     rankChange?: boolean
     matchAsOpponent1?: boolean | MatchPlayer$matchAsOpponent1Args<ExtArgs>
     matchAsOpponent2?: boolean | MatchPlayer$matchAsOpponent2Args<ExtArgs>
@@ -2929,13 +2921,16 @@ export namespace Prisma {
   export type MatchPlayerSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    playerName?: boolean
+    username?: boolean
+    avatarUrl?: boolean
     isAI?: boolean
     finalScore?: boolean
     isReady?: boolean
     isHost?: boolean
     characterId?: boolean
     paddleId?: boolean
+    rankTier?: boolean
+    rankDivision?: boolean
     rankChange?: boolean
     User?: boolean | MatchPlayer$UserArgs<ExtArgs>
   }, ExtArgs["result"]["matchPlayer"]>
@@ -2943,13 +2938,16 @@ export namespace Prisma {
   export type MatchPlayerSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    playerName?: boolean
+    username?: boolean
+    avatarUrl?: boolean
     isAI?: boolean
     finalScore?: boolean
     isReady?: boolean
     isHost?: boolean
     characterId?: boolean
     paddleId?: boolean
+    rankTier?: boolean
+    rankDivision?: boolean
     rankChange?: boolean
     User?: boolean | MatchPlayer$UserArgs<ExtArgs>
   }, ExtArgs["result"]["matchPlayer"]>
@@ -2957,17 +2955,20 @@ export namespace Prisma {
   export type MatchPlayerSelectScalar = {
     id?: boolean
     userId?: boolean
-    playerName?: boolean
+    username?: boolean
+    avatarUrl?: boolean
     isAI?: boolean
     finalScore?: boolean
     isReady?: boolean
     isHost?: boolean
     characterId?: boolean
     paddleId?: boolean
+    rankTier?: boolean
+    rankDivision?: boolean
     rankChange?: boolean
   }
 
-  export type MatchPlayerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "playerName" | "isAI" | "finalScore" | "isReady" | "isHost" | "characterId" | "paddleId" | "rankChange", ExtArgs["result"]["matchPlayer"]>
+  export type MatchPlayerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "username" | "avatarUrl" | "isAI" | "finalScore" | "isReady" | "isHost" | "characterId" | "paddleId" | "rankTier" | "rankDivision" | "rankChange", ExtArgs["result"]["matchPlayer"]>
   export type MatchPlayerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     matchAsOpponent1?: boolean | MatchPlayer$matchAsOpponent1Args<ExtArgs>
     matchAsOpponent2?: boolean | MatchPlayer$matchAsOpponent2Args<ExtArgs>
@@ -2990,13 +2991,16 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string | null
-      playerName: string
+      username: string
+      avatarUrl: string | null
       isAI: boolean
       finalScore: number
       isReady: boolean
       isHost: boolean
       characterId: string
       paddleId: string
+      rankTier: string
+      rankDivision: string
       rankChange: number | null
     }, ExtArgs["result"]["matchPlayer"]>
     composites: {}
@@ -3426,13 +3430,16 @@ export namespace Prisma {
   interface MatchPlayerFieldRefs {
     readonly id: FieldRef<"MatchPlayer", 'String'>
     readonly userId: FieldRef<"MatchPlayer", 'String'>
-    readonly playerName: FieldRef<"MatchPlayer", 'String'>
+    readonly username: FieldRef<"MatchPlayer", 'String'>
+    readonly avatarUrl: FieldRef<"MatchPlayer", 'String'>
     readonly isAI: FieldRef<"MatchPlayer", 'Boolean'>
     readonly finalScore: FieldRef<"MatchPlayer", 'Int'>
     readonly isReady: FieldRef<"MatchPlayer", 'Boolean'>
     readonly isHost: FieldRef<"MatchPlayer", 'Boolean'>
     readonly characterId: FieldRef<"MatchPlayer", 'String'>
     readonly paddleId: FieldRef<"MatchPlayer", 'String'>
+    readonly rankTier: FieldRef<"MatchPlayer", 'String'>
+    readonly rankDivision: FieldRef<"MatchPlayer", 'String'>
     readonly rankChange: FieldRef<"MatchPlayer", 'Int'>
   }
     
@@ -6336,7 +6343,6 @@ export namespace Prisma {
   export type UserMinAggregateOutputType = {
     id: string | null
     userId: number | null
-    username: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6344,7 +6350,6 @@ export namespace Prisma {
   export type UserMaxAggregateOutputType = {
     id: string | null
     userId: number | null
-    username: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6352,7 +6357,6 @@ export namespace Prisma {
   export type UserCountAggregateOutputType = {
     id: number
     userId: number
-    username: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -6370,7 +6374,6 @@ export namespace Prisma {
   export type UserMinAggregateInputType = {
     id?: true
     userId?: true
-    username?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6378,7 +6381,6 @@ export namespace Prisma {
   export type UserMaxAggregateInputType = {
     id?: true
     userId?: true
-    username?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6386,7 +6388,6 @@ export namespace Prisma {
   export type UserCountAggregateInputType = {
     id?: true
     userId?: true
-    username?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -6481,7 +6482,6 @@ export namespace Prisma {
   export type UserGroupByOutputType = {
     id: string
     userId: number
-    username: string
     createdAt: Date
     updatedAt: Date
     _count: UserCountAggregateOutputType | null
@@ -6508,7 +6508,6 @@ export namespace Prisma {
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    username?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     matchPlayers?: boolean | User$matchPlayersArgs<ExtArgs>
@@ -6522,7 +6521,6 @@ export namespace Prisma {
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    username?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -6530,7 +6528,6 @@ export namespace Prisma {
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    username?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -6538,12 +6535,11 @@ export namespace Prisma {
   export type UserSelectScalar = {
     id?: boolean
     userId?: boolean
-    username?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "username" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     matchPlayers?: boolean | User$matchPlayersArgs<ExtArgs>
     matchSpectators?: boolean | User$matchSpectatorsArgs<ExtArgs>
@@ -6567,7 +6563,6 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: number
-      username: string
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
@@ -7000,7 +6995,6 @@ export namespace Prisma {
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
     readonly userId: FieldRef<"User", 'Int'>
-    readonly username: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
   }
@@ -9970,13 +9964,16 @@ export namespace Prisma {
   export const MatchPlayerScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
-    playerName: 'playerName',
+    username: 'username',
+    avatarUrl: 'avatarUrl',
     isAI: 'isAI',
     finalScore: 'finalScore',
     isReady: 'isReady',
     isHost: 'isHost',
     characterId: 'characterId',
     paddleId: 'paddleId',
+    rankTier: 'rankTier',
+    rankDivision: 'rankDivision',
     rankChange: 'rankChange'
   };
 
@@ -10015,7 +10012,6 @@ export namespace Prisma {
   export const UserScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
-    username: 'username',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -10218,13 +10214,16 @@ export namespace Prisma {
     NOT?: MatchPlayerWhereInput | MatchPlayerWhereInput[]
     id?: StringFilter<"MatchPlayer"> | string
     userId?: StringNullableFilter<"MatchPlayer"> | string | null
-    playerName?: StringFilter<"MatchPlayer"> | string
+    username?: StringFilter<"MatchPlayer"> | string
+    avatarUrl?: StringNullableFilter<"MatchPlayer"> | string | null
     isAI?: BoolFilter<"MatchPlayer"> | boolean
     finalScore?: IntFilter<"MatchPlayer"> | number
     isReady?: BoolFilter<"MatchPlayer"> | boolean
     isHost?: BoolFilter<"MatchPlayer"> | boolean
     characterId?: StringFilter<"MatchPlayer"> | string
     paddleId?: StringFilter<"MatchPlayer"> | string
+    rankTier?: StringFilter<"MatchPlayer"> | string
+    rankDivision?: StringFilter<"MatchPlayer"> | string
     rankChange?: IntNullableFilter<"MatchPlayer"> | number | null
     matchAsOpponent1?: XOR<MatchNullableScalarRelationFilter, MatchWhereInput> | null
     matchAsOpponent2?: XOR<MatchNullableScalarRelationFilter, MatchWhereInput> | null
@@ -10234,13 +10233,16 @@ export namespace Prisma {
   export type MatchPlayerOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrderInput | SortOrder
-    playerName?: SortOrder
+    username?: SortOrder
+    avatarUrl?: SortOrderInput | SortOrder
     isAI?: SortOrder
     finalScore?: SortOrder
     isReady?: SortOrder
     isHost?: SortOrder
     characterId?: SortOrder
     paddleId?: SortOrder
+    rankTier?: SortOrder
+    rankDivision?: SortOrder
     rankChange?: SortOrderInput | SortOrder
     matchAsOpponent1?: MatchOrderByWithRelationInput
     matchAsOpponent2?: MatchOrderByWithRelationInput
@@ -10253,13 +10255,16 @@ export namespace Prisma {
     OR?: MatchPlayerWhereInput[]
     NOT?: MatchPlayerWhereInput | MatchPlayerWhereInput[]
     userId?: StringNullableFilter<"MatchPlayer"> | string | null
-    playerName?: StringFilter<"MatchPlayer"> | string
+    username?: StringFilter<"MatchPlayer"> | string
+    avatarUrl?: StringNullableFilter<"MatchPlayer"> | string | null
     isAI?: BoolFilter<"MatchPlayer"> | boolean
     finalScore?: IntFilter<"MatchPlayer"> | number
     isReady?: BoolFilter<"MatchPlayer"> | boolean
     isHost?: BoolFilter<"MatchPlayer"> | boolean
     characterId?: StringFilter<"MatchPlayer"> | string
     paddleId?: StringFilter<"MatchPlayer"> | string
+    rankTier?: StringFilter<"MatchPlayer"> | string
+    rankDivision?: StringFilter<"MatchPlayer"> | string
     rankChange?: IntNullableFilter<"MatchPlayer"> | number | null
     matchAsOpponent1?: XOR<MatchNullableScalarRelationFilter, MatchWhereInput> | null
     matchAsOpponent2?: XOR<MatchNullableScalarRelationFilter, MatchWhereInput> | null
@@ -10269,13 +10274,16 @@ export namespace Prisma {
   export type MatchPlayerOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrderInput | SortOrder
-    playerName?: SortOrder
+    username?: SortOrder
+    avatarUrl?: SortOrderInput | SortOrder
     isAI?: SortOrder
     finalScore?: SortOrder
     isReady?: SortOrder
     isHost?: SortOrder
     characterId?: SortOrder
     paddleId?: SortOrder
+    rankTier?: SortOrder
+    rankDivision?: SortOrder
     rankChange?: SortOrderInput | SortOrder
     _count?: MatchPlayerCountOrderByAggregateInput
     _avg?: MatchPlayerAvgOrderByAggregateInput
@@ -10290,13 +10298,16 @@ export namespace Prisma {
     NOT?: MatchPlayerScalarWhereWithAggregatesInput | MatchPlayerScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"MatchPlayer"> | string
     userId?: StringNullableWithAggregatesFilter<"MatchPlayer"> | string | null
-    playerName?: StringWithAggregatesFilter<"MatchPlayer"> | string
+    username?: StringWithAggregatesFilter<"MatchPlayer"> | string
+    avatarUrl?: StringNullableWithAggregatesFilter<"MatchPlayer"> | string | null
     isAI?: BoolWithAggregatesFilter<"MatchPlayer"> | boolean
     finalScore?: IntWithAggregatesFilter<"MatchPlayer"> | number
     isReady?: BoolWithAggregatesFilter<"MatchPlayer"> | boolean
     isHost?: BoolWithAggregatesFilter<"MatchPlayer"> | boolean
     characterId?: StringWithAggregatesFilter<"MatchPlayer"> | string
     paddleId?: StringWithAggregatesFilter<"MatchPlayer"> | string
+    rankTier?: StringWithAggregatesFilter<"MatchPlayer"> | string
+    rankDivision?: StringWithAggregatesFilter<"MatchPlayer"> | string
     rankChange?: IntNullableWithAggregatesFilter<"MatchPlayer"> | number | null
   }
 
@@ -10470,7 +10481,6 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
     userId?: IntFilter<"User"> | number
-    username?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     matchPlayers?: MatchPlayerListRelationFilter
@@ -10483,7 +10493,6 @@ export namespace Prisma {
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
-    username?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     matchPlayers?: MatchPlayerOrderByRelationAggregateInput
@@ -10496,7 +10505,6 @@ export namespace Prisma {
   export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     userId?: number
-    username?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
@@ -10507,12 +10515,11 @@ export namespace Prisma {
     bets?: BetListRelationFilter
     invitationsSent?: InvitationListRelationFilter
     invitationsReceived?: InvitationListRelationFilter
-  }, "id" | "userId" | "username">
+  }, "id" | "userId">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
-    username?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
@@ -10528,7 +10535,6 @@ export namespace Prisma {
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"User"> | string
     userId?: IntWithAggregatesFilter<"User"> | number
-    username?: StringWithAggregatesFilter<"User"> | string
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -10770,13 +10776,16 @@ export namespace Prisma {
 
   export type MatchPlayerCreateInput = {
     id?: string
-    playerName: string
+    username: string
+    avatarUrl?: string | null
     isAI?: boolean
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
     characterId: string
     paddleId: string
+    rankTier: string
+    rankDivision: string
     rankChange?: number | null
     matchAsOpponent1?: MatchCreateNestedOneWithoutOpponent1Input
     matchAsOpponent2?: MatchCreateNestedOneWithoutOpponent2Input
@@ -10786,13 +10795,16 @@ export namespace Prisma {
   export type MatchPlayerUncheckedCreateInput = {
     id?: string
     userId?: string | null
-    playerName: string
+    username: string
+    avatarUrl?: string | null
     isAI?: boolean
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
     characterId: string
     paddleId: string
+    rankTier: string
+    rankDivision: string
     rankChange?: number | null
     matchAsOpponent1?: MatchUncheckedCreateNestedOneWithoutOpponent1Input
     matchAsOpponent2?: MatchUncheckedCreateNestedOneWithoutOpponent2Input
@@ -10800,13 +10812,16 @@ export namespace Prisma {
 
   export type MatchPlayerUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    playerName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isAI?: BoolFieldUpdateOperationsInput | boolean
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
+    rankTier?: StringFieldUpdateOperationsInput | string
+    rankDivision?: StringFieldUpdateOperationsInput | string
     rankChange?: NullableIntFieldUpdateOperationsInput | number | null
     matchAsOpponent1?: MatchUpdateOneWithoutOpponent1NestedInput
     matchAsOpponent2?: MatchUpdateOneWithoutOpponent2NestedInput
@@ -10816,13 +10831,16 @@ export namespace Prisma {
   export type MatchPlayerUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
-    playerName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isAI?: BoolFieldUpdateOperationsInput | boolean
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
+    rankTier?: StringFieldUpdateOperationsInput | string
+    rankDivision?: StringFieldUpdateOperationsInput | string
     rankChange?: NullableIntFieldUpdateOperationsInput | number | null
     matchAsOpponent1?: MatchUncheckedUpdateOneWithoutOpponent1NestedInput
     matchAsOpponent2?: MatchUncheckedUpdateOneWithoutOpponent2NestedInput
@@ -10831,38 +10849,47 @@ export namespace Prisma {
   export type MatchPlayerCreateManyInput = {
     id?: string
     userId?: string | null
-    playerName: string
+    username: string
+    avatarUrl?: string | null
     isAI?: boolean
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
     characterId: string
     paddleId: string
+    rankTier: string
+    rankDivision: string
     rankChange?: number | null
   }
 
   export type MatchPlayerUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    playerName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isAI?: BoolFieldUpdateOperationsInput | boolean
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
+    rankTier?: StringFieldUpdateOperationsInput | string
+    rankDivision?: StringFieldUpdateOperationsInput | string
     rankChange?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type MatchPlayerUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
-    playerName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isAI?: BoolFieldUpdateOperationsInput | boolean
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
+    rankTier?: StringFieldUpdateOperationsInput | string
+    rankDivision?: StringFieldUpdateOperationsInput | string
     rankChange?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
@@ -11043,7 +11070,6 @@ export namespace Prisma {
   export type UserCreateInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchPlayers?: MatchPlayerCreateNestedManyWithoutUserInput
@@ -11056,7 +11082,6 @@ export namespace Prisma {
   export type UserUncheckedCreateInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchPlayers?: MatchPlayerUncheckedCreateNestedManyWithoutUserInput
@@ -11069,7 +11094,6 @@ export namespace Prisma {
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchPlayers?: MatchPlayerUpdateManyWithoutUserNestedInput
@@ -11082,7 +11106,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchPlayers?: MatchPlayerUncheckedUpdateManyWithoutUserNestedInput
@@ -11095,7 +11118,6 @@ export namespace Prisma {
   export type UserCreateManyInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -11103,7 +11125,6 @@ export namespace Prisma {
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11111,7 +11132,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -11435,13 +11455,16 @@ export namespace Prisma {
   export type MatchPlayerCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    playerName?: SortOrder
+    username?: SortOrder
+    avatarUrl?: SortOrder
     isAI?: SortOrder
     finalScore?: SortOrder
     isReady?: SortOrder
     isHost?: SortOrder
     characterId?: SortOrder
     paddleId?: SortOrder
+    rankTier?: SortOrder
+    rankDivision?: SortOrder
     rankChange?: SortOrder
   }
 
@@ -11453,26 +11476,32 @@ export namespace Prisma {
   export type MatchPlayerMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    playerName?: SortOrder
+    username?: SortOrder
+    avatarUrl?: SortOrder
     isAI?: SortOrder
     finalScore?: SortOrder
     isReady?: SortOrder
     isHost?: SortOrder
     characterId?: SortOrder
     paddleId?: SortOrder
+    rankTier?: SortOrder
+    rankDivision?: SortOrder
     rankChange?: SortOrder
   }
 
   export type MatchPlayerMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    playerName?: SortOrder
+    username?: SortOrder
+    avatarUrl?: SortOrder
     isAI?: SortOrder
     finalScore?: SortOrder
     isReady?: SortOrder
     isHost?: SortOrder
     characterId?: SortOrder
     paddleId?: SortOrder
+    rankTier?: SortOrder
+    rankDivision?: SortOrder
     rankChange?: SortOrder
   }
 
@@ -11791,7 +11820,6 @@ export namespace Prisma {
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    username?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -11803,7 +11831,6 @@ export namespace Prisma {
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    username?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -11811,7 +11838,6 @@ export namespace Prisma {
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    username?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -12040,6 +12066,10 @@ export namespace Prisma {
     connect?: MatchWhereUniqueInput
   }
 
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
+  }
+
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean
   }
@@ -12088,10 +12118,6 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMatchPlayersInput, UserUpdateWithoutMatchPlayersInput>, UserUncheckedUpdateWithoutMatchPlayersInput>
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
   }
 
   export type MatchUncheckedUpdateOneWithoutOpponent1NestedInput = {
@@ -12963,7 +12989,6 @@ export namespace Prisma {
   export type UserCreateWithoutMatchSpectatorsInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchPlayers?: MatchPlayerCreateNestedManyWithoutUserInput
@@ -12975,7 +13000,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutMatchSpectatorsInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchPlayers?: MatchPlayerUncheckedCreateNestedManyWithoutUserInput
@@ -13044,7 +13068,6 @@ export namespace Prisma {
   export type UserUpdateWithoutMatchSpectatorsInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchPlayers?: MatchPlayerUpdateManyWithoutUserNestedInput
@@ -13056,7 +13079,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutMatchSpectatorsInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchPlayers?: MatchPlayerUncheckedUpdateManyWithoutUserNestedInput
@@ -13138,7 +13160,6 @@ export namespace Prisma {
   export type UserCreateWithoutMatchPlayersInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchSpectators?: MatchSpectatorCreateNestedManyWithoutUserInput
@@ -13150,7 +13171,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutMatchPlayersInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchSpectators?: MatchSpectatorUncheckedCreateNestedManyWithoutUserInput
@@ -13260,7 +13280,6 @@ export namespace Prisma {
   export type UserUpdateWithoutMatchPlayersInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchSpectators?: MatchSpectatorUpdateManyWithoutUserNestedInput
@@ -13272,7 +13291,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutMatchPlayersInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchSpectators?: MatchSpectatorUncheckedUpdateManyWithoutUserNestedInput
@@ -13283,13 +13301,16 @@ export namespace Prisma {
 
   export type MatchPlayerCreateWithoutMatchAsOpponent1Input = {
     id?: string
-    playerName: string
+    username: string
+    avatarUrl?: string | null
     isAI?: boolean
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
     characterId: string
     paddleId: string
+    rankTier: string
+    rankDivision: string
     rankChange?: number | null
     matchAsOpponent2?: MatchCreateNestedOneWithoutOpponent2Input
     User?: UserCreateNestedOneWithoutMatchPlayersInput
@@ -13298,13 +13319,16 @@ export namespace Prisma {
   export type MatchPlayerUncheckedCreateWithoutMatchAsOpponent1Input = {
     id?: string
     userId?: string | null
-    playerName: string
+    username: string
+    avatarUrl?: string | null
     isAI?: boolean
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
     characterId: string
     paddleId: string
+    rankTier: string
+    rankDivision: string
     rankChange?: number | null
     matchAsOpponent2?: MatchUncheckedCreateNestedOneWithoutOpponent2Input
   }
@@ -13316,13 +13340,16 @@ export namespace Prisma {
 
   export type MatchPlayerCreateWithoutMatchAsOpponent2Input = {
     id?: string
-    playerName: string
+    username: string
+    avatarUrl?: string | null
     isAI?: boolean
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
     characterId: string
     paddleId: string
+    rankTier: string
+    rankDivision: string
     rankChange?: number | null
     matchAsOpponent1?: MatchCreateNestedOneWithoutOpponent1Input
     User?: UserCreateNestedOneWithoutMatchPlayersInput
@@ -13331,13 +13358,16 @@ export namespace Prisma {
   export type MatchPlayerUncheckedCreateWithoutMatchAsOpponent2Input = {
     id?: string
     userId?: string | null
-    playerName: string
+    username: string
+    avatarUrl?: string | null
     isAI?: boolean
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
     characterId: string
     paddleId: string
+    rankTier: string
+    rankDivision: string
     rankChange?: number | null
     matchAsOpponent1?: MatchUncheckedCreateNestedOneWithoutOpponent1Input
   }
@@ -13474,13 +13504,16 @@ export namespace Prisma {
 
   export type MatchPlayerUpdateWithoutMatchAsOpponent1Input = {
     id?: StringFieldUpdateOperationsInput | string
-    playerName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isAI?: BoolFieldUpdateOperationsInput | boolean
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
+    rankTier?: StringFieldUpdateOperationsInput | string
+    rankDivision?: StringFieldUpdateOperationsInput | string
     rankChange?: NullableIntFieldUpdateOperationsInput | number | null
     matchAsOpponent2?: MatchUpdateOneWithoutOpponent2NestedInput
     User?: UserUpdateOneWithoutMatchPlayersNestedInput
@@ -13489,13 +13522,16 @@ export namespace Prisma {
   export type MatchPlayerUncheckedUpdateWithoutMatchAsOpponent1Input = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
-    playerName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isAI?: BoolFieldUpdateOperationsInput | boolean
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
+    rankTier?: StringFieldUpdateOperationsInput | string
+    rankDivision?: StringFieldUpdateOperationsInput | string
     rankChange?: NullableIntFieldUpdateOperationsInput | number | null
     matchAsOpponent2?: MatchUncheckedUpdateOneWithoutOpponent2NestedInput
   }
@@ -13513,13 +13549,16 @@ export namespace Prisma {
 
   export type MatchPlayerUpdateWithoutMatchAsOpponent2Input = {
     id?: StringFieldUpdateOperationsInput | string
-    playerName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isAI?: BoolFieldUpdateOperationsInput | boolean
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
+    rankTier?: StringFieldUpdateOperationsInput | string
+    rankDivision?: StringFieldUpdateOperationsInput | string
     rankChange?: NullableIntFieldUpdateOperationsInput | number | null
     matchAsOpponent1?: MatchUpdateOneWithoutOpponent1NestedInput
     User?: UserUpdateOneWithoutMatchPlayersNestedInput
@@ -13528,13 +13567,16 @@ export namespace Prisma {
   export type MatchPlayerUncheckedUpdateWithoutMatchAsOpponent2Input = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: NullableStringFieldUpdateOperationsInput | string | null
-    playerName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isAI?: BoolFieldUpdateOperationsInput | boolean
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
+    rankTier?: StringFieldUpdateOperationsInput | string
+    rankDivision?: StringFieldUpdateOperationsInput | string
     rankChange?: NullableIntFieldUpdateOperationsInput | number | null
     matchAsOpponent1?: MatchUncheckedUpdateOneWithoutOpponent1NestedInput
   }
@@ -13749,13 +13791,16 @@ export namespace Prisma {
 
   export type MatchPlayerCreateWithoutUserInput = {
     id?: string
-    playerName: string
+    username: string
+    avatarUrl?: string | null
     isAI?: boolean
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
     characterId: string
     paddleId: string
+    rankTier: string
+    rankDivision: string
     rankChange?: number | null
     matchAsOpponent1?: MatchCreateNestedOneWithoutOpponent1Input
     matchAsOpponent2?: MatchCreateNestedOneWithoutOpponent2Input
@@ -13763,13 +13808,16 @@ export namespace Prisma {
 
   export type MatchPlayerUncheckedCreateWithoutUserInput = {
     id?: string
-    playerName: string
+    username: string
+    avatarUrl?: string | null
     isAI?: boolean
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
     characterId: string
     paddleId: string
+    rankTier: string
+    rankDivision: string
     rankChange?: number | null
     matchAsOpponent1?: MatchUncheckedCreateNestedOneWithoutOpponent1Input
     matchAsOpponent2?: MatchUncheckedCreateNestedOneWithoutOpponent2Input
@@ -13942,13 +13990,16 @@ export namespace Prisma {
     NOT?: MatchPlayerScalarWhereInput | MatchPlayerScalarWhereInput[]
     id?: StringFilter<"MatchPlayer"> | string
     userId?: StringNullableFilter<"MatchPlayer"> | string | null
-    playerName?: StringFilter<"MatchPlayer"> | string
+    username?: StringFilter<"MatchPlayer"> | string
+    avatarUrl?: StringNullableFilter<"MatchPlayer"> | string | null
     isAI?: BoolFilter<"MatchPlayer"> | boolean
     finalScore?: IntFilter<"MatchPlayer"> | number
     isReady?: BoolFilter<"MatchPlayer"> | boolean
     isHost?: BoolFilter<"MatchPlayer"> | boolean
     characterId?: StringFilter<"MatchPlayer"> | string
     paddleId?: StringFilter<"MatchPlayer"> | string
+    rankTier?: StringFilter<"MatchPlayer"> | string
+    rankDivision?: StringFilter<"MatchPlayer"> | string
     rankChange?: IntNullableFilter<"MatchPlayer"> | number | null
   }
 
@@ -14075,7 +14126,6 @@ export namespace Prisma {
   export type UserCreateWithoutInvitationsSentInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchPlayers?: MatchPlayerCreateNestedManyWithoutUserInput
@@ -14087,7 +14137,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutInvitationsSentInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchPlayers?: MatchPlayerUncheckedCreateNestedManyWithoutUserInput
@@ -14104,7 +14153,6 @@ export namespace Prisma {
   export type UserCreateWithoutInvitationsReceivedInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchPlayers?: MatchPlayerCreateNestedManyWithoutUserInput
@@ -14116,7 +14164,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutInvitationsReceivedInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchPlayers?: MatchPlayerUncheckedCreateNestedManyWithoutUserInput
@@ -14185,7 +14232,6 @@ export namespace Prisma {
   export type UserUpdateWithoutInvitationsSentInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchPlayers?: MatchPlayerUpdateManyWithoutUserNestedInput
@@ -14197,7 +14243,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutInvitationsSentInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchPlayers?: MatchPlayerUncheckedUpdateManyWithoutUserNestedInput
@@ -14220,7 +14265,6 @@ export namespace Prisma {
   export type UserUpdateWithoutInvitationsReceivedInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchPlayers?: MatchPlayerUpdateManyWithoutUserNestedInput
@@ -14232,7 +14276,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutInvitationsReceivedInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchPlayers?: MatchPlayerUncheckedUpdateManyWithoutUserNestedInput
@@ -14244,7 +14287,6 @@ export namespace Prisma {
   export type UserCreateWithoutBetsInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchPlayers?: MatchPlayerCreateNestedManyWithoutUserInput
@@ -14256,7 +14298,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutBetsInput = {
     id: string
     userId: number
-    username: string
     createdAt?: Date | string
     updatedAt?: Date | string
     matchPlayers?: MatchPlayerUncheckedCreateNestedManyWithoutUserInput
@@ -14319,7 +14360,6 @@ export namespace Prisma {
   export type UserUpdateWithoutBetsInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchPlayers?: MatchPlayerUpdateManyWithoutUserNestedInput
@@ -14331,7 +14371,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutBetsInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: IntFieldUpdateOperationsInput | number
-    username?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     matchPlayers?: MatchPlayerUncheckedUpdateManyWithoutUserNestedInput
@@ -14447,13 +14486,16 @@ export namespace Prisma {
 
   export type MatchPlayerCreateManyUserInput = {
     id?: string
-    playerName: string
+    username: string
+    avatarUrl?: string | null
     isAI?: boolean
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
     characterId: string
     paddleId: string
+    rankTier: string
+    rankDivision: string
     rankChange?: number | null
   }
 
@@ -14509,13 +14551,16 @@ export namespace Prisma {
 
   export type MatchPlayerUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    playerName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isAI?: BoolFieldUpdateOperationsInput | boolean
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
+    rankTier?: StringFieldUpdateOperationsInput | string
+    rankDivision?: StringFieldUpdateOperationsInput | string
     rankChange?: NullableIntFieldUpdateOperationsInput | number | null
     matchAsOpponent1?: MatchUpdateOneWithoutOpponent1NestedInput
     matchAsOpponent2?: MatchUpdateOneWithoutOpponent2NestedInput
@@ -14523,13 +14568,16 @@ export namespace Prisma {
 
   export type MatchPlayerUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    playerName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isAI?: BoolFieldUpdateOperationsInput | boolean
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
+    rankTier?: StringFieldUpdateOperationsInput | string
+    rankDivision?: StringFieldUpdateOperationsInput | string
     rankChange?: NullableIntFieldUpdateOperationsInput | number | null
     matchAsOpponent1?: MatchUncheckedUpdateOneWithoutOpponent1NestedInput
     matchAsOpponent2?: MatchUncheckedUpdateOneWithoutOpponent2NestedInput
@@ -14537,13 +14585,16 @@ export namespace Prisma {
 
   export type MatchPlayerUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    playerName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
     isAI?: BoolFieldUpdateOperationsInput | boolean
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
+    rankTier?: StringFieldUpdateOperationsInput | string
+    rankDivision?: StringFieldUpdateOperationsInput | string
     rankChange?: NullableIntFieldUpdateOperationsInput | number | null
   }
 

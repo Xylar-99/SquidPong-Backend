@@ -1,5 +1,6 @@
 export type UserStatus = "online" | "offline" | "idle" | "doNotDisturb";
 export type rank_tier = "I" | "II" | "III";
+
 export type RankDivision =
   | "Iron"
   | "Bronze"
