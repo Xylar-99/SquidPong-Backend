@@ -40,13 +40,11 @@ export async function receiveFromQueue(queue: string)
 function receiveAndDeliver(msg: any) 
 {
 
-  const userIdTo = '1' // this id is default  important add him ni sendDataToQueue
+  const userIdTo = '1'
 
-  console.log("i call him from gateway ")
   if (msg !== null) 
   {
   const data = JSON.parse(msg.content.toString());  // here recive data  check game.html  how send data using socket
-  console.log(data);
   channel.ack(msg);
   sendDataToQueue({...data , userIdTo} , 'test') //  this important    for send data to gateway for send to user online
   }

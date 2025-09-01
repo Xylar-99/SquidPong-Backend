@@ -136,7 +136,6 @@ export async function deleteAccountHandler(req: FastifyRequest, res: FastifyRepl
   try 
   {
 
-    console.log(typeof id , id)
     const user = await prisma.user.findUnique({ where: {id} });
     if (!user) throw new Error("User not found");
 

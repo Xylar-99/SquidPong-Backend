@@ -117,7 +117,6 @@ export async function verifyTwofaHandler(req: FastifyRequest, res: FastifyReply)
       }
   }
 
-  console.log(id)
   await setJwtTokens(res , {id});
   return res.send(respond);
 }

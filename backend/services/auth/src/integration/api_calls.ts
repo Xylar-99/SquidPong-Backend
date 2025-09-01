@@ -17,7 +17,6 @@ export async function sendToService( url: string, method: string , id:any = null
   }
 
   const res = await fetch(url, options);
-  console.log("hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
   return (await res.json());
 }
 

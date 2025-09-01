@@ -43,19 +43,13 @@ function receiveAndDeliver(msg: any)
 {
 
 
-  console.log("i call him from gateway ")
   if (msg !== null) 
   {
     channel.ack(msg);
     const data = JSON.parse(msg.content.toString());
-    console.log("chat-servcie data : " , data);
     
     addMessage(data.senderId , data.message , data.receiverId);
     sendDataToQueue({message : data.message , to : data.receiverId} , 'test')
-
-    console.log("chat-servcie send to id 2 : ");
-
-    console.log("chat -service" , data);
 
   }
 }

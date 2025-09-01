@@ -36,7 +36,6 @@ export async function authenticateUser(req: FastifyRequest, res: FastifyReply)
     // 2️⃣ Verify JWT
     const payload: any = await app.jwt.verify(token);
 
-    console.log('url:', req.url, 'userId:', payload.userId);
     req.id = payload.userId;
 
   } 

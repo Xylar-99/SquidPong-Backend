@@ -84,7 +84,6 @@ async function onGameMessage(this:WebSocket , message: any)
 
     const id = (this as any).userId; 
 
-    console.log(dataJson , id);
 
 }
 
@@ -93,7 +92,6 @@ async function onGameMessage(this:WebSocket , message: any)
 async function onChatNotificationMessage(this:WebSocket , message: any)
 {
     const data = JSON.parse(message.toString());
-    console.log(data);
 
     await sendDataToQueue(data , data.type);
 
@@ -148,7 +146,6 @@ export function handleHttpUpgrade(req: any, socket: any, head: any)
           throw new Error('No endpoint found');
 
       const token = req.headers.cookie.split('=')[1]
-      console.log(token)
       if (!token) throw new Error('No accessToken found');
 
       const payload: any = app.jwt.verify(token);
@@ -180,13 +177,11 @@ export function handleHttpUpgrade(req: any, socket: any, head: any)
 export function sendWsMessage(msg: any) 
 {
 
-  console.log(onlineUsers)
   try 
   {
 
     const data = JSON.parse(msg.content.toString());
 
-    console.log("gateway service data is:", data);
     const { to } = data;
     if (!to) return;
 

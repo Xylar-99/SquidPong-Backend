@@ -43,8 +43,6 @@ export async function receiveFromQueue(queue: string)
 function receiveAndDeliver(msg: any) 
 {
 
-
-  console.log("i call him from gateway ")
   if (msg !== null) 
     {
     sendWsMessage(msg); 
