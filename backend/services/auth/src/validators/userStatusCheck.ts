@@ -11,7 +11,7 @@ export async function isUserVerified(body:any)
     if(userdb && userdb.password)
       throw new Error(EmailMessage.EMAIL_ALREADY_VERIFIED);
 
-    const code = await redis.get(`2fa:${body.email}`);
+    const code = await redis.get(`verify:${body.email}`);
     if(!code)
         throw new Error(EmailMessage.VERIFICATION_TOKEN_EXPIRED)
 
