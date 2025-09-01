@@ -18,28 +18,30 @@
 // | `/matches/:matchId/player/character` | `PUT`      | Change selected character before start.     |
 // | `/matches/:matchId/player/paddle`    | `PUT`      | Change selected paddle skin before start.   |
 
+import { FastifyInstance } from "fastify";
 
-
-import { RouteHandlerMethod , FastifySchema } from 'fastify';
 import { createMatch, getMatch } from "../controllers/matchController";
+import {
+  matchesParamsValidators,
+  matchesValidators,
+} from "../validators/matchesValidators";
 
-
-type Route = {
-    method  : 'GET' | 'POST' | 'DELETE' | 'PATCH' | 'PUT';
-    url     : string;
-    handler : RouteHandlerMethod;
-    schema? : FastifySchema;
-};
-
-export const matchRoutes: Route[] = [
-  {
-    method: "POST",
-    url: "/api/game/match",
-    handler: createMatch,
-  },
-  {
-    method: "GET",
-    url: "/api/game/match/:matchId",
-    handler: getMatch,
-  },
-];
+export async function matchRoutes(server: FastifyInstance) {
+  // Create a new match
+  server.post(
+    "/match",
+    {
+      schema: {
+        body: matchesValidators.Body,
+      },
+    },
+    createMatch
+  );
+  server.get(
+    "/match/:matchId",
+    {
+      schema: matchesParamsValidators,
+    },
+    getMatch
+  );
+}

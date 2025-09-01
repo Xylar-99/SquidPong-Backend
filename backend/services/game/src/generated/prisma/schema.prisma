@@ -37,18 +37,6 @@ enum AIDifficulty {
   INSANE
 }
 
-enum CharacterId {
-  ZERO
-  TANK
-  WIZARD
-}
-
-enum PaddleSkinId {
-  CLASSIC
-  FUTURISTIC
-  RETRO
-}
-
 enum BetStatus {
   PENDING
   WON
@@ -84,6 +72,11 @@ enum InvitationStatus {
   CANCELLED
 }
 
+enum InvitationType {
+  PUBLIC
+  PRIVATE
+}
+
 // ===================================== Models
 model MatchSpectator {
   id       String @id @default(cuid())
@@ -96,15 +89,15 @@ model MatchSpectator {
 }
 
 model MatchPlayer {
-  id          String       @id @default(cuid())
+  id          String  @id @default(cuid())
   userId      String? // Nullable, since AI doesn't have a User record
   playerName  String
-  isAI        Boolean      @default(false)
-  finalScore  Int          @default(0)
-  isReady     Boolean      @default(false)
-  isHost      Boolean      @default(false)
-  characterId CharacterId
-  paddleId    PaddleSkinId
+  isAI        Boolean @default(false)
+  finalScore  Int     @default(0)
+  isReady     Boolean @default(false)
+  isHost      Boolean @default(false)
+  characterId String
+  paddleId    String
   rankChange  Int?
 
   // Relations
@@ -151,6 +144,7 @@ model MatchSetting {
 
 model User {
   id       String @id
+  userId   Int    @unique
   username String @unique
 
   createdAt DateTime @default(now())
@@ -169,12 +163,13 @@ model Invitation {
   senderId   String
   receiverId String?
   status     InvitationStatus @default(PENDING)
+  type       InvitationType   @default(PUBLIC)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  inviteCode String   @unique // Unique code for the invitation
-  expiresAt  DateTime // Expiration time for the invitation
+  inviteCode String    @unique // Unique code for the invitation
+  expiresAt  DateTime? // Expiration time for the invitation
 
   // 1v1 Match Settings
   scoreLimit       Int
