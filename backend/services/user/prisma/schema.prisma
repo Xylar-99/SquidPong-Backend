@@ -15,7 +15,7 @@ enum UserStatus {
   DO_NOT_DISTURB
 }
 
-enum RankTier {
+enum RankDivision {
   BRONZE
   SILVER
   GOLD
@@ -25,7 +25,7 @@ enum RankTier {
 }
 
 
-enum RankDivision {
+enum RankTier {
   I
   II
   III
