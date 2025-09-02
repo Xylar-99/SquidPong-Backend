@@ -62,18 +62,18 @@ export async function updateProfileHandler(req: FastifyRequest, res: FastifyRepl
     const headers = req.headers as any;
     const userId = Number(headers['x-user-id']);
 
-    const cacheKey = `profile:${userId}`;
-    const cached = await redis.get(cacheKey);
+    // const cacheKey = `profile:${userId}`;
+    // const cached = await redis.get(cacheKey);
 
-    if (cached) 
-      {
-      const profile = JSON.parse(cached);
-      const updatedProfile = { ...profile, ...body };
-      await redis.set(cacheKey, JSON.stringify(updatedProfile), 'EX', CACHE_TTL);
-      console.log("Updated profile in Redis cache only");
-    } 
-    else 
-    {
+    // if (cached) 
+    //   {
+    //   const profile = JSON.parse(cached);
+    //   const updatedProfile = { ...profile, ...body };
+    //   // await redis.set(cacheKey, JSON.stringify(updatedProfile), 'EX', CACHE_TTL);
+    //   // console.log("Updated profile in Redis cache only");
+    // } 
+    // else 
+    // {
       await prisma.profile.update({
         where: { userId },
         data: body,
@@ -87,8 +87,8 @@ export async function updateProfileHandler(req: FastifyRequest, res: FastifyRepl
         }
       });
 
-      await redis.set(cacheKey, JSON.stringify(updatedProfile), 'EX', 60);
-    }
+      // await redis.set(cacheKey, JSON.stringify(updatedProfile), 'EX', 60);
+    // }
 
   } 
   catch (error) 
@@ -148,7 +148,7 @@ export async function deleteProfileHandler(req: FastifyRequest, res: FastifyRepl
   try 
   {
     await prisma.profile.delete({ where: { userId }});
-    await redis.del(`profile:${userId}`);
+    // await redis.del(`profile:${userId}`);
 
   } 
   catch (error) 
@@ -173,14 +173,14 @@ export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyRep
 
   try 
   {
-    const cacheKey = `profile:${userId}`;
-    const cached = await redis.get(cacheKey);
+    // const cacheKey = `profile:${userId}`;
+    // const cached = await redis.get(cacheKey);
 
-    if (cached) 
-      {
-      respond.data = JSON.parse(cached);
-      return res.send(respond);
-      }
+    // if (cached) 
+    //   {
+    //   respond.data = JSON.parse(cached);
+    //   return res.send(respond);
+    //   }
 
     const profile = await prisma.profile.findUnique({
       where: { userId },
@@ -191,7 +191,7 @@ export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyRep
     });
 
     respond.data = profile;
-    await redis.set(cacheKey, JSON.stringify(profile), 'EX', CACHE_TTL);
+    // await redis.set(cacheKey, JSON.stringify(profile), 'EX', CACHE_TTL);
 
   } 
   catch (error) 
@@ -216,14 +216,14 @@ export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply)
 
   try 
   {
-    const cacheKey = `profile:${id}`;
-    const cached = await redis.get(cacheKey);
+    // const cacheKey = `profile:${id}`;
+    // const cached = await redis.get(cacheKey);
 
-    if (cached) 
-      {
-      respond.data = JSON.parse(cached);
-      return res.send(respond);
-      }
+    // if (cached) 
+    //   {
+    //   respond.data = JSON.parse(cached);
+    //   return res.send(respond);
+    //   }
 
     const profile = await prisma.profile.findUnique({
       where: { userId: Number(id) },
@@ -237,7 +237,7 @@ export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply)
     if(!profile)
       throw new Error("User not found in the database.");
     respond.data = profile;
-    await redis.set(cacheKey, JSON.stringify(profile), 'EX', CACHE_TTL);
+    // await redis.set(cacheKey, JSON.stringify(profile), 'EX', CACHE_TTL);
 
   } 
   catch (error) 
