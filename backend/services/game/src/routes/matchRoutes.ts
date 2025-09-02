@@ -20,7 +20,11 @@
 
 import { FastifyInstance } from "fastify";
 
-import { createMatch, getMatch } from "../controllers/matchController";
+import {
+  createMatch,
+  getMatch,
+  getPendingMatchForUser,
+} from "../controllers/matchController";
 import {
   matchesParamsValidators,
   matchesValidators,
@@ -37,11 +41,20 @@ export async function matchRoutes(server: FastifyInstance) {
     },
     createMatch
   );
+  // current user's pending match (limited to one)
   server.get(
-    "/match/:matchId",
+    "/api/game/match/pending/:userId",
     {
-      schema: matchesParamsValidators,
+      schema: {
+        params: {
+          type: "object",
+          properties: {
+            userId: { type: "string" },
+          },
+          required: ["userId"],
+        },
+      },
     },
-    getMatch
+    getPendingMatchForUser
   );
 }

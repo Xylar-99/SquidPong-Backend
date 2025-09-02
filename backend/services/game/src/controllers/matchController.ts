@@ -1,12 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { prisma } from "../lib/prisma";
 import { CreateMatchBody } from "../types/match";
-import {
-  Invitation,
-  Match,
-  MatchPlayer,
-  Prisma,
-} from "../generated/prisma";
+import { Invitation, Match, MatchPlayer, Prisma } from "../generated/prisma";
 import { User } from "../types/users";
 
 export async function createMatch(
@@ -91,8 +86,6 @@ export async function MatchFromInvitation(invitation: any): Promise<Match> {
       include: {
         opponent1: true,
         opponent2: true,
-        matchSetting: true,
-        invitation: true,
       },
     });
 
@@ -139,7 +132,6 @@ export async function createMatchPlayer(
     },
   });
 }
-
 export async function createMatchSetting(
   matchId: string,
   mode: "ONE_VS_ONE" | "ONE_VS_AI",
@@ -182,7 +174,6 @@ export async function createMatchSetting(
 
   throw new Error("Invalid match setting mode");
 }
-
 export async function getMatch(
   request: FastifyRequest<{ Params: { matchId: string } }>,
   reply: FastifyReply
@@ -211,4 +202,95 @@ export async function getMatch(
     console.error("Error fetching match:", error);
     return reply.status(500).send({ error: "Failed to fetch match" });
   }
+}
+export async function getPendingMatchForUser(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const params = request.params as { userId: string };
+
+  try {
+    const pendingMatch = await prisma.match.findFirst({
+      where: {
+        status: "WAITING",
+        OR: [
+          {
+            opponent1: {
+              User: {
+                userId: Number(params.userId),
+              },
+            },
+          },
+          {
+            opponent2: {
+              User: {
+                userId: Number(params.userId),
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        opponent1: true,
+        opponent2: true,
+        matchSetting: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (!pendingMatch) {
+      return reply.status(404).send({ error: "No pending match found!" });
+    }
+
+    return reply.status(200).send({
+      success: true,
+      data: pendingMatch,
+    });
+  } catch (error) {
+    console.error("Error fetching pending match:", error);
+    return reply.status(500).send({ error: "Failed to fetch pending match" });
+  }
+}
+
+// Match management logic
+export async function toggleReadyStatus(
+  request: FastifyRequest<{
+    Params: { matchId: string; playerId: string };
+    Body: { isReady: boolean };
+  }>,
+  reply: FastifyReply
+) {
+  const { matchId, playerId } = request.params;
+  const { isReady } = request.body;
+
+  try {
+    const match = await prisma.match.findUnique({
+      where: { id: matchId },
+      include: { opponent1: true, opponent2: true },
+    });
+
+    if (!match) {
+      return reply.status(404).send({ error: "Match not found" });
+    }
+
+    const player =
+      match.opponent1.id === playerId
+        ? match.opponent1
+        : match.opponent2?.id === playerId
+        ? match.opponent2
+        : null;
+
+    if (!player) {
+      return reply
+        .status(404)
+        .send({ error: "Player not found in this match" });
+    }
+
+    await prisma.matchPlayer.update({
+      where: { id: player.id },
+      data: { isReady },
+    });
+  } catch (error) {}
 }

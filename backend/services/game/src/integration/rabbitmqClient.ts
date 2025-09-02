@@ -44,29 +44,40 @@ export async function sendDataToQueue(data: any, queue: string) {
   }
 }
 
-export async function receiveFromQueue(queue: string) {
-  try 
-  {
-    if (!channel) {
-      console.error("RabbitMQ channel not available");
-      return;
-    }
+// export async function receiveFromQueue(queue: string) {
+//   try 
+//   {
+//     if (!channel) {
+//       console.error("RabbitMQ channel not available");
+//       return;
+//     }
 
-    await channel.consume(queue, receiveAndDeliver, { noAck: false });
-    console.log(`🎧 Listening for messages on queue: ${queue}`);
-  } catch (error) {
-    console.error("Error setting up consumer:", error);
-  }
-}
+//     await channel.consume(queue, receiveAndDeliver, { noAck: false });
+//     console.log(`🎧 Listening for messages on queue: ${queue}`);
+//   } catch (error) {
+//     console.error("Error setting up consumer:", error);
+//   }
+// }
 
-function receiveAndDeliver(msg: any) {
-  if (msg === null) return;
+// function receiveAndDeliver(msg: any) 
+// {
+//   if (msg === null) return;
 
-  try {
-    const data = JSON.parse(msg.content.toString());
-    console.log("📥 Received game message:", data);
+//   try 
+//   {
+//     const data = JSON.parse(msg.content.toString());
+//     console.log("📥 Received game message:", data);
 
-<<<<<<< HEAD
+//   } 
+//   catch (error) 
+//   {
+//     console.error("Error processing message:", error);
+//     // Reject message and don't requeue on parsing errors
+//     channel.nack(msg, false, false);
+//   }
+// }
+
+
 
 export async function receiveFromQueue(queue: string) 
 {
@@ -84,7 +95,6 @@ function receiveAndDeliver(msg: any)
   const data = JSON.parse(msg.content.toString());  // here recive data  check game.html  how send data using socket
   channel.ack(msg);
   sendDataToQueue({...data , userIdTo} , 'test') //  this important    for send data to gateway for send to user online
-=======
     // Process the game logic here
     const processedData = processGameMessage(data);
     
@@ -95,12 +105,8 @@ function receiveAndDeliver(msg: any)
     
     // Acknowledge the message
     channel.ack(msg);
-  } catch (error) {
-    console.error("Error processing message:", error);
-    // Reject message and don't requeue on parsing errors
-    channel.nack(msg, false, false);
->>>>>>> bd3b5c6f71a9cda006961088a7b7b257d8d64e47
-  }
+  
+}
 }
 
 // Game-specific message processing

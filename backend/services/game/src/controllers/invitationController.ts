@@ -322,6 +322,7 @@ export async function AcceptInvitation(
     return reply.status(200).send({
       message: "Invitation accepted and match created successfully",
       data: {
+        invitation : acceptedInvitation,
         match,
       },
     });
