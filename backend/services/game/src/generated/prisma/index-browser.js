@@ -127,13 +127,16 @@ exports.Prisma.MatchSpectatorScalarFieldEnum = {
 exports.Prisma.MatchPlayerScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  playerName: 'playerName',
+  username: 'username',
+  avatarUrl: 'avatarUrl',
   isAI: 'isAI',
   finalScore: 'finalScore',
   isReady: 'isReady',
   isHost: 'isHost',
   characterId: 'characterId',
   paddleId: 'paddleId',
+  rankTier: 'rankTier',
+  rankDivision: 'rankDivision',
   rankChange: 'rankChange'
 };
 
@@ -162,7 +165,7 @@ exports.Prisma.MatchSettingScalarFieldEnum = {
 
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
-  username: 'username',
+  userId: 'userId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -172,6 +175,7 @@ exports.Prisma.InvitationScalarFieldEnum = {
   senderId: 'senderId',
   receiverId: 'receiverId',
   status: 'status',
+  type: 'type',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   inviteCode: 'inviteCode',
@@ -204,18 +208,6 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
-exports.CharacterId = exports.$Enums.CharacterId = {
-  ZERO: 'ZERO',
-  TANK: 'TANK',
-  WIZARD: 'WIZARD'
-};
-
-exports.PaddleSkinId = exports.$Enums.PaddleSkinId = {
-  CLASSIC: 'CLASSIC',
-  FUTURISTIC: 'FUTURISTIC',
-  RETRO: 'RETRO'
-};
-
 exports.GameMode = exports.$Enums.GameMode = {
   ONE_VS_ONE: 'ONE_VS_ONE',
   ONE_VS_AI: 'ONE_VS_AI',
@@ -243,6 +235,11 @@ exports.InvitationStatus = exports.$Enums.InvitationStatus = {
   DECLINED: 'DECLINED',
   EXPIRED: 'EXPIRED',
   CANCELLED: 'CANCELLED'
+};
+
+exports.InvitationType = exports.$Enums.InvitationType = {
+  PUBLIC: 'PUBLIC',
+  PRIVATE: 'PRIVATE'
 };
 
 exports.BetStatus = exports.$Enums.BetStatus = {

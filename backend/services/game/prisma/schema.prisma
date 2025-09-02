@@ -37,42 +37,11 @@ enum AIDifficulty {
   INSANE
 }
 
-enum CharacterId {
-  ZERO
-  TANK
-  WIZARD
-}
-
-enum PaddleSkinId {
-  CLASSIC
-  FUTURISTIC
-  RETRO
-}
-
 enum BetStatus {
   PENDING
   WON
   LOST
   CANCELLED
-}
-
-// ***** Rankings *****
-enum RankTier {
-  I
-  II
-  III
-}
-
-enum RankDivision {
-  IRON
-  BRONZE
-  SILVER
-  GOLD
-  PLATINUM
-  DIAMOND
-  ASCENDANT
-  IMMORTAL
-  MASTER
 }
 
 // ***** Invitations *****
@@ -82,6 +51,11 @@ enum InvitationStatus {
   DECLINED
   EXPIRED
   CANCELLED
+}
+
+enum InvitationType {
+  PUBLIC
+  PRIVATE
 }
 
 // ===================================== Models
@@ -96,16 +70,25 @@ model MatchSpectator {
 }
 
 model MatchPlayer {
-  id          String       @id @default(cuid())
-  userId      String? // Nullable, since AI doesn't have a User record
-  playerName  String
-  isAI        Boolean      @default(false)
-  finalScore  Int          @default(0)
-  isReady     Boolean      @default(false)
-  isHost      Boolean      @default(false)
-  characterId CharacterId
-  paddleId    PaddleSkinId
-  rankChange  Int?
+  id     String  @id @default(cuid())
+  userId String? // Nullable, since AI doesn't have a User record
+
+  // PlayerInfos
+  username  String
+  avatarUrl String?
+
+  // Player match info
+  isAI       Boolean @default(false)
+  finalScore Int     @default(0)
+  isReady    Boolean @default(false)
+  isHost     Boolean @default(false)
+
+  // player metadata
+  characterId  String
+  paddleId     String
+  rankTier     String
+  rankDivision String
+  rankChange   Int?
 
   // Relations
   matchAsOpponent1 Match? @relation("Opponent1")
@@ -150,8 +133,8 @@ model MatchSetting {
 }
 
 model User {
-  id            String        @id 
-  username      String        @unique
+  id       String @id
+  userId   Int    @unique // id from auth system
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -169,18 +152,19 @@ model Invitation {
   senderId   String
   receiverId String?
   status     InvitationStatus @default(PENDING)
+  type       InvitationType   @default(PUBLIC)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  inviteCode String   @unique // Unique code for the invitation
-  expiresAt  DateTime // Expiration time for the invitation
+  inviteCode String    @unique // Unique code for the invitation
+  expiresAt  DateTime? // Expiration time for the invitation
 
   // 1v1 Match Settings
   scoreLimit       Int
   pauseTime        Int
   allowPowerUps    Boolean
-  requiredCurrency Int        @default(0)
+  requiredCurrency Int     @default(0)
 
   message String? // Optional message from the sender
 
@@ -188,7 +172,7 @@ model Invitation {
   matchId String? @unique
   match   Match?  @relation("InvitationMatch", fields: [matchId], references: [id])
 
-  sender   User @relation("InvitationSender", fields: [senderId], references: [id])
+  sender   User  @relation("InvitationSender", fields: [senderId], references: [id])
   receiver User? @relation("InvitationReceiver", fields: [receiverId], references: [id])
 }
 

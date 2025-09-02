@@ -10,7 +10,11 @@ export const createInvitationValidator = {
     ],
     properties: {
       recieverId: { type: "string" },
-      expiresAt: { type: "string", format: "date-time" },
+      expiresAt: {
+        type: ["string", "null"], // allow string or null
+        format: "date-time",
+        nullable: true, // optional but explicit
+      },
       scoreLimit: {
         type: "integer",
         enum: [5, 10, 15, 20],

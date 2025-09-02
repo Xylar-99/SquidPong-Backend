@@ -1,77 +1,51 @@
 export const matchesValidators = {
-  body: {
-    type: "object",
+  Body: {
     oneOf: [
-      // 1. ONE_VS_ONE — requires full gameSettings
+      // ONE_VS_ONE → requires full game settings
       {
+        type: "object",
+        required: [
+          "mode",
+          "opponentId",
+          "scoreLimit",
+          "pauseTime",
+          "allowPowerUps",
+          "requiredCurrency",
+        ],
         properties: {
-          mode: { const: "ONE_VS_ONE" },
+          mode: { type: "string", const: "ONE_VS_ONE" },
           opponentId: { type: "string" },
-          gameSettings: {
-            type: "object",
-            required: ["rules"],
-            properties: {
-              rules: {
-                type: "object",
-                required: ["scoreLimit", "pauseTime", "allowPowerUps"],
-                properties: {
-                  scoreLimit: {
-                    type: "string",
-                    enum: ["FIVE", "TEN", "FIFTEEN", "TWENTY"],
-                  },
-                  pauseTime: {
-                    type: "string",
-                    enum: ["THIRTY_SECONDS", "SIXTY_SECONDS", "NINETY_SECONDS"],
-                  },
-                  allowPowerUps: { type: "boolean" },
-                },
-              },
-              requiredCurrency: {
-                type: "integer",
-                minimum: 0,
-              },
-            },
-          },
+          scoreLimit: { type: "integer", enum: [5, 10, 15, 20] },
+          pauseTime: { type: "integer", enum: [30, 60, 90] },
+          allowPowerUps: { type: "boolean" },
+          requiredCurrency: { type: "integer", minimum: 0 },
         },
-        required: ["mode", "opponentId", "gameSettings"],
       },
-
-      // 2. TOURNAMENT — inherits settings → forbid gameSettings
+      // TOURNAMENT → no gameSettings, inherits from tournament
       {
+        type: "object",
+        required: ["mode", "tournamentId"],
         properties: {
-          mode: { const: "TOURNAMENT" },
+          mode: { type: "string", const: "TOURNAMENT" },
+          tournamentId: { type: "string" },
         },
+      },
+      // ONE_VS_AI → difficulty only
+      {
+        type: "object",
+        required: ["mode", "difficulty"],
+        properties: {
+          mode: { type: "string", const: "ONE_VS_AI" },
+          difficulty: { type: "string", enum: ["EASY", "MEDIUM", "HARD"] },
+        },
+      },
+      // BOUNCE_CHALLENGE → mini-game, no settings allowed
+      {
+        type: "object",
         required: ["mode"],
-        not: {
-          required: ["gameSettings"],
-        },
-      },
-
-      // 3. ONE_VS_AI — requires difficulty
-      {
         properties: {
-          mode: { const: "ONE_VS_AI" },
-          gameSettings: {
-            type: "object",
-            required: ["difficulty"],
-            properties: {
-              difficulty: {
-                type: "string",
-                enum: ["EASY", "MEDIUM", "HARD"],
-              },
-            },
-          },
+          mode: { type: "string", const: "BOUNCE_CHALLENGE" },
         },
-        required: ["mode", "gameSettings"],
-      },
-
-      // 4. BOUNCE_CHALLENGE — no gameSettings allowed
-      {
-        properties: {
-          mode: { const: "BOUNCE_CHALLENGE" },
-        },
-        required: ["mode"],
-        not: { required: ["gameSettings"] },
       },
     ],
   },

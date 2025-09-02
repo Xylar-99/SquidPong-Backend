@@ -1,9 +1,12 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { prisma } from "../lib/prisma";
+import { User } from "../types/users";
+import { MatchFromInvitation } from "./matchController";
+import { sendDataToQueue } from "../integration/rabbitmqClient";
 
 interface CreateInvitationBody {
-  receiverId: string;
-  expiresAt: string; // ISO date string
+  receiverId: string | null;
+  expiresAt: string;
   scoreLimit: 5 | 10 | 15 | 20;
   pauseTime: 30 | 60 | 90; // in seconds
   allowPowerUps: boolean;
@@ -22,39 +25,51 @@ export function generateInviteCode(): string {
 }
 
 // Create an invitation
-export async function createInvitation( request: FastifyRequest, reply: FastifyReply) 
-{
-
-  const { receiverId, allowPowerUps, expiresAt, pauseTime, requiredCurrency, scoreLimit, message, } = request.body as any;
-
-
-  const fakeUserData = {
-    id: "fakeUserId",
-    name: "Fake User",
-    coinsBalance: 1000, // Example balance
-  };
-  const fakeOpponentData = {
-    id: "fakeUserOpponentId",
-    name: "Fake User Opponent",
-    coinsBalance: 500, // Example balance
-  };
+export async function createInvitation(
+  request: FastifyRequest<{ Body: CreateInvitationBody }>,
+  reply: FastifyReply
+) {
+  const {
+    receiverId,
+    allowPowerUps,
+    expiresAt,
+    pauseTime,
+    requiredCurrency,
+    scoreLimit,
+    message,
+  } = request.body;
 
   try {
     // validate user data
-    if (!fakeUserData)
-      return reply.status(404).send({ error: "Sender not found" });
-    if (fakeUserData.coinsBalance < requiredCurrency) {
+    const userId = Number(request.headers["x-user-id"]);
+    const res = await fetch(`http://user:4001/api/user/${userId}`);
+    if (!res.ok) return reply.status(404).send({ error: "Sender not found" });
+
+    const Resp = await res.json();
+    const userData = Resp.data as User;
+
+    if (userData.walletBalance < requiredCurrency) {
       return reply.status(400).send({
         error: "you do not have enough coins for this game.",
       });
     }
 
     // validate receiver if provided
+    let receiverData = null;
+    if (receiverId === userData.id) {
+      return reply
+        .status(400)
+        .send({ error: "You cannot send an invitation to yourself." });
+    }
     if (receiverId) {
-      if (!fakeOpponentData)
+      const res = await fetch(`http://user:4001/api/user/${receiverId}`);
+      if (!res.ok)
         return reply.status(404).send({ error: "Receiver not found" });
 
-      if (fakeOpponentData.coinsBalance < requiredCurrency) {
+      const receiverResp = await res.json();
+      receiverData = receiverResp.data;
+
+      if (receiverData?.walletBalance < requiredCurrency) {
         return reply.status(400).send({
           error: "Receiver does not have enough coins for this game.",
         });
@@ -75,37 +90,45 @@ export async function createInvitation( request: FastifyRequest, reply: FastifyR
     // validate user's create invitation limit
     const userInvitationsCount = await prisma.invitation.count({
       where: {
-        senderId: fakeUserData.id,
+        senderId: userData.id,
         status: "PENDING",
-        expiresAt: { gt: new Date() },
+        OR: [
+          { expiresAt: { gt: new Date() } }, // not expired
+          { expiresAt: null }, // never expires
+        ],
       },
     });
 
     if (userInvitationsCount > 0)
       return reply.status(400).send({
         error: `You only can create one PENDING invitation at a time.`,
+        userData,
       });
 
     // Create the invitation
     const result = await prisma.$transaction(async (tx) => {
       // Ensure sender exist locally
       await tx.user.upsert({
-        where: { id: fakeUserData.id },
-        update: { username: fakeUserData.name },
+        where: { id: userData.id },
+        update: {
+          userId: userData.userId,
+        },
         create: {
-          id: fakeUserData.id,
-          username: fakeUserData.name,
+          id: userData.id,
+          userId: userData.userId,
         },
       });
 
-      // Ensure receiver exist locally if provided
-      if (receiverId && fakeOpponentData) {
+      // Ensure receiver exists locally if provided
+      if (receiverData) {
         await tx.user.upsert({
-          where: { id: fakeOpponentData.id },
-          update: { username: fakeOpponentData.name },
+          where: { id: receiverData.id },
+          update: {
+            userId: receiverData.userId,
+          },
           create: {
-            id: fakeOpponentData.id,
-            username: fakeOpponentData.name,
+            id: receiverData.id,
+            userId: receiverData.userId,
           },
         });
       }
@@ -114,15 +137,16 @@ export async function createInvitation( request: FastifyRequest, reply: FastifyR
       const inviteCode = generateInviteCode();
       const invitation = await tx.invitation.create({
         data: {
-          senderId: fakeUserData.id,
-          receiverId: receiverId || null,
-          expiresAt: new Date(expiresAt),
+          senderId: userData.id,
+          receiverId: receiverId ? receiverData.id : null,
+          expiresAt,
           scoreLimit,
           pauseTime,
           allowPowerUps,
           requiredCurrency,
           message: message || null,
           inviteCode,
+          type: receiverId ? "PRIVATE" : "PUBLIC",
         },
         include: {
           sender: true,
@@ -130,32 +154,28 @@ export async function createInvitation( request: FastifyRequest, reply: FastifyR
         },
       });
 
+      // Send real-time notification to receiver if applicable
+      if (receiverId) {
+        try {
+          await sendDataToQueue(
+            {
+              to: String(receiverData.userId),
+              event: "game-invitation",
+              data: {
+                invitation: invitation,
+              },
+            },
+            "test"
+          );
+        } catch (error) {
+          console.error("Error sending invitation notification:", error);
+        }
+      }
       return invitation;
     });
 
     // Send the response
-    return reply.status(201).send({
-      id: result.id,
-      inviteCode: result.inviteCode,
-      type: receiverId ? "PRIVATE" : "PUBLIC",
-      sender: {
-        id: result.sender.id,
-        username: result.sender.username,
-        level: "placeholder", // Placeholder, replace with actual level logic
-        rank: "placeholder", // Placeholder, replace with actual rank logic
-        coinsBalance: fakeUserData.coinsBalance,
-      },
-      reciever:
-        fakeOpponentData && receiverId
-          ? {
-              id: fakeOpponentData.id,
-              username: fakeOpponentData.name,
-              level: "placeholder", // Placeholder, replace with actual level logic
-              rank: "placeholder", // Placeholder, replace with actual rank logic
-              coinsBalance: fakeOpponentData.coinsBalance,
-            }
-          : null,
-    });
+    return reply.status(201).send(result);
   } catch (error) {
     console.error("=============ERROR :", error);
     return reply.status(400).send({ error: "Error while creating invitation" });
@@ -163,9 +183,11 @@ export async function createInvitation( request: FastifyRequest, reply: FastifyR
 }
 
 // Get an invitation by ID
-export async function getInvitation(  request: FastifyRequest,  reply: FastifyReply) 
-{
-  const { id } = request.params as any;
+export async function getInvitation(
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply
+) {
+  const { id } = request.params;
 
   try {
     const invitation = await prisma.invitation.findUnique({
@@ -180,51 +202,222 @@ export async function getInvitation(  request: FastifyRequest,  reply: FastifyRe
       return reply.status(404).send({ error: "Invitation not found" });
     }
 
-    return reply.status(200).send({
-      id: invitation.id,
-      inviteCode: invitation.inviteCode,
-      type: invitation.receiverId ? "PRIVATE" : "PUBLIC",
-      sender: {
-        id: invitation.sender.id,
-        username: invitation.sender.username,
-        level: "placeholder", // Placeholder, replace with actual level logic
-        rank: "placeholder", // Placeholder, replace with actual rank logic
-        coinsBalance: 1000, // Example balance, replace with actual logic
+    return reply.status(200).send(invitation);
+  } catch (error) {
+    return reply.status(404).send({ error: "Invitation not found" });
+  }
+}
+// Get an invitation by code
+export async function getInvitationByCode(
+  request: FastifyRequest<{ Params: { code: string } }>,
+  reply: FastifyReply
+) {
+  const { code } = request.params;
+
+  try {
+    const invitation = await prisma.invitation.findFirst({
+      where: { inviteCode: code },
+      include: {
+        sender: true,
+        receiver: true,
       },
-      receiver: null, // TODO: TMP SOLUTION
-      expiresAt: invitation.expiresAt.toISOString(),
-      scoreLimit: invitation.scoreLimit,
-      pauseTime: invitation.pauseTime,
-      allowPowerUps: invitation.allowPowerUps,
-      requiredCurrency: invitation.requiredCurrency,
-      message: invitation.message || null,
     });
+
+    if (!invitation) {
+      return reply.status(404).send({ error: "Invitation not found" });
+    }
+
+    return reply.status(200).send(invitation);
   } catch (error) {
     return reply.status(404).send({ error: "Invitation not found" });
   }
 }
 
-// Accept an invitation by ID
+// Accept an invitation
 export async function AcceptInvitation(
-  request: FastifyRequest,
+  request: FastifyRequest<{ Params: { id: string } }>,
   reply: FastifyReply
 ) {
-  // Implementation for accepting an invitation
+  const { id } = request.params;
+
+  // validate user data
+  const userId = Number(request.headers["x-user-id"]);
+
+  const res = await fetch(`http://user:4001/api/user/${userId}`);
+
+  if (!res.ok) return reply.status(404).send({ error: "User not found" });
+
+  const Resp = await res.json();
+  const userData: User = Resp.data;
+
+  // Fetch invitation
+  const invitation = await prisma.invitation.findUnique({ where: { id } });
+  if (!invitation)
+    return reply.status(404).send({ error: "Invitation not found" });
+
+  // Make sure this user can accept
+  if (invitation.receiverId && invitation.receiverId !== userData.id)
+    return reply
+      .status(403)
+      .send({ error: "You can only accept invitations sent to you" });
+
+  // Check status
+  if (invitation.status !== "PENDING")
+    return reply
+      .status(400)
+      .send({ error: "Only pending invitations can be accepted" });
+
+  // Expiration handling
+  if (invitation.expiresAt && invitation.expiresAt < new Date()) {
+    await prisma.invitation.update({
+      where: { id },
+      data: { status: "EXPIRED" },
+    });
+    return reply.status(400).send({ error: "Invitation has expired" });
+  }
+
+  // Ensure receiver exist locally
+  await prisma.user.upsert({
+    where: { id: userData.id },
+    update: {
+      userId: userData.userId,
+    },
+    create: {
+      id: userData.id,
+      userId: userData.userId,
+    },
+  });
+
+  // Accept
+  const acceptedInvitation = await prisma.invitation.update({
+    where: { id },
+    data: { status: "ACCEPTED", receiverId: userData.id },
+    include: { sender: true, receiver: true },
+  });
+  // create a match based on the invitation
+  try {
+    const match = await MatchFromInvitation(acceptedInvitation);
+
+    if (!match) {
+      throw new Error("Failed to create match from invitation");
+    }
+
+    // notify sender via rmq, while the receiver would notified by the response
+    try {
+      await sendDataToQueue(
+        {
+          to: String(acceptedInvitation.sender?.userId),
+          event: "game-invitation",
+          data: {
+            invitation: acceptedInvitation,
+            match,
+          },
+        },
+        "test"
+      );
+    } catch (err) {
+      console.error("Error sending match notification:", err);
+    }
+
+    return reply.status(200).send({
+      message: "Invitation accepted and match created successfully",
+      data: {
+        match,
+      },
+    });
+  } catch (error) {
+    console.error("Error creating match from invitation:", error);
+    return reply
+      .status(500)
+      .send({ error: "Invitation accepted but failed to create match" });
+  }
 }
 
 // Decline an invitation by ID
 export async function DeclineInvitation(
-  request: FastifyRequest,
+  request: FastifyRequest<{ Params: { id: string } }>,
   reply: FastifyReply
 ) {
-  // Implementation for declining an invitation
+  const { id } = request.params;
+
+  // validate user data
+  const userId = Number(request.headers["x-user-id"]);
+  const res = await fetch(`http://user:4001/api/user/${userId}`);
+  if (!res.ok) return reply.status(404).send({ error: "Sender not found" });
+
+  const Resp = await res.json();
+  const userData = Resp.data as User;
+
+  // check if the user is the receiver of the invitation
+  const invitation = await prisma.invitation.findUnique({
+    where: { id: id },
+  });
+  if (!invitation) {
+    return reply.status(404).send({ error: "Invitation not found" });
+  }
+
+  if (invitation.receiverId !== userData.id) {
+    return reply
+      .status(403)
+      .send({ error: "You can only decline invitations sent to you" });
+  }
+
+  // check if the invitation is still pending
+  if (invitation.status !== "PENDING") {
+    return reply
+      .status(400)
+      .send({ error: "Only pending invitations can be declined" });
+  }
+  // check if the invitation is expired
+  if (invitation.expiresAt && invitation.expiresAt < new Date()) {
+    // auto-expire the invitation
+    await prisma.invitation.update({
+      where: { id: id },
+      data: { status: "EXPIRED" },
+    });
+    return reply.status(400).send({ error: "Invitation has expired" });
+  }
+
+  // Decline the invitation
+  try {
+    const declinedInvitation = await prisma.invitation.update({
+      where: { id: id },
+      data: { status: "DECLINED" },
+      include: { sender: true, receiver: true },
+    });
+    // Notify sender
+    try {
+      await sendDataToQueue(
+        {
+          to: String(declinedInvitation.sender?.userId),
+          event: "game-invitation",
+          data: {
+            invitation: declinedInvitation,
+          },
+        },
+        "test"
+      );
+    } catch (error) {
+      console.error("Error sending decline notification:", error);
+    }
+
+    // Send response
+    return reply
+      .status(200)
+      .send({ message: "Invitation declined successfully" });
+  } catch (error) {
+    return reply
+      .status(400)
+      .send({ error: "Error while declining invitation" });
+  }
 }
 
 // Cancel an invitation by ID (sender only)
-export async function CancelInvitation(request: FastifyRequest,reply: FastifyReply) 
-{
-  const { id } = request.params as any;
-  const body = request.body as any;
+export async function CancelInvitation(
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply
+) {
+  const { id } = request.params;
 
   try {
     const invitation = await prisma.invitation.findUnique({
@@ -241,16 +434,44 @@ export async function CancelInvitation(request: FastifyRequest,reply: FastifyRep
         .send({ error: "Only pending invitations can be cancelled" });
     }
 
-    if (invitation.senderId !== body.userId) {
+    // validate user data
+    const userId = Number(request.headers["x-user-id"]);
+    const res = await fetch(`http://user:4001/api/user/${userId}`);
+
+    if (!res.ok) return reply.status(404).send({ error: "Sender not found" });
+
+    const Resp = await res.json();
+    const userData = Resp.data as User;
+
+    if (invitation.senderId !== userData.id) {
       return reply
         .status(403)
         .send({ error: "You can only cancel your own invitations" });
     }
 
-    await prisma.invitation.update({
+    const cancelledInvitation = await prisma.invitation.update({
       where: { id: id },
       data: { status: "CANCELLED" },
+      include: { sender: true, receiver: true },
     });
+
+    // Notify receiver if applicable
+    if (invitation.receiverId) {
+      try {
+        await sendDataToQueue(
+          {
+            to: String(cancelledInvitation.receiver?.userId),
+            event: "game-invitation",
+            data: {
+              invitation: cancelledInvitation,
+            },
+          },
+          "test"
+        );
+      } catch (error) {
+        console.error("Error sending cancellation notification:", error);
+      }
+    }
     return reply
       .status(200)
       .send({ message: "Invitation cancelled successfully" });
@@ -262,12 +483,13 @@ export async function CancelInvitation(request: FastifyRequest,reply: FastifyRep
 }
 
 // List all invitations for a user
-export async function listInvitations( request: FastifyRequest, reply: FastifyReply) 
-{
-  const { userId } = request.params as any;
+export async function listInvitations(
+  request: FastifyRequest<{ Params: { userId: string } }>,
+  reply: FastifyReply
+) {
+  const { userId } = request.params;
 
-  try 
-  {
+  try {
     const invitations = await prisma.invitation.findMany({
       where: {
         OR: [{ senderId: userId }, { receiverId: userId }],
@@ -284,49 +506,20 @@ export async function listInvitations( request: FastifyRequest, reply: FastifyRe
     if (!invitations || invitations.length === 0) {
       return reply.status(404).send({ error: "No invitations found" });
     } else {
-      return reply.status(200).send(
-        invitations.map((invitation:any) => ({
-          id: invitation.id,
-          inviteCode: invitation.inviteCode,
-          type: invitation.receiverId ? "PRIVATE" : "PUBLIC",
-          status: invitation.status,
-          sender: {
-            id: invitation.sender.id,
-            username: invitation.sender.username,
-            level: "placeholder", // Placeholder, replace with actual level logic
-            rank: "placeholder", // Placeholder, replace with actual rank logic
-            coinsBalance: 1000, // Example balance, replace with actual logic
-          },
-          receiver: invitation.receiver
-            ? {
-                id: invitation.receiver.id,
-                username: invitation.receiver.username,
-                level: "placeholder", // Placeholder, replace with actual level logic
-                rank: "placeholder", // Placeholder, replace with actual rank logic
-                coinsBalance: 500, // Example balance, replace with actual logic
-              }
-            : null,
-          expiresAt: invitation.expiresAt.toISOString(),
-          scoreLimit: invitation.scoreLimit,
-          pauseTime: invitation.pauseTime,
-          allowPowerUps: invitation.allowPowerUps,
-          requiredCurrency: invitation.requiredCurrency,
-          message: invitation.message || null,
-        }))
-      );
+      return reply.status(200).send(invitations);
     }
-  } 
-  catch (error) 
-  {
+  } catch (error) {
     console.error("=============ERROR :", error);
     return reply.status(400).send({ error: "Error while listing invitations" });
   }
 }
 
 // Delete an invitation by ID (admin only)
-export async function deleteInvitation( request: FastifyRequest, reply: FastifyReply) 
-{
-  const { id } = request.params as any;
+export async function deleteInvitation(
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply
+) {
+  const { id } = request.params;
 
   try {
     const invitation = await prisma.invitation.findUnique({
