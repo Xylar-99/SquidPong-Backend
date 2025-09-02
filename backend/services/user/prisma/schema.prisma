@@ -118,8 +118,8 @@ model Profile {
   isVerified    Boolean    @default(false)
   walletBalance Int        @default(0)
   level         Int        @default(1)
-  rankDivision  RankDivision @default(I)
-  rankTier      RankTier   @default(BRONZE)
+  rankDivision  RankDivision @default(BRONZE)
+  rankTier      RankTier   @default(I)
 
 
 
