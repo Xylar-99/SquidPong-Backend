@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { CreateMatchBody } from "../types/match";
 import { Invitation, Match, MatchPlayer, Prisma } from "../generated/prisma";
 import { User } from "../types/users";
+import { sendDataToQueue } from "../integration/rabbitmqClient";
 
 export async function createMatch(
   request: FastifyRequest,
@@ -255,26 +256,21 @@ export async function getPendingMatchForUser(
 }
 
 // Match management logic
-export async function toggleReadyStatus(
-  request: FastifyRequest<{
-    Params: { matchId: string; playerId: string };
-    Body: { isReady: boolean };
-  }>,
-  reply: FastifyReply
-) {
-  const { matchId, playerId } = request.params;
-  const { isReady } = request.body;
-
+export async function toggleReadyStatus(matchId: string, playerId: string) {
   try {
     const match = await prisma.match.findUnique({
       where: { id: matchId },
-      include: { opponent1: true, opponent2: true },
+      include: {
+        opponent1: { include: { User: { select: { userId: true } } } },
+        opponent2: { include: { User: { select: { userId: true } } } },
+      },
     });
 
     if (!match) {
-      return reply.status(404).send({ error: "Match not found" });
+      throw new Error("Match not found");
     }
 
+    console.log("-----", playerId, match.opponent1.id, match.opponent2?.id);
     const player =
       match.opponent1.id === playerId
         ? match.opponent1
@@ -283,14 +279,181 @@ export async function toggleReadyStatus(
         : null;
 
     if (!player) {
-      return reply
-        .status(404)
-        .send({ error: "Player not found in this match" });
+      throw new Error("Player not found in this match");
     }
+
+    const opponent =
+      match.opponent1.id === player.id ? match.opponent2 : match.opponent1;
+
+    const updatedMatchPlayer = await prisma.matchPlayer.update({
+      where: {
+        id: player.id,
+      },
+      data: {
+        isReady: !player.isReady,
+      },
+    });
+
+    // Notify opponent
+    if (opponent?.User?.userId) {
+      await sendDataToQueue(
+        {
+          to: opponent?.User?.userId,
+          event: "match-player-update",
+          data: {
+            matchPlayer: updatedMatchPlayer,
+          },
+        },
+        "test"
+      );
+    }
+  } catch (error) {
+    console.error("Error toggling ready status:", error);
+    throw error;
+  }
+}
+export async function giveUp(matchId: string, playerId: string) {
+  try {
+    const match = await prisma.match.findUnique({
+      where: { id: matchId },
+      include: {
+        opponent1: { include: { User: { select: { userId: true } } } },
+        opponent2: { include: { User: { select: { userId: true } } } },
+      },
+    });
+
+    if (!match) {
+      throw new Error("Match not found");
+    }
+
+    if (match.status === "COMPLETED" || match.status === "CANCELLED") {
+      throw new Error("Match already completed or cancelled");
+    }
+
+    const player =
+      match.opponent1.id === playerId
+        ? match.opponent1
+        : match.opponent2?.id === playerId
+        ? match.opponent2
+        : null;
+    if (!player) {
+      throw new Error("Player not found in this match");
+    }
+    const opponent =
+      match.opponent1.id === player.id ? match.opponent2 : match.opponent1;
 
     await prisma.matchPlayer.update({
       where: { id: player.id },
-      data: { isReady },
+      data: { isResigned: true, isWinner: false },
     });
-  } catch (error) {}
+
+    if (opponent) {
+      await prisma.matchPlayer.update({
+        where: { id: opponent.id },
+        data: { isResigned: false, isWinner: true },
+      });
+    }
+
+    const updatedMatch = await prisma.match.update({
+      where: { id: matchId },
+      data: {
+        status: "CANCELLED",
+        winnerId: opponent?.id || null,
+      },
+      include: {
+        opponent1: true,
+        opponent2: true,
+        matchSetting: true,
+      },
+    });
+
+    // Notify opponent
+    if (opponent?.User?.userId) {
+      await sendDataToQueue(
+        {
+          to: opponent.User.userId,
+          event: "match-update",
+          data: {
+            match: updatedMatch,
+            reason: "opponent_gave_up",
+          },
+        },
+        "test"
+      );
+    }
+  } catch (err) {
+    console.error("Error handling give up:", err);
+    throw err;
+  }
+}
+export async function startGame(matchId: string, playerId: string) {
+  try {
+    const match = await prisma.match.findUnique({
+      where: { id: matchId },
+      include: {
+        opponent1: { include: { User: { select: { userId: true } } } },
+        opponent2: { include: { User: { select: { userId: true } } } },
+      },
+    });
+
+    if (!match) {
+      throw new Error("Match not found");
+    }
+
+    if (match.status !== "WAITING") {
+      throw new Error("Match is not in a startable state");
+    }
+
+    const player =
+      match.opponent1.userId === playerId
+        ? match.opponent1
+        : match.opponent2?.userId === playerId
+        ? match.opponent2
+        : null;
+
+
+    if (!player) {
+      throw new Error("Player not found in this match");
+    }
+
+    console.log("player starting =====", player);
+    if (!player.isHost) {
+      throw new Error("Only the host can start the match");
+    }
+
+
+    if (!player.isReady) {
+      throw new Error("You must be ready to start the match");
+    }
+
+    const opponent =
+      match.opponent1.id === player.id ? match.opponent2 : match.opponent1;
+
+    if (opponent && !opponent.isReady) {
+      throw new Error("Opponent is not ready");
+    }
+
+    const updatedMatch = await prisma.match.update({
+      where: { id: matchId },
+      data: { status: "IN_PROGRESS" },
+      include: { opponent1: true, opponent2: true, matchSetting: true },
+    });
+
+    if (opponent?.User?.userId) {
+      await sendDataToQueue(
+        {
+          to: opponent.User.userId,
+          event: "match-update",
+          data: {
+            match: updatedMatch,
+            reason: "match_started",
+          },
+        },
+        "test"
+      );
+    }
+  } catch (error) {
+    console.error("Error starting game:", error);
+    throw error;
+  }
 }

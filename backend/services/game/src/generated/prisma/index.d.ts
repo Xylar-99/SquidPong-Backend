@@ -2678,6 +2678,8 @@ export namespace Prisma {
     finalScore: number | null
     isReady: boolean | null
     isHost: boolean | null
+    isWinner: boolean | null
+    isResigned: boolean | null
     characterId: string | null
     paddleId: string | null
     rankTier: string | null
@@ -2694,6 +2696,8 @@ export namespace Prisma {
     finalScore: number | null
     isReady: boolean | null
     isHost: boolean | null
+    isWinner: boolean | null
+    isResigned: boolean | null
     characterId: string | null
     paddleId: string | null
     rankTier: string | null
@@ -2710,6 +2714,8 @@ export namespace Prisma {
     finalScore: number
     isReady: number
     isHost: number
+    isWinner: number
+    isResigned: number
     characterId: number
     paddleId: number
     rankTier: number
@@ -2738,6 +2744,8 @@ export namespace Prisma {
     finalScore?: true
     isReady?: true
     isHost?: true
+    isWinner?: true
+    isResigned?: true
     characterId?: true
     paddleId?: true
     rankTier?: true
@@ -2754,6 +2762,8 @@ export namespace Prisma {
     finalScore?: true
     isReady?: true
     isHost?: true
+    isWinner?: true
+    isResigned?: true
     characterId?: true
     paddleId?: true
     rankTier?: true
@@ -2770,6 +2780,8 @@ export namespace Prisma {
     finalScore?: true
     isReady?: true
     isHost?: true
+    isWinner?: true
+    isResigned?: true
     characterId?: true
     paddleId?: true
     rankTier?: true
@@ -2873,6 +2885,8 @@ export namespace Prisma {
     finalScore: number
     isReady: boolean
     isHost: boolean
+    isWinner: boolean
+    isResigned: boolean
     characterId: string
     paddleId: string
     rankTier: string
@@ -2908,6 +2922,8 @@ export namespace Prisma {
     finalScore?: boolean
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId?: boolean
     paddleId?: boolean
     rankTier?: boolean
@@ -2927,6 +2943,8 @@ export namespace Prisma {
     finalScore?: boolean
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId?: boolean
     paddleId?: boolean
     rankTier?: boolean
@@ -2944,6 +2962,8 @@ export namespace Prisma {
     finalScore?: boolean
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId?: boolean
     paddleId?: boolean
     rankTier?: boolean
@@ -2961,6 +2981,8 @@ export namespace Prisma {
     finalScore?: boolean
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId?: boolean
     paddleId?: boolean
     rankTier?: boolean
@@ -2968,7 +2990,7 @@ export namespace Prisma {
     rankChange?: boolean
   }
 
-  export type MatchPlayerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "username" | "avatarUrl" | "isAI" | "finalScore" | "isReady" | "isHost" | "characterId" | "paddleId" | "rankTier" | "rankDivision" | "rankChange", ExtArgs["result"]["matchPlayer"]>
+  export type MatchPlayerOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "username" | "avatarUrl" | "isAI" | "finalScore" | "isReady" | "isHost" | "isWinner" | "isResigned" | "characterId" | "paddleId" | "rankTier" | "rankDivision" | "rankChange", ExtArgs["result"]["matchPlayer"]>
   export type MatchPlayerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     matchAsOpponent1?: boolean | MatchPlayer$matchAsOpponent1Args<ExtArgs>
     matchAsOpponent2?: boolean | MatchPlayer$matchAsOpponent2Args<ExtArgs>
@@ -2997,6 +3019,8 @@ export namespace Prisma {
       finalScore: number
       isReady: boolean
       isHost: boolean
+      isWinner: boolean
+      isResigned: boolean
       characterId: string
       paddleId: string
       rankTier: string
@@ -3436,6 +3460,8 @@ export namespace Prisma {
     readonly finalScore: FieldRef<"MatchPlayer", 'Int'>
     readonly isReady: FieldRef<"MatchPlayer", 'Boolean'>
     readonly isHost: FieldRef<"MatchPlayer", 'Boolean'>
+    readonly isWinner: FieldRef<"MatchPlayer", 'Boolean'>
+    readonly isResigned: FieldRef<"MatchPlayer", 'Boolean'>
     readonly characterId: FieldRef<"MatchPlayer", 'String'>
     readonly paddleId: FieldRef<"MatchPlayer", 'String'>
     readonly rankTier: FieldRef<"MatchPlayer", 'String'>
@@ -9970,6 +9996,8 @@ export namespace Prisma {
     finalScore: 'finalScore',
     isReady: 'isReady',
     isHost: 'isHost',
+    isWinner: 'isWinner',
+    isResigned: 'isResigned',
     characterId: 'characterId',
     paddleId: 'paddleId',
     rankTier: 'rankTier',
@@ -10220,6 +10248,8 @@ export namespace Prisma {
     finalScore?: IntFilter<"MatchPlayer"> | number
     isReady?: BoolFilter<"MatchPlayer"> | boolean
     isHost?: BoolFilter<"MatchPlayer"> | boolean
+    isWinner?: BoolFilter<"MatchPlayer"> | boolean
+    isResigned?: BoolFilter<"MatchPlayer"> | boolean
     characterId?: StringFilter<"MatchPlayer"> | string
     paddleId?: StringFilter<"MatchPlayer"> | string
     rankTier?: StringFilter<"MatchPlayer"> | string
@@ -10239,6 +10269,8 @@ export namespace Prisma {
     finalScore?: SortOrder
     isReady?: SortOrder
     isHost?: SortOrder
+    isWinner?: SortOrder
+    isResigned?: SortOrder
     characterId?: SortOrder
     paddleId?: SortOrder
     rankTier?: SortOrder
@@ -10261,6 +10293,8 @@ export namespace Prisma {
     finalScore?: IntFilter<"MatchPlayer"> | number
     isReady?: BoolFilter<"MatchPlayer"> | boolean
     isHost?: BoolFilter<"MatchPlayer"> | boolean
+    isWinner?: BoolFilter<"MatchPlayer"> | boolean
+    isResigned?: BoolFilter<"MatchPlayer"> | boolean
     characterId?: StringFilter<"MatchPlayer"> | string
     paddleId?: StringFilter<"MatchPlayer"> | string
     rankTier?: StringFilter<"MatchPlayer"> | string
@@ -10280,6 +10314,8 @@ export namespace Prisma {
     finalScore?: SortOrder
     isReady?: SortOrder
     isHost?: SortOrder
+    isWinner?: SortOrder
+    isResigned?: SortOrder
     characterId?: SortOrder
     paddleId?: SortOrder
     rankTier?: SortOrder
@@ -10304,6 +10340,8 @@ export namespace Prisma {
     finalScore?: IntWithAggregatesFilter<"MatchPlayer"> | number
     isReady?: BoolWithAggregatesFilter<"MatchPlayer"> | boolean
     isHost?: BoolWithAggregatesFilter<"MatchPlayer"> | boolean
+    isWinner?: BoolWithAggregatesFilter<"MatchPlayer"> | boolean
+    isResigned?: BoolWithAggregatesFilter<"MatchPlayer"> | boolean
     characterId?: StringWithAggregatesFilter<"MatchPlayer"> | string
     paddleId?: StringWithAggregatesFilter<"MatchPlayer"> | string
     rankTier?: StringWithAggregatesFilter<"MatchPlayer"> | string
@@ -10782,6 +10820,8 @@ export namespace Prisma {
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId: string
     paddleId: string
     rankTier: string
@@ -10801,6 +10841,8 @@ export namespace Prisma {
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId: string
     paddleId: string
     rankTier: string
@@ -10818,6 +10860,8 @@ export namespace Prisma {
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
+    isWinner?: BoolFieldUpdateOperationsInput | boolean
+    isResigned?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
     rankTier?: StringFieldUpdateOperationsInput | string
@@ -10837,6 +10881,8 @@ export namespace Prisma {
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
+    isWinner?: BoolFieldUpdateOperationsInput | boolean
+    isResigned?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
     rankTier?: StringFieldUpdateOperationsInput | string
@@ -10855,6 +10901,8 @@ export namespace Prisma {
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId: string
     paddleId: string
     rankTier: string
@@ -10870,6 +10918,8 @@ export namespace Prisma {
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
+    isWinner?: BoolFieldUpdateOperationsInput | boolean
+    isResigned?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
     rankTier?: StringFieldUpdateOperationsInput | string
@@ -10886,6 +10936,8 @@ export namespace Prisma {
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
+    isWinner?: BoolFieldUpdateOperationsInput | boolean
+    isResigned?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
     rankTier?: StringFieldUpdateOperationsInput | string
@@ -11461,6 +11513,8 @@ export namespace Prisma {
     finalScore?: SortOrder
     isReady?: SortOrder
     isHost?: SortOrder
+    isWinner?: SortOrder
+    isResigned?: SortOrder
     characterId?: SortOrder
     paddleId?: SortOrder
     rankTier?: SortOrder
@@ -11482,6 +11536,8 @@ export namespace Prisma {
     finalScore?: SortOrder
     isReady?: SortOrder
     isHost?: SortOrder
+    isWinner?: SortOrder
+    isResigned?: SortOrder
     characterId?: SortOrder
     paddleId?: SortOrder
     rankTier?: SortOrder
@@ -11498,6 +11554,8 @@ export namespace Prisma {
     finalScore?: SortOrder
     isReady?: SortOrder
     isHost?: SortOrder
+    isWinner?: SortOrder
+    isResigned?: SortOrder
     characterId?: SortOrder
     paddleId?: SortOrder
     rankTier?: SortOrder
@@ -13307,6 +13365,8 @@ export namespace Prisma {
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId: string
     paddleId: string
     rankTier: string
@@ -13325,6 +13385,8 @@ export namespace Prisma {
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId: string
     paddleId: string
     rankTier: string
@@ -13346,6 +13408,8 @@ export namespace Prisma {
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId: string
     paddleId: string
     rankTier: string
@@ -13364,6 +13428,8 @@ export namespace Prisma {
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId: string
     paddleId: string
     rankTier: string
@@ -13510,6 +13576,8 @@ export namespace Prisma {
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
+    isWinner?: BoolFieldUpdateOperationsInput | boolean
+    isResigned?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
     rankTier?: StringFieldUpdateOperationsInput | string
@@ -13528,6 +13596,8 @@ export namespace Prisma {
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
+    isWinner?: BoolFieldUpdateOperationsInput | boolean
+    isResigned?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
     rankTier?: StringFieldUpdateOperationsInput | string
@@ -13555,6 +13625,8 @@ export namespace Prisma {
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
+    isWinner?: BoolFieldUpdateOperationsInput | boolean
+    isResigned?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
     rankTier?: StringFieldUpdateOperationsInput | string
@@ -13573,6 +13645,8 @@ export namespace Prisma {
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
+    isWinner?: BoolFieldUpdateOperationsInput | boolean
+    isResigned?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
     rankTier?: StringFieldUpdateOperationsInput | string
@@ -13797,6 +13871,8 @@ export namespace Prisma {
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId: string
     paddleId: string
     rankTier: string
@@ -13814,6 +13890,8 @@ export namespace Prisma {
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId: string
     paddleId: string
     rankTier: string
@@ -13996,6 +14074,8 @@ export namespace Prisma {
     finalScore?: IntFilter<"MatchPlayer"> | number
     isReady?: BoolFilter<"MatchPlayer"> | boolean
     isHost?: BoolFilter<"MatchPlayer"> | boolean
+    isWinner?: BoolFilter<"MatchPlayer"> | boolean
+    isResigned?: BoolFilter<"MatchPlayer"> | boolean
     characterId?: StringFilter<"MatchPlayer"> | string
     paddleId?: StringFilter<"MatchPlayer"> | string
     rankTier?: StringFilter<"MatchPlayer"> | string
@@ -14492,6 +14572,8 @@ export namespace Prisma {
     finalScore?: number
     isReady?: boolean
     isHost?: boolean
+    isWinner?: boolean
+    isResigned?: boolean
     characterId: string
     paddleId: string
     rankTier: string
@@ -14557,6 +14639,8 @@ export namespace Prisma {
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
+    isWinner?: BoolFieldUpdateOperationsInput | boolean
+    isResigned?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
     rankTier?: StringFieldUpdateOperationsInput | string
@@ -14574,6 +14658,8 @@ export namespace Prisma {
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
+    isWinner?: BoolFieldUpdateOperationsInput | boolean
+    isResigned?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
     rankTier?: StringFieldUpdateOperationsInput | string
@@ -14591,6 +14677,8 @@ export namespace Prisma {
     finalScore?: IntFieldUpdateOperationsInput | number
     isReady?: BoolFieldUpdateOperationsInput | boolean
     isHost?: BoolFieldUpdateOperationsInput | boolean
+    isWinner?: BoolFieldUpdateOperationsInput | boolean
+    isResigned?: BoolFieldUpdateOperationsInput | boolean
     characterId?: StringFieldUpdateOperationsInput | string
     paddleId?: StringFieldUpdateOperationsInput | string
     rankTier?: StringFieldUpdateOperationsInput | string
