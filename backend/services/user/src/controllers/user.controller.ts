@@ -54,55 +54,39 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
 export async function updateProfileHandler(req: FastifyRequest, res: FastifyReply) 
 {
 
-  const respond: ApiResponse<null> = { success: true, message: 'User updated successfully' };
+  const respond: ApiResponse<any> = { success: true, message: 'User updated successfully' };
 
-  try 
-  {
-    const body = await convertParsedMultipartToJson(req);
-    const headers = req.headers as any;
-    const userId = Number(headers['x-user-id']);
+  console.log("hello world")
 
-    // const cacheKey = `profile:${userId}`;
-    // const cached = await redis.get(cacheKey);
+  // try 
+  // {
+  //   const body = await convertParsedMultipartToJson(req);
+  //   const headers = req.headers as any;
+  //   const userId = Number(headers['x-user-id']);
 
-    // if (cached) 
-    //   {
-    //   const profile = JSON.parse(cached);
-    //   const updatedProfile = { ...profile, ...body };
-    //   // await redis.set(cacheKey, JSON.stringify(updatedProfile), 'EX', CACHE_TTL);
-    //   // console.log("Updated profile in Redis cache only");
-    // } 
-    // else 
-    // {
-      await prisma.profile.update({
-        where: { userId },
-        data: body,
-      });
+  //   const updatedProfile =  await prisma.profile.update({
+  //       where: { userId },
+  //       data: body,
+  //     });
 
-      const updatedProfile = await prisma.profile.findUnique({
-        where: { userId },
-        include: {
-          preferences: { include: { notifications: true } },
-          playerStats: { include: { vsAIStats: true } },
-        }
-      });
+  //     respond.data = updatedProfile;
 
-      // await redis.set(cacheKey, JSON.stringify(updatedProfile), 'EX', 60);
-    // }
+  // }
 
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error) 
-      {
-      respond.message = error.message;
-      return res.status(400).send(respond);
-      }
-  }
+  // catch (error) 
+  // {
+  //   respond.success = false;
+  //   if (error instanceof Error) 
+  //     {
+  //     respond.message = error.message;
+  //     return res.status(400).send(respond);
+  //     }
+  // }
 
   return res.send(respond);
 }
+
+
 
 
 export async function getAllUserHandler(req: FastifyRequest, res: FastifyReply)
@@ -117,7 +101,6 @@ export async function getAllUserHandler(req: FastifyRequest, res: FastifyReply)
     const profiles = await prisma.profile.findMany({
     include: {
       preferences: { include: { notifications: true } },
-      playerStats: { include: { vsAIStats: true } },
     }
   })
 
@@ -186,7 +169,6 @@ export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyRep
       where: { userId },
       include: {
         preferences: { include: { notifications: true } },
-        playerStats: { include: { vsAIStats: true } },
       }
     });
 
@@ -228,9 +210,9 @@ export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply)
     const profile = await prisma.profile.findUnique({
       where: { userId: Number(id) },
       include: {
-        preferences: { include: { notifications: true } },
-        playerStats: { include: { vsAIStats: true } },
         
+        preferences: { include: { notifications: true } },
+      
       }
     });
 

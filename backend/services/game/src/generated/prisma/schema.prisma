@@ -82,6 +82,8 @@ model MatchPlayer {
   finalScore Int     @default(0)
   isReady    Boolean @default(false)
   isHost     Boolean @default(false)
+  isWinner   Boolean @default(false)
+  isResigned Boolean @default(false)
 
   // player metadata
   characterId  String

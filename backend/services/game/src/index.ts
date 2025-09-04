@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import Fastify from "fastify";
 import { matchRoutes } from "./routes/matchRoutes";
 import { invitationRoutes } from "./routes/invitationRoutes";
-import { initRabbitMQ, receiveFromQueue, closeRabbitMQ } from "./integration/rabbitmqClient";
+import { initRabbitMQ, receiveFromQueue } from "./integration/rabbitmqClient";
 import fastifyjwt from "@fastify/jwt";
 
 
@@ -40,14 +40,12 @@ const start = async () => {
 // Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('Received SIGINT, shutting down gracefully...');
-  await closeRabbitMQ();
   await server.close();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
   console.log('Received SIGTERM, shutting down gracefully...');
-  await closeRabbitMQ();
   await server.close();
   process.exit(0);
 });

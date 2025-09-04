@@ -1,13 +1,9 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { prisma } from "../lib/prisma";
 import { CreateMatchBody } from "../types/match";
-import {
-  Invitation,
-  Match,
-  MatchPlayer,
-  Prisma,
-} from "../generated/prisma";
+import { Invitation, Match, MatchPlayer, Prisma } from "../generated/prisma";
 import { User } from "../types/users";
+import { sendDataToQueue } from "../integration/rabbitmqClient";
 
 export async function createMatch(
   request: FastifyRequest,
@@ -91,8 +87,6 @@ export async function MatchFromInvitation(invitation: any): Promise<Match> {
       include: {
         opponent1: true,
         opponent2: true,
-        matchSetting: true,
-        invitation: true,
       },
     });
 
@@ -139,7 +133,6 @@ export async function createMatchPlayer(
     },
   });
 }
-
 export async function createMatchSetting(
   matchId: string,
   mode: "ONE_VS_ONE" | "ONE_VS_AI",
@@ -182,7 +175,6 @@ export async function createMatchSetting(
 
   throw new Error("Invalid match setting mode");
 }
-
 export async function getMatch(
   request: FastifyRequest<{ Params: { matchId: string } }>,
   reply: FastifyReply
@@ -210,5 +202,258 @@ export async function getMatch(
   } catch (error) {
     console.error("Error fetching match:", error);
     return reply.status(500).send({ error: "Failed to fetch match" });
+  }
+}
+export async function getPendingMatchForUser(
+  request: FastifyRequest,
+  reply: FastifyReply
+) {
+  const params = request.params as { userId: string };
+
+  try {
+    const pendingMatch = await prisma.match.findFirst({
+      where: {
+        status: "WAITING",
+        OR: [
+          {
+            opponent1: {
+              User: {
+                userId: Number(params.userId),
+              },
+            },
+          },
+          {
+            opponent2: {
+              User: {
+                userId: Number(params.userId),
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        opponent1: true,
+        opponent2: true,
+        matchSetting: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (!pendingMatch) {
+      return reply.status(404).send({ error: "No pending match found!" });
+    }
+
+    return reply.status(200).send({
+      success: true,
+      data: pendingMatch,
+    });
+  } catch (error) {
+    console.error("Error fetching pending match:", error);
+    return reply.status(500).send({ error: "Failed to fetch pending match" });
+  }
+}
+
+// Match management logic
+export async function toggleReadyStatus(matchId: string, playerId: string) {
+  try {
+    const match = await prisma.match.findUnique({
+      where: { id: matchId },
+      include: {
+        opponent1: { include: { User: { select: { userId: true } } } },
+        opponent2: { include: { User: { select: { userId: true } } } },
+      },
+    });
+
+    if (!match) {
+      throw new Error("Match not found");
+    }
+
+    console.log("-----", playerId, match.opponent1.id, match.opponent2?.id);
+    const player =
+      match.opponent1.id === playerId
+        ? match.opponent1
+        : match.opponent2?.id === playerId
+        ? match.opponent2
+        : null;
+
+    if (!player) {
+      throw new Error("Player not found in this match");
+    }
+
+    const opponent =
+      match.opponent1.id === player.id ? match.opponent2 : match.opponent1;
+
+    const updatedMatchPlayer = await prisma.matchPlayer.update({
+      where: {
+        id: player.id,
+      },
+      data: {
+        isReady: !player.isReady,
+      },
+    });
+
+    // Notify opponent
+    if (opponent?.User?.userId) {
+      await sendDataToQueue(
+        {
+          to: opponent?.User?.userId,
+          event: "match-player-update",
+          data: {
+            matchPlayer: updatedMatchPlayer,
+          },
+        },
+        "test"
+      );
+    }
+  } catch (error) {
+    console.error("Error toggling ready status:", error);
+    throw error;
+  }
+}
+export async function giveUp(matchId: string, playerId: string) {
+  try {
+    const match = await prisma.match.findUnique({
+      where: { id: matchId },
+      include: {
+        opponent1: { include: { User: { select: { userId: true } } } },
+        opponent2: { include: { User: { select: { userId: true } } } },
+      },
+    });
+
+    if (!match) {
+      throw new Error("Match not found");
+    }
+
+    if (match.status === "COMPLETED" || match.status === "CANCELLED") {
+      throw new Error("Match already completed or cancelled");
+    }
+
+    const player =
+      match.opponent1.id === playerId
+        ? match.opponent1
+        : match.opponent2?.id === playerId
+        ? match.opponent2
+        : null;
+    if (!player) {
+      throw new Error("Player not found in this match");
+    }
+    const opponent =
+      match.opponent1.id === player.id ? match.opponent2 : match.opponent1;
+
+    await prisma.matchPlayer.update({
+      where: { id: player.id },
+      data: { isResigned: true, isWinner: false },
+    });
+
+    if (opponent) {
+      await prisma.matchPlayer.update({
+        where: { id: opponent.id },
+        data: { isResigned: false, isWinner: true },
+      });
+    }
+
+    const updatedMatch = await prisma.match.update({
+      where: { id: matchId },
+      data: {
+        status: "CANCELLED",
+        winnerId: opponent?.id || null,
+      },
+      include: {
+        opponent1: true,
+        opponent2: true,
+        matchSetting: true,
+      },
+    });
+
+    // Notify opponent
+    if (opponent?.User?.userId) {
+      await sendDataToQueue(
+        {
+          to: opponent.User.userId,
+          event: "match-update",
+          data: {
+            match: updatedMatch,
+            reason: "opponent_gave_up",
+          },
+        },
+        "test"
+      );
+    }
+  } catch (err) {
+    console.error("Error handling give up:", err);
+    throw err;
+  }
+}
+export async function startGame(matchId: string, playerId: string) {
+  try {
+    const match = await prisma.match.findUnique({
+      where: { id: matchId },
+      include: {
+        opponent1: { include: { User: { select: { userId: true } } } },
+        opponent2: { include: { User: { select: { userId: true } } } },
+      },
+    });
+
+    if (!match) {
+      throw new Error("Match not found");
+    }
+
+    if (match.status !== "WAITING") {
+      throw new Error("Match is not in a startable state");
+    }
+
+    const player =
+      match.opponent1.userId === playerId
+        ? match.opponent1
+        : match.opponent2?.userId === playerId
+        ? match.opponent2
+        : null;
+
+
+    if (!player) {
+      throw new Error("Player not found in this match");
+    }
+
+    console.log("player starting =====", player);
+    if (!player.isHost) {
+      throw new Error("Only the host can start the match");
+    }
+
+
+    if (!player.isReady) {
+      throw new Error("You must be ready to start the match");
+    }
+
+    const opponent =
+      match.opponent1.id === player.id ? match.opponent2 : match.opponent1;
+
+    if (opponent && !opponent.isReady) {
+      throw new Error("Opponent is not ready");
+    }
+
+    const updatedMatch = await prisma.match.update({
+      where: { id: matchId },
+      data: { status: "IN_PROGRESS" },
+      include: { opponent1: true, opponent2: true, matchSetting: true },
+    });
+
+    if (opponent?.User?.userId) {
+      await sendDataToQueue(
+        {
+          to: opponent.User.userId,
+          event: "match-update",
+          data: {
+            match: updatedMatch,
+            reason: "match_started",
+          },
+        },
+        "test"
+      );
+    }
+  } catch (error) {
+    console.error("Error starting game:", error);
+    throw error;
   }
 }

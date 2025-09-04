@@ -124,8 +124,9 @@ model Profile {
 
 
   // Relationships
+
+
   preferences         ProfilePreferences?
-  playerStats         PlayerStats?
 
  
   playerCharacters   Json @default("[\"Zero\"]")
@@ -148,21 +149,6 @@ model Profile {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Profile preferences
 model ProfilePreferences {
   id               String @id @default(cuid())
@@ -175,6 +161,8 @@ model ProfilePreferences {
   profile       Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   notifications NotificationSettings?
 }
+
+
 
 // Notification settings
 model NotificationSettings {
@@ -189,118 +177,8 @@ model NotificationSettings {
   preferences ProfilePreferences @relation(fields: [preferencesId], references: [id], onDelete: Cascade)
 }
 
-// Player statistics
-model PlayerStats {
-  id        String @id @default(cuid())
-  profileId String @unique
 
 
-  score Int @default(0)
-  rank  Int @default(0)
-
-  gamesPlayed Int @default(0)
-  gamesWon    Int @default(0)
-  gamesLost   Int @default(0)
-
-  tournamentsPlayed Int @default(0)
-  tournamentsWon    Int @default(0)
-  tournamentsLost   Int @default(0)
-
-  winStreak        Int @default(0)
-  loseStreak       Int @default(0)
-  longestWinStreak Int @default(0)
-
-  averageGameDuration Int @default(0)
-  totalPlayTime       Int @default(0)
-  friendsCount        Int @default(0)
-
-  bounceChallengeBestScore   Int @default(0)
-  bounceChallengeGamesPlayed Int @default(0)
-
-  profile   Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  vsAIStats VSAIStats[]
-  
-}
-
-// AI statistics
-model VSAIStats {
-  id            String @id @default(cuid())
-  playerStatsId String
-  difficulty    AIDifficulty
-  gamesPlayed   Int @default(0)
-  gamesWon      Int @default(0)
-  gamesLost     Int @default(0)
-
-  playerStats PlayerStats @relation(fields: [playerStatsId], references: [id], onDelete: Cascade)
-
-  @@unique([playerStatsId, difficulty])
-}
-
-
-
-
-
-// Match system
-model Match {
-  id          String @id @default(cuid())
-  creatorId   String
-  status      MatchStatus @default(WAITING)
-  gameMode    GameMode
-  startTime   DateTime?
-  endTime     DateTime?
-  winnerId    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  profileHistory ProfileMatchHistory[]
-}
-
-
-// Profile match history junction
-model ProfileMatchHistory {
-  id        String @id @default(cuid())
-  profileId String
-  matchId   String
-  result    MatchResult
-  score     Int @default(0)
-
-  match   Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
-
-  @@unique([profileId, matchId])
-}
-
-// Tournament system
-model Tournament {
-  id          String @id @default(cuid())
-  name        String
-  description String?
-  maxPlayers  Int
-  prizePool   Int @default(0)
-  status      TournamentStatus @default(REGISTRATION)
-  startTime   DateTime
-  endTime     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  entries TournamentEntry[]
-
-}
-
-model TournamentEntry {
-  id           String @id @default(cuid())
-  profileId    String
-  tournamentId String
-  position     Int?
-  joinedAt     DateTime @default(now())
-
-  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-
-  @@unique([profileId, tournamentId])
-}
-
-
-
-// Friendship system
 model Friendship {
   id        String @id @default(cuid())
 

@@ -8,6 +8,8 @@ COPY ./*.json .
 
 RUN npm install
 
+RUN npm i --save-dev @types/amqplib
+
 COPY ./src ./src
 
 COPY ./prisma ./prisma

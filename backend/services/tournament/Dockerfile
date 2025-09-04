@@ -10,6 +10,8 @@ RUN npm install
 
 RUN npm install resend
 
+RUN npm i --save-dev @types/amqplib
+
 COPY ./src ./src
 
 COPY ./prisma ./prisma

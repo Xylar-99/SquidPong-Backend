@@ -47,7 +47,7 @@ services:
     image: gateway-image
     container_name: gateway
     restart: always
-    command: sh -c "sleep 6 && npm run start"
+    command: sh -c "sleep 6 && npm run dev"
     volumes:
       - ./frontend/src/uploads:/tmp/
       - ./backend/gateway/src:/gateway/src
@@ -65,7 +65,7 @@ services:
       sh -c "
       sleep 6 &&
       npx prisma migrate dev --name init &&
-      npm run start
+      npm run dev
       "
     env_file:
       - ./backend/services/auth/.env
@@ -86,7 +86,7 @@ services:
       sh -c "
       sleep 6 &&
       npx prisma migrate dev --name init &&
-      npm run start
+      npm run dev
       "
     env_file:
       - ./backend/services/user/.env
@@ -108,7 +108,7 @@ services:
       sh -c "
       sleep 6 &&
       npx prisma migrate dev --name init &&
-      npm run start
+      npm run dev
       "
     env_file:
       - ./backend/services/notify/.env
@@ -129,7 +129,7 @@ services:
       sh -c "
       sleep 6 &&
       npx prisma migrate dev --name init &&
-      npm run start
+      npm run dev
       "
     env_file:
       - ./backend/services/chat/.env
@@ -141,27 +141,27 @@ services:
     networks: 
       - web
 
-  game:
-    build: ./backend/services/game
-    image: game-image
-    container_name: game
-    restart: always
-    command: >
-      sh -c "
-      sleep 6 &&
-      npx prisma migrate dev --name init &&
-      npm run dev
-      "
-    env_file:
-      - ./backend/services/game/.env
-    ports:
-      - "3000:3000"
-      - "5005:5555"
-    volumes:
-      - ./backend/services/game/src:/game/src
-      - ./backend/services/game/prisma:/game/prisma  # mounted DB folder
-    networks: 
-      - web
+  # game:
+  #   build: ./backend/services/game
+  #   image: game-image
+  #   container_name: game
+  #   restart: always
+  #   command: >
+  #     sh -c "
+  #     sleep 6 &&
+  #     npx prisma migrate dev --name init &&
+  #     npm run dev
+  #     "
+  #   env_file:
+  #     - ./backend/services/game/.env
+  #   ports:
+  #     - "3000:3000"
+  #     - "5005:5555"
+  #   volumes:
+  #     - ./backend/services/game/src:/game/src
+  #     - ./backend/services/game/prisma:/game/prisma  # mounted DB folder
+  #   networks: 
+  #     - web
 
 networks:
   web:

@@ -133,6 +133,8 @@ exports.Prisma.MatchPlayerScalarFieldEnum = {
   finalScore: 'finalScore',
   isReady: 'isReady',
   isHost: 'isHost',
+  isWinner: 'isWinner',
+  isResigned: 'isResigned',
   characterId: 'characterId',
   paddleId: 'paddleId',
   rankTier: 'rankTier',
