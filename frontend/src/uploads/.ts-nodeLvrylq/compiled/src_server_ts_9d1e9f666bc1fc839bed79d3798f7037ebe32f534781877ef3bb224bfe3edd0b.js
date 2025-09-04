@@ -1,0 +1,1 @@
+throw new Error("⨯ Unable to compile TypeScript:\nsrc/server.ts(2,27): error TS7016: Could not find a declaration file for module 'ws'. '/gateway/node_modules/ws/index.js' implicitly has an 'any' type.\n  Try `npm i --save-dev @types/ws` if it exists or add a new declaration (.d.ts) file containing `declare module 'ws';`\n");

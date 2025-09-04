@@ -47,7 +47,7 @@ function receiveAndDeliver(msg: any)
   {
     channel.ack(msg);
     const data = JSON.parse(msg.content.toString());
-    
+    console.log(data)
     addMessage(data.senderId , data.message , data.receiverId);
     sendDataToQueue({message : data.message , to : data.receiverId} , 'test')
 

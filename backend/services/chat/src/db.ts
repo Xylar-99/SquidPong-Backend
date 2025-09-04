@@ -49,6 +49,8 @@ export async function addMessage(senderId: string, message: string , receiverId 
     return newMessage;
 }
 
+
+
 export async function addReaction(messageId: number, emoji: string, user: string): Promise<DbReactionRow> {
     const newReaction = await prisma.reaction.create({
         data: {
