@@ -5,7 +5,9 @@ import prisma from '../db/database';
 
 
 
-export async function convertParsedMultipartToJson(req: FastifyRequest): Promise<any> {
+export async function convertParsedMultipartToJson(req: FastifyRequest): Promise<any> 
+{
+
   const rawBody = req.body as any;
   const data: Record<string, any> = {};
   let filePath: string | undefined;
@@ -20,9 +22,16 @@ export async function convertParsedMultipartToJson(req: FastifyRequest): Promise
       await pipeline(field.file, fs.createWriteStream(filePath));
       data[key] = `${process.env.URL}${filePath}`;
     } 
-    else if (field?.type === 'field') 
-      data[key] = field.value;
+    else if (field?.type === "field") 
+    {
+
+    try  { data[key] = JSON.parse(field.value); } 
+    catch  { data[key] = field.value; }
+
+    }
   }
+
+  // console.log("convertParsedMultipartToJson is : " , { ...data} )
 
   return { ...data };
 }

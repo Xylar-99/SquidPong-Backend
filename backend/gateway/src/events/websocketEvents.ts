@@ -11,6 +11,8 @@ async function sendSingleMultipartVoid(url: string, fieldName: string, value: st
 {
   const formData = new FormData();
   formData.append(fieldName, value);
+  formData.append("playerPaddles", "value1");
+  formData.append("preferences", JSON.stringify({ soundEnabled: false , musicEnabled : false }));
 
   try 
   {
