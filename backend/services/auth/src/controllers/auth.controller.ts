@@ -24,6 +24,7 @@ declare module 'fastify' {
 
 
 
+
 export async function getRootHandler(req:FastifyRequest , res:FastifyReply)
 {
   return res.send({msg : "hello ft_trandandan"})

@@ -30,7 +30,6 @@ export async function createProfileHandler(req: FastifyRequest, res: FastifyRepl
     data: {
       ...profileData,
       preferences: { create: { notifications: { create: {} } } },
-      playerStats: { create: {}},
     },
 
   });
