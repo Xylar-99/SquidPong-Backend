@@ -11,7 +11,7 @@ export async function initRabbitMQ() {
     
     // Assert queues that this service will use
     await channel.assertQueue("game", { durable: true });
-    await channel.assertQueue("test", { durable: true }); // Gateway queue
+    // await channel.assertQueue("test", { durable: true }); // Gateway queue
     
     // Add connection error handling
     connection.on('error', (err: any) => {

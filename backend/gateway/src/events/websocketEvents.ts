@@ -182,19 +182,27 @@ export function sendWsMessage(msg: any)
 
     const data = JSON.parse(msg.content.toString());
 
-    const { to } = data;
+    let { to } = data;
     if (!to) return;
+    
+    to = Array.isArray(to) ? to : [to];
 
-    const socketKey = `user:${to}:sockets:chat-notification`;
-    const socket = onlineUsers.get(socketKey);
-    if (!socket) 
+    for (const userId of to) 
     {
-      console.log(`User ${to} not online`);
-      return;
+      
+    const socketKey = `user:${userId}:sockets:chat-notification`;
+    const socket = onlineUsers.get(socketKey);
+
+    if (!socket)
+    {
+      console.log(`User ${userId} not online`);
+      continue;
     }
 
     if (socket.readyState === WebSocket.OPEN)
       socket.send(JSON.stringify(data));
+  }
+
 
   } 
   catch (err) 

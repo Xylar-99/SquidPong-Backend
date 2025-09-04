@@ -45,6 +45,7 @@ function receiveAndDeliver(msg: any)
 
   if (msg !== null) 
     {
+    const data = JSON.parse(msg.content.toString());
     sendWsMessage(msg); 
     channel.ack(msg);
     }
