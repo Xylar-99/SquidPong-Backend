@@ -120,8 +120,11 @@ SquidPong Backend follows a microservices architecture with the following compon
 
 - **Docker** (v20.10+)
 - **Docker Compose** (v2.0+)
-- **Node.js** (v18+) - for development
-- **npm** or **yarn** - for package management
+- **Make** (usually pre-installed on Linux/macOS)
+
+**That's it!** 🎉 No need to install Node.js, npm, databases, or any other dependencies - everything runs in Docker containers.
+
+> **Note**: Node.js (v18+) and npm are only needed if you want to develop outside of Docker containers.
 
 ## 🚀 Quick Start
 
@@ -131,25 +134,25 @@ SquidPong Backend follows a microservices architecture with the following compon
    cd SquidPong-Backend
    ```
 
-2. **Set up environment variables**
+2. **Set up environment variables** (optional - services work with defaults)
    ```bash
-   # Copy example env files (you'll need to create these)
+   # Copy example env files if you need custom configuration
    cp backend/gateway/.env.example backend/gateway/.env
    cp backend/services/auth/.env.example backend/services/auth/.env
-   cp backend/services/user/.env.example backend/services/user/.env
-   cp backend/services/chat/.env.example backend/services/chat/.env
-   cp backend/services/notify/.env.example backend/services/notify/.env
-   cp backend/services/tournament/.env.example backend/services/tournament/.env
+   # ... other services if needed
    ```
 
-3. **Start all services**
+3. **Start everything with one command** ⚡
    ```bash
    make up
    ```
-   or
-   ```bash
-   docker compose up --build
-   ```
+   
+   That's it! This single command will:
+   - Build all Docker images
+   - Start all microservices
+   - Initialize databases with migrations
+   - Set up Redis and RabbitMQ
+   - Configure the Gateway and Caddy proxy
 
 4. **Access the application**
    - Frontend: http://localhost:8080
@@ -159,9 +162,38 @@ SquidPong Backend follows a microservices architecture with the following compon
    - Prisma Studio (Chat): http://localhost:5004
    - Prisma Studio (Notify): http://localhost:5003
 
+### 🎯 Essential Make Commands
+
+```bash
+make up      # 🚀 Start everything (the only command you usually need!)
+make down    # 🛑 Stop all services  
+make fclean  # 🧹 Complete cleanup (removes all data)
+make re      # 🔄 Full restart (clean + start)
+```
+
 ## 💻 Development
 
-### Local Development Setup
+### Quick Development Start
+
+**For most developers, you only need:**
+
+```bash
+# Clone and start everything
+git clone https://github.com/TRAN5PONG/SquidPong-Backend.git
+cd SquidPong-Backend
+make up
+```
+
+**That's it!** The Makefile handles everything automatically:
+- 🏗️ Building all Docker images
+- 🗄️ Database migrations for all services  
+- 🚀 Starting all microservices
+- 🔧 Setting up Redis and RabbitMQ
+- 🌐 Configuring reverse proxy
+
+### Advanced Development (Optional)
+
+Only needed if you want to develop outside Docker or debug individual services:
 
 1. **Install dependencies** (for each service)
    ```bash
@@ -174,7 +206,7 @@ SquidPong Backend follows a microservices architecture with the following compon
    cd ../game && npm install
    ```
 
-2. **Run database migrations**
+2. **Run database migrations** (only if developing locally)
    ```bash
    # Each service with Prisma needs its own migration
    cd backend/services/auth && npx prisma migrate dev --name init
@@ -185,7 +217,7 @@ SquidPong Backend follows a microservices architecture with the following compon
    cd ../game && npx prisma migrate dev --name init
    ```
 
-3. **Start services individually**
+3. **Start services individually** (for debugging)
    ```bash
    # Gateway
    cd backend/gateway && npm run dev
@@ -198,33 +230,39 @@ SquidPong Backend follows a microservices architecture with the following compon
 
 ### Available Make Commands
 
+> 💡 **TL;DR**: Just use `make up` to start everything!
+
 ```bash
-make up      # Start all services with Docker Compose (--build flag included)
-make down    # Stop all services and remove created images  
-make fclean  # Complete cleanup: stop services, remove volumes and all images
-make re      # Full restart: run fclean then up (clean slate restart)
+make up      # 🚀 Start everything (builds images, runs migrations, starts all services)
+make down    # 🛑 Stop all services gracefully
+make fclean  # 🧹 Complete cleanup (⚠️ deletes all data)
+make re      # 🔄 Full restart (fclean + up)
 ```
 
 **Detailed Command Breakdown:**
 
-- **`make up`**: Builds and starts all containers in development mode
-  - Equivalent to: `docker compose up --build`
-  - Creates networks, starts databases, and launches all microservices
+- **`make up`** - The main command you'll use ⭐
+  - Automatically builds all Docker images
+  - Starts Redis, RabbitMQ, and all databases
+  - Runs Prisma migrations for each service
+  - Launches all microservices with hot reload
+  - Sets up Caddy reverse proxy
+  - **No manual setup required!**
 
-- **`make down`**: Graceful shutdown and cleanup
+- **`make down`** - Clean shutdown
   - Stops all running containers
   - Removes created Docker images to free space
-  - Preserves volumes (database data is kept)
+  - Keeps database data intact
 
-- **`make fclean`**: Complete cleanup (use with caution in development)
+- **`make fclean`** - Nuclear option (use carefully)
   - Stops all containers
-  - Removes all volumes (⚠️ **deletes all database data**)
+  - Removes all volumes ⚠️ **deletes all SQLite databases**
   - Removes all images
   - Use when you want a completely fresh start
 
-- **`make re`**: Alias for `make fclean && make up`
-  - Complete reset and restart
-  - Useful when you want to start from scratch
+- **`make re`** - Complete reset
+  - Equivalent to `make fclean && make up`
+  - Fresh installation from scratch
 
 ## 📖 API Documentation
 
@@ -325,16 +363,28 @@ Similar pattern with service-specific configurations.
 
 ## 🐳 Docker
 
-### Production Build
+### Simple Usage (Recommended)
 ```bash
+make up    # Start everything
+make down  # Stop everything  
+```
+
+### Direct Docker Commands (Advanced)
+If you prefer using Docker directly instead of Make:
+
+```bash
+# Development
+docker compose up --build
+
+# Production
 docker compose -f docker-compose.prod.yml up --build
 ```
 
-### Development with Hot Reload
-The current `docker-compose.yml` is configured for development with:
-- Volume mounts for hot reloading
-- Exposed ports for debugging
-- Development-specific commands
+**Why use Make instead?**
+- ✅ Shorter commands (`make up` vs `docker compose up --build`)
+- ✅ Consistent across different environments
+- ✅ Built-in cleanup and restart options
+- ✅ Handles complex Docker operations automatically
 
 ## 🛠️ Tech Stack
 
