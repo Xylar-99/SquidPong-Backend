@@ -176,11 +176,13 @@ SquidPong Backend follows a microservices architecture with the following compon
 
 2. **Run database migrations**
    ```bash
-   # Each service with Prisma
-   cd backend/services/auth && npx prisma migrate dev
-   cd ../user && npx prisma migrate dev
-   cd ../chat && npx prisma migrate dev
-   cd ../notify && npx prisma migrate dev
+   # Each service with Prisma needs its own migration
+   cd backend/services/auth && npx prisma migrate dev --name init
+   cd ../user && npx prisma migrate dev --name init  
+   cd ../chat && npx prisma migrate dev --name init
+   cd ../notify && npx prisma migrate dev --name init
+   cd ../tournament && npx prisma migrate dev --name init
+   cd ../game && npx prisma migrate dev --name init
    ```
 
 3. **Start services individually**
@@ -197,11 +199,32 @@ SquidPong Backend follows a microservices architecture with the following compon
 ### Available Make Commands
 
 ```bash
-make up      # Start all services with Docker Compose
-make down    # Stop all services and remove images
-make fclean  # Stop services, remove volumes, and clean all images
-make re      # Clean and restart (equivalent to fclean + up)
+make up      # Start all services with Docker Compose (--build flag included)
+make down    # Stop all services and remove created images  
+make fclean  # Complete cleanup: stop services, remove volumes and all images
+make re      # Full restart: run fclean then up (clean slate restart)
 ```
+
+**Detailed Command Breakdown:**
+
+- **`make up`**: Builds and starts all containers in development mode
+  - Equivalent to: `docker compose up --build`
+  - Creates networks, starts databases, and launches all microservices
+
+- **`make down`**: Graceful shutdown and cleanup
+  - Stops all running containers
+  - Removes created Docker images to free space
+  - Preserves volumes (database data is kept)
+
+- **`make fclean`**: Complete cleanup (use with caution in development)
+  - Stops all containers
+  - Removes all volumes (⚠️ **deletes all database data**)
+  - Removes all images
+  - Use when you want a completely fresh start
+
+- **`make re`**: Alias for `make fclean && make up`
+  - Complete reset and restart
+  - Useful when you want to start from scratch
 
 ## 📖 API Documentation
 
@@ -213,25 +236,40 @@ API documentation is available via Swagger UI:
 
 ## 🗄️ Database
 
-Each service uses **SQLite** with **Prisma ORM**:
+Each microservice maintains its own **SQLite database** with **Prisma ORM** for data isolation and service independence:
 
-- `backend/services/auth/prisma/auth.db` - Authentication data
-- `backend/services/user/prisma/user.db` - User profiles
-- `backend/services/chat/prisma/chat.db` - Chat messages
-- `backend/services/notify/prisma/notify.db` - Notifications
+### Service-Specific Databases
+- **Auth Service**: `backend/services/auth/prisma/auth.db` - User authentication, tokens, sessions
+- **User Service**: `backend/services/user/prisma/user.db` - User profiles, preferences, avatars
+- **Chat Service**: `backend/services/chat/prisma/chat.db` - Messages, conversations, chat groups
+- **Notification Service**: `backend/services/notify/prisma/notify.db` - Notifications, alerts, push settings
+- **Tournament Service**: `backend/services/tournament/prisma/tournament.db` - Tournament data, brackets
+- **Game Service**: `backend/services/game/prisma/game.db` - Game states, matches, scores
 
 ### Database Management
 
+Each service manages its own database independently:
+
 ```bash
-# Generate Prisma client
+# Navigate to specific service directory
+cd backend/services/[service-name]
+
+# Generate Prisma client for the service
 npx prisma generate
 
-# Run migrations
+# Run migrations for the service
 npx prisma migrate dev
 
-# Access Prisma Studio
+# Access Prisma Studio for the service (runs on service-specific port)
 npx prisma studio
 ```
+
+**Service-specific Prisma Studio ports:**
+- Auth: http://localhost:5001
+- User: http://localhost:5002  
+- Notify: http://localhost:5003
+- Chat: http://localhost:5004
+- Game: http://localhost:5005
 
 ## 📨 Message Queue & Caching
 
@@ -328,9 +366,17 @@ This project is licensed under the ISC License.
 ### Common Issues
 
 1. **Port conflicts**: Make sure ports 8080, 4000, 5001-5005 are available
-2. **Database migrations**: Run `npx prisma migrate dev` in each service directory
-3. **Permission issues**: Ensure Docker has proper permissions for volume mounts
+2. **Database migrations**: Each service has its own SQLite database - run migrations individually:
+   ```bash
+   cd backend/services/[service-name] && npx prisma migrate dev --name init
+   ```
+3. **Permission issues**: Ensure Docker has proper permissions for volume mounts and SQLite files
 4. **Service startup order**: Services wait 6 seconds before starting to ensure dependencies are ready
+5. **Database reset**: Use `make fclean` carefully - it will delete all SQLite database files
+6. **Individual service debugging**: Check specific service logs:
+   ```bash
+   docker compose logs -f [service-name]
+   ```
 
 ### Logs
 
