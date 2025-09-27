@@ -70,8 +70,9 @@ model MatchSpectator {
 }
 
 model MatchPlayer {
-  id     String  @id @default(cuid())
-  userId String? // Nullable, since AI doesn't have a User record
+  id       String  @id @default(cuid())
+  userId   String? // Nullable, since AI doesn't have a User record
+  gmUserId String?
 
   // PlayerInfos
   username  String
@@ -102,6 +103,7 @@ model Match {
   id          String     @id @default(cuid())
   mode        GameMode
   status      GameStatus
+  roomId      String?    @unique
   duration    Int
   createdAt   DateTime   @default(now())
   confirmedAt DateTime?
@@ -135,8 +137,8 @@ model MatchSetting {
 }
 
 model User {
-  id       String @id
-  userId   Int    @unique // id from auth system
+  id     String @id
+  userId Int    @unique // id from GM
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

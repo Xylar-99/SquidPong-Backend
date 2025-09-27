@@ -15,15 +15,9 @@ export async function initRabbitMQ() {
     channel = await connection.createChannel();
 
     // Assert queues that this service will use
-<<<<<<< HEAD
-    await channel.assertQueue("game", { durable: true });
-    // await channel.assertQueue("test", { durable: true }); // Gateway queue
-    
-=======
     await channel.assertQueue("game");
     // await channel.assertQueue("test", { durable: true }); // Gateway queue
 
->>>>>>> 55b8a486fda67abb1529294c480c39908acdd4a1
     // Add connection error handling
     connection.on("error", (err: any) => {
       console.error("RabbitMQ connection error:", err);
@@ -123,12 +117,15 @@ async function processMacthMessage(data: any) {
 
         sendDataToQueue(
           {
-            to: data.senderGMid, // send only to the starter
+            to: [
+              updatedMatch.opponent1.gmUserId,
+              updatedMatch.opponent2?.gmUserId,
+            ], // send only to the starter
             event: "match-started",
             data: { match: updatedMatch },
           },
           "test"
-        ); // TODO : THE GOAL FOR TOMORROW IS TO REFAC THAT SHIT, A CLEAR USER ID TO SEND DATA WITH IN THE RMQ
+        );
       } catch (error) {
         sendDataToQueue(
           {
@@ -150,76 +147,4 @@ async function processMacthMessage(data: any) {
   }
 }
 
-// Game logic handlers
-function handlePlayerMove(data: any) {
-  // Process player move logic
-  const result = {
-    type: "move_result",
-    gameId: data.gameId,
-    playerId: data.playerId,
-    userIdTo: data.playerId, // Send back to the player who made the move
-    success: true,
-    newPosition: data.position,
-    timestamp: Date.now(),
-  };
-
-  console.log("🎯 Player move processed");
-  return result;
-}
-function handleGameStart(data: any) {
-  // Initialize game state
-  const result = {
-    type: "game_started",
-    gameId: data.gameId,
-    userIdTo: data.playerId, // or broadcast to all players
-    gameState: {
-      status: "active",
-      startTime: Date.now(),
-      players: data.players || [],
-    },
-    message: "Game has started!",
-  };
-
-  console.log("🚀 Game started");
-  return result;
-}
-function handleGameEnd(data: any) {
-  // Process game end logic
-  const result = {
-    type: "game_ended",
-    gameId: data.gameId,
-    userIdTo: "broadcast", // Send to all players in the game
-    winner: data.winner,
-    finalScore: data.score,
-    timestamp: Date.now(),
-    message: `Game ended! Winner: ${data.winner}`,
-  };
-
-  console.log("🏁 Game ended");
-  return result;
-}
-function handlePlayerInvitation(data: any) {
-  // Process invitation logic
-  const result = {
-    type: "invitation_received",
-    gameId: data.gameId,
-    userIdTo: data.invitedPlayerId, // Send to invited player
-    fromPlayer: data.fromPlayer,
-    gameType: data.gameType,
-    message: `${data.fromPlayer} invited you to play ${data.gameType}`,
-    timestamp: Date.now(),
-  };
-
-  console.log("💌 Invitation processed");
-  return result;
-}
-// Graceful shutdown
-export async function closeRabbitMQ() {
-  try {
-    if (channel) await channel.close();
-    if (connection) await connection.close();
-    console.log("✅ RabbitMQ connection closed gracefully");
-  } catch (error) {
-    console.error("Error closing RabbitMQ:", error);
-  }
-}
+async function getGMuserId(userId: string) {}

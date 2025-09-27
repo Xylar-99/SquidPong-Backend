@@ -1,1 +1,0 @@
-throw new Error("⨯ Unable to compile TypeScript:\nsrc/integration/rabbitmqClient.ts(1,18): error TS7016: Could not find a declaration file for module 'amqplib'. '/user/node_modules/amqplib/channel_api.js' implicitly has an 'any' type.\n  Try `npm i --save-dev @types/amqplib` if it exists or add a new declaration (.d.ts) file containing `declare module 'amqplib';`\n");

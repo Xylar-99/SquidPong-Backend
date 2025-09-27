@@ -15,6 +15,7 @@ export enum AuthMessage {
   }
   
   export enum AuthError {
+    TOKEN_EXPIRED = 'Session expired. Please login again.',
     UNKNOWN_ERROR = 'An unknown error occurred.',
     INTERNAL_SERVER_ERROR = 'Internal server error.',
     BAD_REQUEST = 'Bad request.',
@@ -56,8 +57,9 @@ export enum AuthMessage {
   }
   
   export enum TwoFA {
+    TWO_FA_VERIFY_SUCCESS = '2FA verified successfully.',
     TWO_FA_SETUP_SUCCESS = '2FA setup completed successfully.',
-    TWO_FA_ALREADY_ENABLED = '2FA is already enabled.',
+    TWO_FA_ALREADY_ENABLED = '2fa via Authenticator App is already enabled.',
     TWO_FA_ENABLED = '2FA is  enabled.',
     TWO_FA_DESABLED = '2FA is  desabled.',
     INVALID_2FA_CODE = 'Invalid 2FA code.',
@@ -67,9 +69,35 @@ export enum AuthMessage {
     TWO_FA_DISABLE_SUCCESS = '2FA has been disabled successfully.',
     TWO_FA_ENABLE_SUCCESS = '2FA has been enabled successfully.',
 
+
+
   }
   
+
+  export enum TwoFaEmaiL {
+    TWO_FA_EMAIL_EXPIRED = '2FA code has expired.',
+    TWO_FA_EMAIL_SENT = '2FA code sent to email.',
+    TWO_FA_EMAIL_FAILED = 'Failed to send 2FA code email.',
+    TWO_FA_ALREADY_ENABLED = '2FA via email is already enabled.',
+    TWO_FA_NOT_ENABLED = '2FA via email is not enabled.',
+    INVALID_2FA_CODE = 'Invalid 2FA code.',
+    VALID_2FA_CODE = 'Valid 2FA code.',
+    TWO_FA_EMAIL_SETUP_SUCCESS = 'Email 2FA setup completed successfully.',
+    TWO_FA_EMAIL_VERIFY_SUCCESS = 'Email 2FA verified successfully.',
+    TWO_FA_EMAIL_DISABLED = 'Email 2FA has been disabled successfully.',
+    TWO_FA_EMAIL_ENABLED = 'Email 2FA has been enabled successfully.',
+    TWO_FA_EMAIL_INVALID = 'Invalid email for 2FA.',
+    TWO_FA_EMAIL_REQUIRED = 'Email is required for 2FA.',
+    TWO_FA_EMAIL_NOT_CONFIGURED = 'Email service is not configured for 2FA.',
+    TWO_FA_EMAIL_RATE_LIMIT = 'Too many requests. Please try again later.',
+
+
+  }
+
   export enum PasswordMessage {
+    RESET_TOKEN_EXPIRED = 'Reset code has expired.',
+    INVALID_RESET_TOKEN = 'Invalid reset code.',
+    PASSWORDS_DO_NOT_MATCH = 'Passwords do not match.',
     PASSWORD_RESET_EMAIL_SENT = 'Password reset email sent.',
     PASSWORD_RESET_SUCCESS = 'Password reset successful.',
     PASSWORD_RESET_INVALID = 'Invalid reset token.',
@@ -89,6 +117,9 @@ export enum AuthMessage {
   
   export enum UserProfileMessage
   {
+    DELETE_ACCOUNT_SUCCESS = 'Account deleted successfully.', // ✅ NEW
+    LOGIN_SUCCESSFUL = 'Login successful.', // ✅ NEW
+    LOGOUT_SUCCESSFUL = 'Logout successful.', // ✅ NEW
     EMAIL_ALREADY_USED = 'Email is already registered.',
     USERNAME_ALREADY_USED = 'Username is already taken.',
     WEAK_PASSWORD = 'Password is too weak.',

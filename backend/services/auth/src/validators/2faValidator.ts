@@ -21,17 +21,16 @@ function generateToken(length = 10)
 export async function setJwtTokens(res: FastifyReply, user: any | null) 
 {
   const accessToken = await app.jwt.sign({ userId: user.id }, { expiresIn: "7d" });
-  const refreshToken = await app.jwt.sign({ userId: user.id }, { expiresIn: "7d" });
+  const refreshToken = await app.jwt.sign({ userId: user.id }, { expiresIn: "30d" });
 
   res.setCookie("accessToken", accessToken, { httpOnly: true, path: "/", sameSite: "lax", secure: false });
   res.setCookie("refreshToken", refreshToken, {
     httpOnly: true,
     path: "/api/auth/refresh",
-    maxAge: 7 * 24 * 60 * 60,
+    maxAge: 30 * 24 * 60 * 60,
   });
 
   await redis.set(accessToken, "valid", "EX", 60 * 24 * 7 * 60);
-
 }
 
 
@@ -42,7 +41,7 @@ export async function setJwtTokens(res: FastifyReply, user: any | null)
 export async function isTwoFactorEnabled(res: FastifyReply, user: any | null , respond: ApiResponse ) : Promise<any>
 {
 
-  if(!user.is2FAEnabled)
+  if(user.twoFAMethod == "NONE")
   {
     respond.data.is2FAEnabled = false;
     await setJwtTokens(res , user);
@@ -50,9 +49,8 @@ export async function isTwoFactorEnabled(res: FastifyReply, user: any | null , r
   }
   
   respond.data.is2FAEnabled = true;
-  respond.data.token = generateToken();
-  await redis.set(respond.data.token, user.id, "EX", "260");
-
+  const message = (user.twoFAMethod == "EMAIL") ? "A verification code has been sent to your email." : "Please enter the code from your authenticator app.";
+  respond.message = message;
 }
 
 

@@ -9,20 +9,29 @@ services:
       - "8080:80"
       - "4000:4000"
     volumes:
-      - ./frontend/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./frontend/src:/etc/caddy/files
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      - web
+
+  frontend:
+    image: frontend:latest
+    build: ./frontend
+    container_name: frontend
+    restart: always
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/frontend
+      - /frontend/node_modules
     networks:
       - web
 
   redis:
-    image: redis:7
+    image: redis/redis-stack-server:latest
     container_name: redis
     restart: always
     networks:
       - web
-    # volumes:
-    #   - ./data/redis:/data
-    # command: ["redis-server", "--appendonly", "yes", "--dir", "/data", "--appendfilename", "appendonly.aof"]
 
   rabbitmq:
     image: rabbitmq
@@ -31,16 +40,16 @@ services:
     networks:
       - web
 
-  swagger-ui:
-    image: swaggerapi/swagger-ui:latest
-    container_name: swagger
-    restart: always
-    ports:
-      - "9090:8080"
-    environment:
-      - URLS=[{"url":"http://localhost:4000/api/auth/docs/json","name":"Auth Service"},{"url":"http://localhost:4000/api/user/docs/json","name":"User Service"}]
-    networks:
-      - web
+  # swagger-ui:
+  #   image: swaggerapi/swagger-ui:latest
+  #   container_name: swagger
+  #   restart: always
+  #   ports:
+  #     - "9090:8080"
+  #   environment:
+  #     - URLS=[{"url":"http://localhost:4000/api/auth/docs/json","name":"Auth Service"},{"url":"http://localhost:4000/api/user/docs/json","name":"User Service"}]
+  #   networks:
+  #     - web
 
   gateway:
     build: ./backend/gateway
@@ -72,8 +81,9 @@ services:
     ports:
       - "5001:5555"
     volumes:
+      - ./uploads/user/:/auth/uploads/
       - ./backend/services/auth/src:/auth/src
-      - ./backend/services/auth/prisma:/auth/prisma  # mounted DB folder
+      - ./backend/services/auth/prisma:/auth/prisma
     networks:
       - web
 
@@ -93,9 +103,9 @@ services:
     ports:
       - "5002:5555"
     volumes:
-      - ./frontend/src/uploads:/tmp/
+      - ./uploads/user/:/user/uploads
       - ./backend/services/user/src:/user/src
-      - ./backend/services/user/prisma:/user/prisma  # mounted DB folder
+      - ./backend/services/user/prisma:/user/prisma
     networks:
       - web
 
@@ -116,7 +126,7 @@ services:
       - "5003:5555"
     volumes:
       - ./backend/services/notify/src:/notify/src
-      - ./backend/services/notify/prisma:/notify/prisma  # mounted DB folder
+      - ./backend/services/notify/prisma:/notify/prisma
     networks: 
       - web
 
@@ -136,8 +146,9 @@ services:
     ports:
       - "5004:5555"
     volumes:
+      - ./uploads/chat/:/chat/uploads
       - ./backend/services/chat/src:/chat/src
-      - ./backend/services/chat/prisma:/chat/prisma  # mounted DB folder
+      - ./backend/services/chat/prisma:/chat/prisma
     networks: 
       - web
 
@@ -159,7 +170,7 @@ services:
   #     - "5005:5555"
   #   volumes:
   #     - ./backend/services/game/src:/game/src
-  #     - ./backend/services/game/prisma:/game/prisma  # mounted DB folder
+  #     - ./backend/services/game/prisma:/game/prisma
   #   networks: 
   #     - web
 

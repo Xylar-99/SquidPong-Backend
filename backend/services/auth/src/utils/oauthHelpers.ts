@@ -1,10 +1,16 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 
+import path from 'path';
+import fs from 'fs';
+import { pipeline } from 'stream';
+import { promisify } from 'util';
+import { Readable } from 'stream';
 
 import app from "../app";
 
 export async function fetchIntraToken(code: string): Promise<string>
 {
+
   const body = {
     grant_type: 'authorization_code',
     client_id: process.env.IDINTRA,
@@ -41,7 +47,7 @@ export async function fetchIntraUser(access_token: string): Promise<any> {
 
 export function sendResponseToFrontend(res: FastifyReply, respond: any)
 {
-  const FRONTEND_URL = 'http://localhost:5173/';
+  const FRONTEND_URL = 'http://localhost:8080/';
   const newRespond = { ...respond, type: 'google-auth-success' };
 
   res.type('text/html').send(`
@@ -76,4 +82,31 @@ export async function fetchGoogleUser(req: FastifyRequest): Promise<any>
   data['lname'] = data.family_name;
 
   return data;
+}
+
+
+
+
+
+
+const pipe = promisify(pipeline);
+
+export async function fetchAvatarImagePipeline(imageUrl: string, username: string) 
+{
+  const res = await fetch(imageUrl);
+
+  if (!res.ok) throw new Error(`Failed to fetch image: ${res.status} ${res.statusText}`);
+  if (!res.body) throw new Error('No response body');
+
+  const ext = res.headers.get('content-type')?.split('/');
+  let filePath = `/auth/uploads/avatar/${username}.${ext ? ext[1] : 'jpg'}`;
+  
+  
+  
+  console.log('Saving avatar to', filePath);
+  const nodeStream = Readable.fromWeb(res.body as any);
+
+  await pipe(nodeStream, fs.createWriteStream(filePath));
+  filePath = `http://localhost:4000/api/user/avatars/${username}.${ext ? ext[1] : 'jpg'}`;
+  return (filePath);
 }

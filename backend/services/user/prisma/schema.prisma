@@ -100,17 +100,16 @@ enum PlayerPaddle {
 model Profile {
   id        String       @id @default(cuid())
 
-  userId    Int          @unique
-  username  String       
+  userId    Int           @unique
+  username  String        @unique 
   firstName String
   lastName  String
 
   status    UserStatus   @default(ONLINE)
   lastSeen  DateTime     @default(now())
-  avatar    String        @default("testing.png")
-  banner    String        @default("testing.png")
+  avatar    String        @default("http://localhost:4000/api/user/avatars/default.png")
+  banner    String        @default("http://localhost:4000/api/user/banners/default.png")
   bio       String        @default("Just here to have fun, level up, and make some epic memories!")
-  
 
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
@@ -121,29 +120,15 @@ model Profile {
   rankDivision  RankDivision @default(BRONZE)
   rankTier      RankTier   @default(I)
 
-
-
-  // Relationships
-
-
   preferences         ProfilePreferences?
 
- 
   playerCharacters   Json @default("[\"Zero\"]")
   playerSelectedCharacter PlayerCharacter @default(Zero)
 
   playerPaddles Json @default("[\"Boss\"]")
   playerSelectedPaddle    PlayerPaddle @default(Boss)
 
-
-
-  // Friendships
-  sentFriendRequests     Friendship[] @relation("SentFriendRequests")
-  receivedFriendRequests Friendship[] @relation("ReceivedFriendRequests")
 }
-
-
-
 
 
 
@@ -182,15 +167,11 @@ model NotificationSettings {
 model Friendship {
   id        String @id @default(cuid())
 
-  senderId  String
-  receiverId String
-  status    FriendshipStatus @default(PENDING)
+  senderId    String
+  receiverId  String
+  status      FriendshipStatus @default(PENDING)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sender   Profile @relation("SentFriendRequests", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver Profile @relation("ReceivedFriendRequests", fields: [receiverId], references: [id], onDelete: Cascade)
-
-  @@unique([senderId, receiverId])
 }

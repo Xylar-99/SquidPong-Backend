@@ -1,109 +1,102 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../db/database';
-import { convertParsedMultipartToJson } from '../utils/utils';
-import { ApiResponse } from '../utils/errorHandler';
+import { updateProfileRedis , convertParsedMultipartToJson , syncRedisProfileToDbAppendArrays } from '../utils/utils';
+import { ApiResponse, sendError } from '../utils/errorHandler';
 import { Profile } from '../utils/types';
-import redis from '../utils/redis';
+import { redis } from '../utils/redis';
+import { ProfileMessages, PreferenceMessages, NotificationMessages, GeneralMessages } from '../utils/responseMessages';
 
-const CACHE_TTL = 60;
 
 
-export async function createProfileHandler(req: FastifyRequest, res: FastifyReply)
+
+export async function createProfileHandler(req: FastifyRequest, res: FastifyReply) 
 {
-  
-  const respond: ApiResponse<null> = { success: true, message: 'User created successfully' };
+  const response: ApiResponse<null> = {  success: true,  message: ProfileMessages.CREATE_SUCCESS  };
+
   const body = req.body as any;
 
-  const profileData:any = {
+  const newProfileData: any = {
     userId: body.id,
     username: body.username,
     firstName: body.fname,
     lastName: body.lname,
-    avatar : body.avatar,
+    avatar: body.avatar,
   };
 
+  try 
+  {
+    const profile = await prisma.profile.create({
+      data: {
+        ...newProfileData,
+        preferences: { create: { notifications: { create: {} } } },
+      },
+    });
+
+    const redisKey = `profile:${profile.userId}`;
+    await redis.set(redisKey, profile);
+    
+    // Ensure user exists in chat service
+    await fetch('http://chat:4003/api/chat/new/user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...newProfileData, isVerified: false })
+    });
+
+
+
+  } 
+  catch (error) {
+    return sendError(res, error);
+  }
+
+  return res.send(response);
+}
+
+
+export async function updateProfileHandler99(req: FastifyRequest, res: FastifyReply) 
+{
+  const respond: ApiResponse<any> = { success: true, message: ProfileMessages.UPDATE_SUCCESS };
+  const headers = req.headers as any;
+  const userId = Number(headers['x-user-id']);
+  
+  const {status} = req.body as {status : string};
+  console.log("------------------------------status : ", status);
+  console.log("updateProfileHandler99 called for userId:", userId);
 
   try 
   {
 
-    await prisma.profile.create({
-    data: {
-      ...profileData,
-      preferences: { create: { notifications: { create: {} } } },
-    },
+  if(status == "ONLINE")
+    await prisma.profile.update({ where: { userId }, data: { status : "ONLINE" } });
+  else
+    await syncRedisProfileToDbAppendArrays(userId);
 
-  });
-
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error) {
-      respond.message = error.message;
-      return res.status(400).send(respond);
-    }
+  }
+  catch (error) {
+    return sendError(res, error);
   }
 
   return res.send(respond);
 }
 
 
-
-
-
-export async function updateProfileWithMultipart(body: any, userId: number) 
-{
-
-  const profile = await prisma.profile.findUnique({ where: { userId }});
-  if (!profile) throw new Error("Profile not found");
-
-  const mergedBody = { ...body };
-  const jsonArrayFields = ["playerCharacters", "playerPaddles"];
-
-  for (const field of jsonArrayFields) 
-  {
-    if (body[field]) 
-    {
-      const currentArray = profile[field] || [];
-      const newArray = Array.isArray(body[field]) ? body[field] : [body[field]];
-      mergedBody[field] = [...new Set([...currentArray, ...newArray])];
-    }
-  }
-
-    const updatedProfile =  await prisma.profile.update({
-    where: { userId },
-    data: {
-      ...Object.fromEntries( Object.entries(mergedBody).filter(([key]) => key !== "preferences")),
-      ...(mergedBody.preferences && { preferences: { update: { data: mergedBody.preferences, }}}),
-    },
-    });
-
-    return updatedProfile;
-
-}
 
 export async function updateProfileHandler(req: FastifyRequest, res: FastifyReply) 
 {
-
-  const respond: ApiResponse<any> = { success: true, message: 'User updated successfully' };
-
+  const respond: ApiResponse<Profile> = { success: true, message: ProfileMessages.UPDATE_SUCCESS };
+  const headers = req.headers as any;
+  const userId = Number(headers['x-user-id']);
+  
   try 
   {
     const body = await convertParsedMultipartToJson(req);
-    const headers = req.headers as any;
-    const userId = Number(headers['x-user-id']);
-    respond.data = updateProfileWithMultipart(body , userId);
+
+    console.log("Body Update : ", body);
+    respond.data = await updateProfileRedis(body , userId);
 
   }
-
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error) 
-      {
-      respond.message = error.message;
-      return res.status(400).send(respond);
-      }
+  catch (error) {
+    return sendError(res, error);
   }
 
   return res.send(respond);
@@ -112,100 +105,101 @@ export async function updateProfileHandler(req: FastifyRequest, res: FastifyRepl
 
 
 
-export async function getAllUserHandler(req: FastifyRequest, res: FastifyReply)
+export async function getAllUserHandler(req: FastifyRequest, res: FastifyReply) 
 {
-  const headers = req.headers as any;
-  const userId = Number(headers['x-user-id']);
-  const respond: ApiResponse<Profile[]> = { success: true, message: 'Users fetched successfully' };
+  const respond: ApiResponse<Profile[]> = {success: true,  message: ProfileMessages.FETCH_SUCCESS};
 
   try 
   {
+    const onlineUserIds: string[] = await redis.getOnlineUsers();
 
-    const profiles = await prisma.profile.findMany({
-    include: {
-      preferences: { include: { notifications: true } },
+    // Fetch offline users from the database
+    const offlineProfiles = await prisma.profile.findMany({
+      where: { status: "OFFLINE" },
+      include: { preferences: { include: { notifications: true } } },
+    });
+
+    // Fetch online users from Redis cache
+    const onlineProfiles: Profile[] = [];
+    for (const userId of onlineUserIds) 
+    {
+      const profile = await redis.get(`profile:${userId}`);
+      if (profile)
+        onlineProfiles.push({ ...profile, status: "ONLINE" });
     }
-  })
 
-  respond.data = profiles;
-  
+    const allProfiles = [
+      ...offlineProfiles,
+      ...onlineProfiles,
+    ];
+
+    respond.data = allProfiles;
+
   } 
-  catch (error) 
-  {
-
-    respond.success = false;
-    if (error instanceof Error) {
-      respond.message = error.message;
-      return res.status(400).send(respond);
-    }
+  catch (error) {
+    return sendError(res, error);
   }
 
   return res.send(respond);
 }
-
 
 
 export async function deleteProfileHandler(req: FastifyRequest, res: FastifyReply) 
 {
-  const respond: ApiResponse<null> = { success: true, message: 'User deleted successfully' };
+  const respond: ApiResponse<null> = { success: true, message: ProfileMessages.DELETE_SUCCESS };
+  
   const headers = req.headers as any;
   const userId = Number(headers['x-user-id']);
 
+  const cacheKey = `profile:${userId}`;
+
   try 
   {
-    await prisma.profile.delete({ where: { userId }});
-    // await redis.del(`profile:${userId}`);
+    const profile = await prisma.profile.findUnique({ where: { userId } });
+    if (!profile) throw new Error(ProfileMessages.DELETE_NOT_FOUND);
 
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error) {
-      respond.message = error.message;
-      return res.status(400).send(respond);
-    }
+    await prisma.profile.delete({ where: { userId } });
+
+    await redis.del(cacheKey);
+
+  }
+  catch (error) {
+    return sendError(res, error);
   }
 
   return res.send(respond);
 }
+
 
 
 
 export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyReply) 
 {
+  const respond: ApiResponse<any> = { success: true, message: ProfileMessages.FETCH_SUCCESS };
+
   const headers = req.headers as any;
   const userId = Number(headers['x-user-id']);
-  const respond: ApiResponse< any> = { success: true, message: 'Current user fetched' };
+  const cacheKey = `profile:${userId}`;
 
   try 
   {
-    // const cacheKey = `profile:${userId}`;
-    // const cached = await redis.get(cacheKey);
+    let profile = await redis.get(cacheKey);
 
-    // if (cached) 
-    //   {
-    //   respond.data = JSON.parse(cached);
-    //   return res.send(respond);
-    //   }
+    if (!profile) 
+    {
+      profile = await prisma.profile.findUnique({
+        where: { userId },
+        include: { preferences: true },
+      });
 
-    const profile = await prisma.profile.findUnique({
-      where: { userId },
-      include: {
-        preferences: { include: { notifications: true } },
-      }
-    });
+      if (!profile) throw new Error(ProfileMessages.FETCH_NOT_FOUND);
+      await redis.set(cacheKey, profile);
+    }
 
     respond.data = profile;
-    // await redis.set(cacheKey, JSON.stringify(profile), 'EX', CACHE_TTL);
-
   } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error) {
-      respond.message = error.message;
-      return res.status(400).send(respond);
-    }
+  catch (error) {
+    return sendError(res, error);
   }
 
   return res.send(respond);
@@ -215,43 +209,29 @@ export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyRep
 
 export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply) 
 {
-
-  const { id } = req.params as any;
-  const respond: ApiResponse<Profile | any> = { success: true, message: 'User fetched' };
+  const respond: ApiResponse<any> = { success: true, message: ProfileMessages.FETCH_SUCCESS };
+  
+  const { id } =  req.params as { id: string };
+  const cacheKey = `profile:${id}`;
 
   try 
   {
-    // const cacheKey = `profile:${id}`;
-    // const cached = await redis.get(cacheKey);
+    let profile = await redis.get(cacheKey);
 
-    // if (cached) 
-    //   {
-    //   respond.data = JSON.parse(cached);
-    //   return res.send(respond);
-    //   }
+    if (!profile) 
+    {
+      profile = await prisma.profile.findUnique({
+        where: { userId : Number(id)  },
+        include: { preferences: true },
+      });
 
-    const profile = await prisma.profile.findUnique({
-      where: { userId: Number(id) },
-      include: {
-        
-        preferences: { include: { notifications: true } },
-      
-      }
-    });
-
-    if(!profile)
-      throw new Error("User not found in the database.");
-    respond.data = profile;
-    // await redis.set(cacheKey, JSON.stringify(profile), 'EX', CACHE_TTL);
-
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error) {
-      respond.message = error.message;
-      return res.status(400).send(respond);
+      if (!profile) throw new Error(ProfileMessages.FETCH_NOT_FOUND);
     }
+
+    respond.data = profile;
+  }
+  catch (error) {
+    return sendError(res, error);
   }
 
   return res.send(respond);
@@ -259,72 +239,58 @@ export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply)
 
 
 
-// export async function deleteAccountHandler(req: FastifyRequest, res: FastifyReply) 
-// {
-//   const respond: ApiResponse<null> = { success: false, message: "Account deletion failed" };
-//   const headers = req.headers as any;
-//   const userId = Number(headers['x-user-id']);
-
-//   try 
-//   {
-
-//     await prisma.profile.delete({ where: { userId } });
-
-//     respond.success = true;
-//     respond.message = "Account deleted successfully";
-    
-//   } 
-//   catch (error) 
-//   {
-//     if (error instanceof Error) {
-//       respond.message = error.message;
-//       return res.status(400).send(respond);
-//     }
-//     return res.status(500).send(respond);
-//   }
-
-//   return res.send(respond);
-// }
-
-
-
 export async function searchUsersHandler(req: FastifyRequest, res: FastifyReply) 
 {
-  const respond: ApiResponse<any> = { success: true, message: 'Search results fetched' };
+  const respond: ApiResponse<Profile[]> = { success: true, message: ProfileMessages.FETCH_SUCCESS };
+  const { query } = req.query as { query: string };
+
+  if (!query)
+  {
+    respond.success = false;
+    respond.message =  'Query parameter is required';
+    return res.status(400).send(respond);
+  }
 
   try 
   {
-    // const query = req.query as any;
-    // const search = query.q as string;
 
-    // if (!search)
-    //   throw new Error("Search query is required")
+    const onlineUserIds: string[] = await redis.getOnlineUsers();
+    const onlineProfiles: Profile[] = [];
+
+    // Fetch online users from Redis cache
+    for (const userId of onlineUserIds) 
+    {
+      const profile = await redis.get(`profile:${userId}`);
+      if (profile) 
+      {
+        if (
+          profile.username.toLowerCase().includes(query.toLowerCase()) ||
+          profile.firstName.toLowerCase().includes(query.toLowerCase())
+        ) 
+        {
+          onlineProfiles.push({ ...profile});
+        }
+      }
+    }
 
 
-    // const users = await prisma.profile.findMany({
-    //   where: {
-    //     OR: [
-    //       { username: { contains: search, mode: 'insensitive' } },
-    //       { fname: { contains: search, mode: 'insensitive' } }
-    //     ]
-    //   },
-    //   select: {
-    //     id: true,
-    //     username: true,
-    //     fname: true,
-    //     lname: true,
-    //     email: true,
-    //   },
-    // });
+    const offlineProfiles = await prisma.profile.findMany({
+      where: {
+        OR: [
+          { username: { contains: query,} },
+          { firstName: { contains: query,} },
+        ],
+        id: { notIn: onlineUserIds },
+      },
+      include: { preferences: { include: { notifications: true } } },
+    });
 
-    // respond.data = users;
+    const allProfiles = [...onlineProfiles, ...offlineProfiles];
 
+    respond.data = allProfiles;
   } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error) respond.message = error.message;
-    return res.status(400).send(respond);
+  catch (error) {
+    return sendError(res, error);
   }
 
   return res.send(respond);
