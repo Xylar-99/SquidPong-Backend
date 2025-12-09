@@ -1,5 +1,3 @@
-
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,14 +7,95 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Tournament {
+  id               String           @id @default(cuid())
+  name             String
+  description      String?
+  organizerId      String
+  maxPlayers       Int
+  currentRound     TournamentRound?
+  status           TournamentStatus @default(REGISTRATION)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  winnerId         String?
+  participationFee Int?
 
-model User {
-  id            Int     @id @default(autoincrement())
-  name          String  @unique
-  email         String  @unique
-  auth_provider String  @default("local")
-  ver_code      String  @default("999")
-  is_verified   Boolean @default(false)  
-  password      String  
+  // Relations with cascading deletes
+  participants TournamentPlayer[]
+  rounds       TournamentRoundData[]
+}
 
+model TournamentRoundData {
+  id           String          @id @default(cuid())
+  name         TournamentRound
+  order        Int // 1 = Qualifiers, 2 = Round of 16, etc.
+  tournamentId String
+
+  tournament Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  matches    TournamentMatch[]
+}
+
+model TournamentMatch {
+  id String @id @default(cuid())
+
+  roundId               String
+  matchId               String? // link to game service match
+  nextTournamentMatchId String? // link to the next match in the bracket
+  opponent1Id           String?
+  opponent2Id           String?
+  opponent1Score        Int        @default(0)
+  opponent2Score        Int        @default(0)
+  winnerId              String?
+  status                GameStatus @default(PENDING)
+  deadline              DateTime?
+
+  // Relations with cascading deletes
+  round     TournamentRoundData @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  opponent1 TournamentPlayer?   @relation("MatchOpponent1", fields: [opponent1Id], references: [id], onDelete: SetNull)
+  opponent2 TournamentPlayer?   @relation("MatchOpponent2", fields: [opponent2Id], references: [id], onDelete: SetNull)
+}
+
+model TournamentPlayer {
+  id              String  @id @default(cuid())
+  userId          String
+  bracketPosition Int?
+  isEliminated    Boolean @default(false)
+  isReady         Boolean @default(false)
+  tournamentId    String
+
+  firstName    String
+  lastName     String
+  userName     String
+  avatar       String
+  isVerified   Boolean @default(false)
+  rankDivision String
+
+  tournament         Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  matchesAsOpponent1 TournamentMatch[] @relation("MatchOpponent1")
+  matchesAsOpponent2 TournamentMatch[] @relation("MatchOpponent2")
+
+  @@unique([userId, tournamentId])
+}
+
+enum TournamentRound {
+  QUALIFIERS // i will be rremove this later
+  ROUND_OF_16
+  QUARTER_FINALS
+  SEMI_FINALS
+  FINAL
+}
+
+enum TournamentStatus {
+  REGISTRATION
+  READY
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum GameStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }

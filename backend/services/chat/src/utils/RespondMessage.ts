@@ -49,7 +49,10 @@ export enum PollMessages {
 
 export enum GroupMessages {
 
-    // Group CRUD
+  NOT_A_MEMBER = 'You are not a member of this group.',
+    CANNOT_UPDATE_MATCH_GROUP = 'Cannot update a match-associated group.',
+    NOT_FOUND = 'Group not found.',
+    IMAGE_UPDATED_SUCCESS = 'Group image updated successfully.',
     CANNOT_CHANGE_OWN_ROLE = 'You cannot change your own role in the group.',
     JOIN_REQUEST_REJECTED_SUCCESS = 'Join request rejected successfully.',
     JOIN_REQUEST_REJECTED_FAILED = 'Failed to reject join request.',
@@ -132,6 +135,12 @@ export enum GroupMessages {
     POLL_CLOSED_FAILED = 'Failed to close poll.',
     POLL_RESULTS_FETCHED_SUCCESS = 'Poll results fetched successfully.',
     POLL_RESULTS_FETCHED_FAILED = 'Failed to fetch poll results.',
+
+    // User Invitations
+    USER_INVITED_SUCCESS = 'User invited to group successfully.',
+    USER_INVITED_FAILED = 'Failed to invite user to group.',
+    USER_REQUESTS_FETCHED_SUCCESS = 'User join requests fetched successfully.',
+    USER_REQUESTS_FETCHED_FAILED = 'Failed to fetch user join requests.',
 
     // General Errors
     INVALID_REQUEST = 'Invalid request.',

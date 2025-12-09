@@ -1,8 +1,8 @@
 import {FastifyReply } from "fastify";
 import app from "../app";
 import prisma from "../db/database";
-import { sendDataToQueue } from "../integration/rabbitmqClient";
-import redis from "../integration/redisClient";
+import { sendDataToQueue } from "../integration/rabbitmq.integration";
+import redis from "../integration/redis.integration";
 import { ApiResponse } from "../utils/errorHandler";
 
 
@@ -18,10 +18,13 @@ function generateToken(length = 10)
 
 
 
-export async function setJwtTokens(res: FastifyReply, user: any | null) 
+export async function setJwtTokens(res: FastifyReply, userId: number) 
 {
-  const accessToken = await app.jwt.sign({ userId: user.id }, { expiresIn: "7d" });
-  const refreshToken = await app.jwt.sign({ userId: user.id }, { expiresIn: "30d" });
+
+  // here check is user is ready have token or not if have token in redis just return it
+
+  const accessToken = await app.jwt.sign({ userId }, { expiresIn: "7d" });
+  const refreshToken = await app.jwt.sign({ userId}, { expiresIn: "30d" });
 
   res.setCookie("accessToken", accessToken, { httpOnly: true, path: "/", sameSite: "lax", secure: false });
   res.setCookie("refreshToken", refreshToken, {
@@ -38,18 +41,23 @@ export async function setJwtTokens(res: FastifyReply, user: any | null)
 
 
 
-export async function isTwoFactorEnabled(res: FastifyReply, user: any | null , respond: ApiResponse ) : Promise<any>
+export async function isTwoFactorEnabled(userId : number ,  twoFAMethod : string , res: FastifyReply, respond: ApiResponse ) : Promise<any>
 {
 
-  if(user.twoFAMethod == "NONE")
+  if(twoFAMethod == "none")
   {
     respond.data.is2FAEnabled = false;
-    await setJwtTokens(res , user);
+    await setJwtTokens(res , userId);
     return ;
   }
   
-  respond.data.is2FAEnabled = true;
-  const message = (user.twoFAMethod == "EMAIL") ? "A verification code has been sent to your email." : "Please enter the code from your authenticator app.";
+  const twoFAToken = generateToken(); 
+  const redisKey = `2fa:token:${twoFAToken}`;
+  await redis.set(redisKey, JSON.stringify({ userId, twoFAMethod }), 'EX', 5 * 60); // Expires in 5 minutes
+  
+  const message = (twoFAMethod == "email") ? "A verification code has been sent to your email." : "Please enter the code from your authenticator app.";
+  
+  respond.data = { is2FAEnabled: true , twoFAToken };
   respond.message = message;
 }
 

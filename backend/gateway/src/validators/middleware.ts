@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import app from '../app';
 import { ApiResponse } from '../utils/errorHandler';
-import redis from '../integration/redisClient';
+import redis from '../integration/redis.integration';
 
 
 export async function authenticateUser(req: FastifyRequest, res: FastifyReply) 
@@ -10,13 +10,24 @@ export async function authenticateUser(req: FastifyRequest, res: FastifyReply)
   const respond: ApiResponse<null> = { success: false, message: 'Unauthorized' };
   const url = req.url;
 
+  console.log(`Authenticating request for URL: ${url}`);
   const publicURIs: string[] = [
     '/', '/favicon.ico',
     '/api/user/docs/json',
+    '/api/chat/docs',
     '/api/auth/docs/json',
+    
+    '/api/user/health',
+    '/api/auth/health',
+    '/api/chat/health',
+    '/api/notify/health',
+    '/api/tournament/health',
+
     '/api/auth/signup', 
-    '/api/auth/login', 
     '/api/auth/verify-email', 
+    '/api/auth/login',
+    '/api/auth/forgot-password',
+    '/api/auth/reset-password', 
     '/api/auth/intra', 
     '/api/auth/google', 
     '/api/auth/refresh'
@@ -40,17 +51,18 @@ export async function authenticateUser(req: FastifyRequest, res: FastifyReply)
     const cookie = req.headers.cookie;
     if (!cookie) throw new Error("Not allowed");
 
-    const token = cookie.split('=')[1];
-    if (!token) throw new Error("Missing access token");
-
+    const tokenCookie = cookie.split('; ').find((c:string) => c.startsWith('accessToken='));
+    if (!tokenCookie) throw new Error("Not allowed");
+    
+    const token = tokenCookie.split('=')[1];
+    if (!token) throw new Error("Not allowed");
+    
     // mode development
     // const tokenExists = await redis.get(token);
     // if (!tokenExists) throw new Error("Token expired or invalid");
 
     const payload: any = await app.jwt.verify(token);
-
     req.id = payload.userId;
-
   } 
   catch (error) 
   {

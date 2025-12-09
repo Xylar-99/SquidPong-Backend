@@ -1,297 +1,588 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import prisma from '../db/database';
-import { updateProfileRedis , convertParsedMultipartToJson , syncRedisProfileToDbAppendArrays } from '../utils/utils';
-import { ApiResponse, sendError } from '../utils/errorHandler';
-import { Profile } from '../utils/types';
-import { redis } from '../utils/redis';
-import { ProfileMessages, PreferenceMessages, NotificationMessages, GeneralMessages } from '../utils/responseMessages';
+import { FastifyRequest, FastifyReply } from "fastify";
+import prisma from "../db/database";
+import { ApiResponse, sendError } from "../utils/errorHandler";
+import { Profile } from "../utils/types";
+import { ProfileMessages, GeneralMessages } from "../utils/responseMessages";
+import { checkSecretToken } from "../utils/utils";
+enum PaddleColor {
+  Red = "Red",
+  Blue = "Blue",
+  Yellow = "Yellow",
+  Orange = "Orange",
+  Purple = "Purple",
+}
+import {
+  sendServiceRequest,
+  getPromotedRank,
+  isReadyExists,
+} from "../utils/utils";
+import {
+  purchaseItem,
+  buyVerified,
+  sendServiceRequestSimple,
+  SelectedItemExists,
+  convertParsedMultipartToJson,
+} from "../utils/utils";
+import { removeFriendFromChat } from "../integration/chat.restapi";
 
+import { deleteAccountInChat } from "../integration/chat.restapi";
+import { deleteAccountInNotify } from "../integration/notify.restapi";
+import {
+  calculateLevel,
+  calculateNewScore,
+  calculateRank,
+} from "../utils/scoreHandler";
 
-
-
-export async function createProfileHandler(req: FastifyRequest, res: FastifyReply) 
-{
-  const response: ApiResponse<null> = {  success: true,  message: ProfileMessages.CREATE_SUCCESS  };
-
-  const body = req.body as any;
-
-  const newProfileData: any = {
-    userId: body.id,
-    username: body.username,
-    firstName: body.fname,
-    lastName: body.lname,
-    avatar: body.avatar,
+export async function createProfileHandler(
+  req: FastifyRequest,
+  res: FastifyReply
+) {
+  const response: ApiResponse<null> = {
+    success: true,
+    message: ProfileMessages.CREATE_SUCCESS,
   };
 
-  try 
-  {
-    const profile = await prisma.profile.create({
+  const body = req.body as {
+    userId: number;
+    username: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+    banner?: string;
+    rankDivision?: string;
+    rankTier?: string;
+    playerSelectedCharacter?: string;
+    playerPaddles?: string[];
+    playerSelectedPaddle?: string;
+    paddleColor?: PaddleColor;
+    level?: number;
+    score?: number;
+    walletBalance?: number;
+    isVerified?: boolean;
+  };
+
+  body["avatar"] =
+    body["avatar"] ||
+    `${
+      process.env.BACKEND_URL || "http://localhost:4000"
+    }:4433/api/user/avatars/default.png`;
+  try {
+    checkSecretToken(req);
+
+    console.log("body to create profile:", body);
+
+    await prisma.profile.create({
       data: {
-        ...newProfileData,
+        ...body,
+        playerSelectedCharacter: body.playerSelectedCharacter as any,
+        playerPaddles: body.playerPaddles as any,
+        playerSelectedPaddle: body.playerSelectedPaddle as any,
+        rankDivision: body.rankDivision as any,
+        rankTier: body.rankTier as any,
+        level: body.level,
+        score: body.score,
+        walletBalance: body.walletBalance,
+        paddleColor: body.paddleColor,
         preferences: { create: { notifications: { create: {} } } },
       },
     });
 
-    const redisKey = `profile:${profile.userId}`;
-    await redis.set(redisKey, profile);
-    
-    // Ensure user exists in chat service
-    await fetch('http://chat:4003/api/chat/new/user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...newProfileData, isVerified: false })
+    await sendServiceRequestSimple("chat", body.userId, "POST", {
+      ...body,
+      userId: String(body.userId),
     });
-
-
-
-  } 
-  catch (error) {
+    await sendServiceRequestSimple("notify", body.userId, "POST", {
+      ...body,
+      userId: String(body.userId),
+    });
+  } catch (error) {
     return sendError(res, error);
   }
 
   return res.send(response);
 }
 
+export async function updateProfileHandlerDB(
+  req: FastifyRequest,
+  res: FastifyReply
+) {
+  const respond: ApiResponse<any> = {
+    success: true,
+    message: ProfileMessages.UPDATE_SUCCESS,
+    data: null,
+  };
 
-export async function updateProfileHandler99(req: FastifyRequest, res: FastifyReply) 
-{
-  const respond: ApiResponse<any> = { success: true, message: ProfileMessages.UPDATE_SUCCESS };
   const headers = req.headers as any;
-  const userId = Number(headers['x-user-id']);
-  
-  const {status} = req.body as {status : string};
-  console.log("------------------------------status : ", status);
-  console.log("updateProfileHandler99 called for userId:", userId);
+  const userId = Number(headers["x-user-id"]);
 
-  try 
-  {
+  let newData: { isVerified?: boolean; walletBalance?: number } = {};
+  let body = req.body as any;
 
-  if(status == "ONLINE")
-    await prisma.profile.update({ where: { userId }, data: { status : "ONLINE" } });
-  else
-    await syncRedisProfileToDbAppendArrays(userId);
-
-  }
-  catch (error) {
-    return sendError(res, error);
-  }
-
-  return res.send(respond);
-}
-
-
-
-export async function updateProfileHandler(req: FastifyRequest, res: FastifyReply) 
-{
-  const respond: ApiResponse<Profile> = { success: true, message: ProfileMessages.UPDATE_SUCCESS };
-  const headers = req.headers as any;
-  const userId = Number(headers['x-user-id']);
-  
-  try 
-  {
-    const body = await convertParsedMultipartToJson(req);
-
-    console.log("Body Update : ", body);
-    respond.data = await updateProfileRedis(body , userId);
-
-  }
-  catch (error) {
-    return sendError(res, error);
-  }
-
-  return res.send(respond);
-}
-
-
-
-
-export async function getAllUserHandler(req: FastifyRequest, res: FastifyReply) 
-{
-  const respond: ApiResponse<Profile[]> = {success: true,  message: ProfileMessages.FETCH_SUCCESS};
-
-  try 
-  {
-    const onlineUserIds: string[] = await redis.getOnlineUsers();
-
-    // Fetch offline users from the database
-    const offlineProfiles = await prisma.profile.findMany({
-      where: { status: "OFFLINE" },
-      include: { preferences: { include: { notifications: true } } },
+  try {
+    let existingProfile = await prisma.profile.findUnique({
+      where: { userId },
     });
+    if (!existingProfile) throw new Error(ProfileMessages.UPDATE_NOT_FOUND);
 
-    // Fetch online users from Redis cache
-    const onlineProfiles: Profile[] = [];
-    for (const userId of onlineUserIds) 
-    {
-      const profile = await redis.get(`profile:${userId}`);
-      if (profile)
-        onlineProfiles.push({ ...profile, status: "ONLINE" });
+    if (await isReadyExists(body.username, existingProfile.username))
+      throw new Error(ProfileMessages.READY_EXISTS);
+
+    body.playerCharacters = await purchaseItem(
+      existingProfile,
+      "playerCharacters",
+      body.playerCharacters
+    );
+
+    body.playerPaddles = await purchaseItem(
+      existingProfile,
+      "playerPaddles",
+      body.playerPaddles
+    );
+
+    if (body.playerSelectedCharacter) {
+      const exists = await SelectedItemExists(
+        existingProfile,
+        "playerCharacters",
+        body.playerSelectedCharacter
+      );
+      if (!exists) throw new Error(ProfileMessages.PLAYER_IS_NOT_OWNED);
+    }
+    if (body.playerSelectedPaddle) {
+      const exists = await SelectedItemExists(
+        existingProfile,
+        "playerPaddles",
+        body.playerSelectedPaddle
+      );
+      if (!exists) throw new Error(ProfileMessages.PADDLE_IS_NOT_OWNED);
     }
 
-    const allProfiles = [
-      ...offlineProfiles,
-      ...onlineProfiles,
-    ];
+    newData.walletBalance = existingProfile.walletBalance;
 
-    respond.data = allProfiles;
+    if (body.isVerified === true) newData = await buyVerified(existingProfile);
 
-  } 
-  catch (error) {
+    body = { ...body, ...newData };
+
+    body["status"] = body.customStatus;
+
+    console.log("Final body to update:", body);
+    const updatedProfile = await prisma.profile.update({
+      where: { userId },
+      data: {
+        ...body,
+        ...(body.preferences && {
+          preferences: {
+            update: {
+              ...body.preferences,
+              ...(body.preferences.notifications && {
+                notifications: {
+                  update: { ...body.preferences.notifications },
+                },
+              }),
+            },
+          },
+        }),
+      },
+    });
+
+    if (body.username) {
+      await sendServiceRequestSimple("auth", userId, "PUT", {
+        username: body.username,
+      });
+    }
+
+    // Removed Redis update for status
+
+    const dataSend = {
+      ...(body.username && { username: body.username }),
+      ...(body.firstName && { firstName: body.firstName }),
+      ...(body.lastName && { lastName: body.lastName }),
+      ...(body.isVerified && { isVerified: body.isVerified }),
+      ...(body.customStatus && { customStatus: body.customStatus }),
+      ...(body.customStatus && { status: body.customStatus }),
+    };
+
+    await sendServiceRequestSimple("chat", userId, "PUT", dataSend);
+    await sendServiceRequestSimple("notify", userId, "PUT", {
+      ...dataSend,
+      notificationSettings: {
+        ...(body.preferences?.notifications && {
+          ...body.preferences.notifications,
+        }),
+      },
+    });
+
+    // Removed Redis update
+
+    respond.data = updatedProfile;
+  } catch (error) {
     return sendError(res, error);
   }
-
   return res.send(respond);
 }
 
+export async function updateProfileHandler(
+  req: FastifyRequest,
+  res: FastifyReply
+) {
+  const respond: ApiResponse<any> = {
+    success: true,
+    message: ProfileMessages.UPDATE_SUCCESS,
+  };
 
-export async function deleteProfileHandler(req: FastifyRequest, res: FastifyReply) 
-{
-  const respond: ApiResponse<null> = { success: true, message: ProfileMessages.DELETE_SUCCESS };
-  
   const headers = req.headers as any;
-  const userId = Number(headers['x-user-id']);
+  const userId = Number(headers["x-user-id"]);
+  const Token = headers["x-secret-token"];
+
+  const body = req.body as {
+    score?: number;
+    level?: number;
+    status?: "ONLINE" | "OFFLINE";
+    updateLastSeen?: boolean;
+  };
+  let profile;
+
+  try {
+    const profileExists = await prisma.profile.findUnique({
+      where: { userId },
+    });
+    if (!profileExists) throw new Error(ProfileMessages.UPDATE_NOT_FOUND);
+
+    if (Token !== process.env.SECRET_TOKEN)
+      throw new Error(GeneralMessages.UNAUTHORIZED);
+
+    let dataToUpdate: any = {};
+    if (body.status !== undefined) {
+      if (body.status === "OFFLINE") {
+        dataToUpdate.status = "OFFLINE";
+        dataToUpdate.lastSeen = new Date();
+      } else {
+        dataToUpdate.status = profileExists.customStatus;
+      }
+
+      await prisma.profile.update({
+        where: { userId },
+        data: dataToUpdate,
+      });
+
+      await sendServiceRequestSimple("chat", userId, "PUT", {
+        status: dataToUpdate.status,
+      });
+      await sendServiceRequestSimple("notify", userId, "PUT", {
+        status: dataToUpdate.status,
+      });
+
+      return res.send(respond);
+    }
+
+    // Handle score/level updates
+    profile = await prisma.profile.findUnique({ where: { userId } });
+    if (!profile) throw new Error(ProfileMessages.FETCH_NOT_FOUND);
+
+    const new_score = profile.score + (body.score || 0);
+    const { newRankTier, newRankDivision, newScore } = getPromotedRank(
+      profile,
+      new_score
+    );
+
+    const newLevel =
+      Math.sign(body.score || 0) === 1
+        ? profile.level + (body.score || 0) / 10
+        : profile.level + (body.level || 0);
+
+    // Removed Redis update
+  } catch (error) {
+    return sendError(res, error);
+  }
+  return res.send(respond);
+}
+
+export async function getAllUserHandler(
+  req: FastifyRequest,
+  res: FastifyReply
+) {
+  const respond: ApiResponse<Profile[]> = {
+    success: true,
+    message: ProfileMessages.FETCH_SUCCESS,
+  };
+  try {
+    const profiles = await prisma.profile.findMany({
+      include: { preferences: true },
+    });
+    respond.data = profiles;
+  } catch (error) {
+    return sendError(res, error);
+  }
+  return res.send(respond);
+}
+
+export async function deleteProfileHandler(
+  req: FastifyRequest,
+  res: FastifyReply
+) {
+  const respond: ApiResponse<null> = {
+    success: true,
+    message: ProfileMessages.DELETE_SUCCESS,
+  };
+
+  const headers = req.headers as any;
+  const userId = Number(headers["x-user-id"]);
 
   const cacheKey = `profile:${userId}`;
 
-  try 
-  {
+  try {
+    checkSecretToken(req);
     const profile = await prisma.profile.findUnique({ where: { userId } });
     if (!profile) throw new Error(ProfileMessages.DELETE_NOT_FOUND);
 
-    await prisma.profile.delete({ where: { userId } });
+    const deletedUsername = `deleted_user_${userId}`;
+    await prisma.profile.update({
+      where: { userId },
+      data: { isDeleted: true, username: deletedUsername },
+    });
+    // Removed Redis delete
 
-    await redis.del(cacheKey);
-
-  }
-  catch (error) {
+    // Notify other services about account deletion
+    await deleteAccountInChat(userId);
+    await deleteAccountInNotify(userId);
+  } catch (error) {
     return sendError(res, error);
   }
-
   return res.send(respond);
 }
 
-
-
-
-export async function getCurrentUserHandler(req: FastifyRequest, res: FastifyReply) 
-{
-  const respond: ApiResponse<any> = { success: true, message: ProfileMessages.FETCH_SUCCESS };
-
+export async function getCurrentUserHandler(
+  req: FastifyRequest,
+  res: FastifyReply
+) {
+  const respond: ApiResponse<any> = {
+    success: true,
+    message: ProfileMessages.FETCH_SUCCESS,
+  };
   const headers = req.headers as any;
-  const userId = Number(headers['x-user-id']);
-  const cacheKey = `profile:${userId}`;
+  const userId = Number(headers["x-user-id"]);
 
-  try 
-  {
-    let profile = await redis.get(cacheKey);
-
-    if (!profile) 
-    {
-      profile = await prisma.profile.findUnique({
-        where: { userId },
-        include: { preferences: true },
-      });
-
-      if (!profile) throw new Error(ProfileMessages.FETCH_NOT_FOUND);
-      await redis.set(cacheKey, profile);
-    }
+  try {
+    const profile = await prisma.profile.findUnique({
+      where: { userId },
+      include: { preferences: { include: { notifications: true } } },
+    });
+    if (!profile) throw new Error(ProfileMessages.FETCH_NOT_FOUND);
 
     respond.data = profile;
-  } 
-  catch (error) {
+
+    // Removed Redis caching
+  } catch (error) {
     return sendError(res, error);
   }
-
   return res.send(respond);
 }
 
+export async function getUserByIdHandler(
+  req: FastifyRequest,
+  res: FastifyReply
+) {
+  const respond: ApiResponse<any> = {
+    success: true,
+    message: ProfileMessages.FETCH_SUCCESS,
+  };
+  const { id } = req.params as { id: string };
 
-
-export async function getUserByIdHandler(req: FastifyRequest, res: FastifyReply) 
-{
-  const respond: ApiResponse<any> = { success: true, message: ProfileMessages.FETCH_SUCCESS };
-  
-  const { id } =  req.params as { id: string };
-  const cacheKey = `profile:${id}`;
-
-  try 
-  {
-    let profile = await redis.get(cacheKey);
-
-    if (!profile) 
-    {
-      profile = await prisma.profile.findUnique({
-        where: { userId : Number(id)  },
-        include: { preferences: true },
-      });
-
-      if (!profile) throw new Error(ProfileMessages.FETCH_NOT_FOUND);
-    }
-
+  try {
+    const profile = await prisma.profile.findUnique({
+      where: { userId: Number(id), isDeleted: false },
+      include: { preferences: true },
+    });
+    if (!profile) throw new Error(ProfileMessages.FETCH_NOT_FOUND);
     respond.data = profile;
-  }
-  catch (error) {
+  } catch (error) {
     return sendError(res, error);
   }
-
   return res.send(respond);
 }
 
+export async function getUserByUserNameHandler(
+  req: FastifyRequest,
+  res: FastifyReply
+) {
+  const respond: ApiResponse<any> = {
+    success: true,
+    message: ProfileMessages.FETCH_SUCCESS,
+  };
 
+  const headers = req.headers as { "x-user-id": string };
+  const userId = Number(headers["x-user-id"]);
 
-export async function searchUsersHandler(req: FastifyRequest, res: FastifyReply) 
-{
-  const respond: ApiResponse<Profile[]> = { success: true, message: ProfileMessages.FETCH_SUCCESS };
-  const { query } = req.query as { query: string };
+  const { username } = req.params as { username: string };
 
-  if (!query)
-  {
-    respond.success = false;
-    respond.message =  'Query parameter is required';
-    return res.status(400).send(respond);
-  }
+  try {
+    let profile = await prisma.profile.findUnique({ where: { username } });
+    if (!profile) throw new Error(GeneralMessages.NOT_FOUND);
 
-  try 
-  {
+    let profileWithStatus: any = profile;
 
-    const onlineUserIds: string[] = await redis.getOnlineUsers();
-    const onlineProfiles: Profile[] = [];
-
-    // Fetch online users from Redis cache
-    for (const userId of onlineUserIds) 
-    {
-      const profile = await redis.get(`profile:${userId}`);
-      if (profile) 
-      {
-        if (
-          profile.username.toLowerCase().includes(query.toLowerCase()) ||
-          profile.firstName.toLowerCase().includes(query.toLowerCase())
-        ) 
-        {
-          onlineProfiles.push({ ...profile});
+    if (userId !== profile.userId) {
+      const statusFriends = await prisma.friendship.findFirst({
+        where: {
+          OR: [
+            { senderId: userId, receiverId: profile.userId },
+            { senderId: profile.userId, receiverId: userId },
+          ],
+        },
+      });
+      if (!statusFriends)
+        profileWithStatus.relationshipStatus = "NO_RELATIONSHIP";
+      else {
+        if (statusFriends.status === "ACCEPTED")
+          profileWithStatus.relationshipStatus = "FRIENDS";
+        else if (statusFriends.status === "PENDING") {
+          if (statusFriends.senderId === userId)
+            profileWithStatus.relationshipStatus = "REQUEST_SENT";
+          else profileWithStatus.relationshipStatus = "REQUEST_RECEIVED";
+        } else if (statusFriends.status === "BLOCKED") {
+          const isblocker = await prisma.blockedUser.findFirst({
+            where: {
+              blockerId: userId,
+              blockedId: profile.userId,
+            },
+          });
+          if (isblocker) profileWithStatus.relationshipStatus = "YOU_BLOCKED";
+          else profileWithStatus.relationshipStatus = "BLOCKED_YOU";
         }
       }
     }
 
+    respond.data = profileWithStatus;
+  } catch (error) {
+    return sendError(res, error);
+  }
+  return res.send(respond);
+}
 
-    const offlineProfiles = await prisma.profile.findMany({
-      where: {
-        OR: [
-          { username: { contains: query,} },
-          { firstName: { contains: query,} },
-        ],
-        id: { notIn: onlineUserIds },
-      },
-      include: { preferences: { include: { notifications: true } } },
+export async function updateProfileImageHandler(
+  req: FastifyRequest,
+  res: FastifyReply
+) {
+  const respond: ApiResponse<any> = {
+    success: true,
+    message: ProfileMessages.UPDATE_SUCCESS,
+  };
+  const headers = req.headers as any;
+  const userId = Number(headers["x-user-id"]);
+
+  try {
+    const parsed = (await convertParsedMultipartToJson(req)) as any;
+    const data = await prisma.profile.update({
+      where: { userId },
+      data: { avatar: parsed },
     });
 
-    const allProfiles = [...onlineProfiles, ...offlineProfiles];
+    // Removed Redis update
 
-    respond.data = allProfiles;
-  } 
-  catch (error) {
+    await sendServiceRequestSimple("chat", userId, "PUT", { avatar: parsed });
+    await sendServiceRequestSimple("notify", userId, "PUT", { avatar: parsed });
+    respond.data = data;
+  } catch (error) {
     return sendError(res, error);
   }
 
   return res.send(respond);
+}
+
+export async function searchUsersHandler(
+  req: FastifyRequest,
+  res: FastifyReply
+) {
+  const respond: ApiResponse<Profile[]> = {
+    success: true,
+    message: ProfileMessages.FETCH_SUCCESS,
+  };
+  const { query } = req.query as { query: string };
+
+  try {
+    if (!query) throw new Error("Query parameter is required");
+
+    const dbProfiles = await prisma.profile.findMany({
+      where: {
+        isDeleted: false,
+        OR: [
+          { username: { contains: query } },
+          { firstName: { contains: query } },
+        ],
+      },
+      include: { preferences: { include: { notifications: true } } },
+    });
+    respond.data = dbProfiles;
+  } catch (error) {
+    return sendError(res, error);
+  }
+  return res.send(respond);
+}
+
+export async function leaderboard(eq: FastifyRequest, res: FastifyReply) {
+  const respond: ApiResponse<Profile[]> = {
+    success: true,
+    message: ProfileMessages.FETCH_SUCCESS,
+  };
+
+  try {
+    const leaderboard = await prisma.profile.findMany({
+      where: {
+        isDeleted: false,
+      },
+      orderBy: {
+        level: "desc",
+      },
+    });
+
+    respond.data = leaderboard;
+    return res.send(respond);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+
+export async function applyMatchResult(req: FastifyRequest, res: FastifyReply) {
+  const { player1Id, player2Id, player1Result, player2Result } = req.body as {
+    player1Id: number;
+    player2Id: number;
+    player1Result: "WIN" | "LOSS";
+    player2Result: "WIN" | "LOSS";
+  };
+
+  const applyForPlayer = async (playerId: number, result: "WIN" | "LOSS") => {
+    const profile = await prisma.profile.findUnique({
+      where: { userId: playerId },
+    });
+
+    if (!profile) return;
+
+    const newScore = calculateNewScore(profile.score, result);
+    const newLevel = calculateLevel(newScore);
+    const { rankDivision, rankTier } = calculateRank(newScore);
+
+    await prisma.profile.update({
+      where: { userId: playerId },
+      data: {
+        score: newScore,
+        level: newLevel,
+        rankDivision,
+        rankTier,
+      },
+    });
+  };
+
+  await Promise.all([
+    applyForPlayer(player1Id, player1Result),
+    applyForPlayer(player2Id, player2Result),
+  ]);
+
+  console.log("reaaaaaaaaaaaaaaaaaaaaaaaaaaaach222222222222222222222")
+  return res.send({
+    success: true,
+    message: "Match results applied successfully",
+  });
 }

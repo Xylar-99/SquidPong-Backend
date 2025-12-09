@@ -1,18 +1,27 @@
 import dotenv from 'dotenv';
 import app from './app'
-import { initRabbitMQ , receiveFromQueue } from './integration/rabbitmqClient';
+import { initRabbitMQ , receiveFromQueue } from './integration/rabbitmq.integration';
+import { validateEnvironmentVariables } from './utils/envValidator';
 
 dotenv.config();
 
-const port = Number(process.env.PORT);
-const host = process.env.HOST;
+// Validate environment variables before starting
+validateEnvironmentVariables();
+
+const port = Number(process.env.NOTIFY_SERVICE_PORT);
+const host = process.env.NOTIFY_SERVICE_HOST;
 
 
 async function StartServer()
 {
     try 
     {
-        app.listen({port : port , host : host} , () => { console.log(`Notify service running at http://notify:${port}`) })
+
+    await app.listen({port  , host } , () => { console.log(`Notify service running at http://notify:${port}`) })
+    await initRabbitMQ();
+    await receiveFromQueue("emailhub");
+    await receiveFromQueue("eventhub");
+  
     } 
     catch (error) 
     {
@@ -22,10 +31,4 @@ async function StartServer()
 }
 
 
-
-async function start() 
-{
-  await  initRabbitMQ();
-  await receiveFromQueue("emailhub")
-}
-start();
+StartServer();

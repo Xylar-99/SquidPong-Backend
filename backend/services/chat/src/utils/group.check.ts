@@ -5,32 +5,28 @@ import { fetchAndEnsureUser } from "./helper";
 
 
 // change later to accept newMemberId and check if it's valid userId 
-export async function checkUserAndFetchGroup( groupId: number) 
+export async function checkUserAndFetchGroup( groupId: number , matchId : string = "" ) 
 {
-  
+  const where = (matchId !== "") ? { matchId } : { id: groupId };
+
   const group = await prisma.group.findUnique({
-    where: { id: groupId },
+    where,
     include: {
-      members: true,
+      members: { include: { user: true } },
       chat: {
         include: {
           members: true,
           messages: {
-            include: {
-              reactions: true,
-            },
-            orderBy: {
-              timestamp: 'desc',
-            },
-            take: 20,
-          },
-        },
-      },
-    },
+            include: { reactions: true },
+            orderBy: { timestamp: 'desc' }
+          }
+        }
+      }
+    }
   });
 
-  if (!group)
-    throw new Error(GroupMessages.FETCH_NOT_FOUND);
+  if (!group) throw new Error(GroupMessages.FETCH_NOT_FOUND);
 
-  return group;
+return group;
+
 }

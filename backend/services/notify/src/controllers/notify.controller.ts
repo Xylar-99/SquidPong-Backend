@@ -1,76 +1,92 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../db/database';
 import { ApiResponse } from '../utils/errorHandler';
-import { createNotification , updateNotification , deleteNotification } from "../controllers/helps.controller";
+import { getVisibleStatus } from '../utils/statusHelper';
 
 
-export async function postSendNotificationHandler(req: FastifyRequest, res: FastifyReply) 
-{
-  const respond: ApiResponse<null> = { success: true, message: 'Notification sent successfully' };
-  const body = req.body as {
-    userId: number;
-    title: string;
-    message: string;
-    type?: string;
+
+export async function getNotificationHistoryHandler(
+  req: FastifyRequest,
+  res: FastifyReply
+) {
+  const headers = req.headers as any;
+  const userId = String(headers["x-user-id"]);
+
+  const respond: ApiResponse<any[]> = {
+    success: true,
+    message: "Notifications fetched successfully",
   };
 
-  try 
-  {
-    await prisma.notification.create({
-      data: {
-        userId: body.userId,
-        title: body.title as any,
-        message: body.message,
-        type: body.type ? (body.type as any) : 'INFO',
-      },
-    });
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error) respond.message = error.message;
-    return res.status(400).send(respond);
-  }
-
-  return res.send(respond);
-}
-
-export async function updateNotificationHandler(req: FastifyRequest, res: FastifyReply)
-{
-  const respond: ApiResponse<null> = { success: true, message: 'Notification updated successfully' };
-  const body = req.body as  any;
-  const headers = req.headers as any;
-
-  const { notifyId } = req.params as { notifyId: string };
-  const userId = Number(headers['x-user-id']);
-
-  try 
-  {
-    await updateNotification({id : notifyId , userId , status : "READ"})
-  } 
-  catch (error) 
-  {
-    respond.success = false;
-    if (error instanceof Error) respond.message = error.message;
-    return res.status(400).send(respond);
-  }
-
-  return res.send(respond);
-}
-
-export async function getNotificationHistoryHandler(req: FastifyRequest, res: FastifyReply) 
-{
-  const headers = req.headers as any;
-  const userId = Number(headers['x-user-id']);
-  const respond: ApiResponse<any[]> = { success: true, message: 'Notifications fetched successfully' };
-
-  try 
-  {
+  try {
     const notifications = await prisma.notification.findMany({
-      where: { userId },
-      orderBy: { createdAt: 'desc' },
+      where: { targetId: userId },
+      include: {
+        by: true,              // include full user
+        payload: {
+          include: {
+            friendRequest: true,   // include nested FK relation
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
     });
+
     respond.data = notifications;
+  } catch (error) {
+    respond.success = false;
+    if (error instanceof Error) respond.message = error.message;
+    return res.status(400).send(respond);
+  }
+
+  return res.send(respond);
+}
+
+
+
+export async function markNotificationAsReadHandler(req: FastifyRequest, res: FastifyReply)
+{
+  const respond: ApiResponse<null> = { success: true, message: 'Notification marked as read successfully' };
+  
+  const headers = req.headers as any;
+  const userId = String(headers['x-user-id']);
+  
+  const { notifyId } = req.params as { notifyId: number };
+  try 
+  {
+    const notification = await prisma.notification.findUnique({
+      where: { id: Number(notifyId) },
+    });
+
+    if (!notification) throw new Error('Notification not found');
+
+    await prisma.notification.update({
+      where: { id: Number(notifyId) , targetId : userId },
+      data: { isRead : true }
+    });
+  } 
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error) respond.message = error.message;
+    return res.status(400).send(respond);
+  }
+
+  return res.send(respond);
+}
+
+
+export async function markNotificationAsReadAllHandler(req: FastifyRequest, res: FastifyReply)
+{
+  const respond: ApiResponse<null> = { success: true, message: 'All notifications marked as read successfully' };
+  const headers = req.headers as any;
+  const userId = String(headers['x-user-id']);
+
+  try 
+  {
+    await prisma.notification.updateMany({
+      where: { targetId : userId , isRead : false },
+      data: { isRead : true }
+    });
   } 
   catch (error) 
   {
@@ -87,11 +103,22 @@ export async function getNotificationHistoryHandler(req: FastifyRequest, res: Fa
 export async function deleteNotificationHandler(req: FastifyRequest, res: FastifyReply)
 {
   const respond: ApiResponse<null> = { success: true, message: 'Notification deleted successfully' };
-  const { notifyId } = req.params as any;
+  const { notifyId } = req.params as { notifyId: number };
+  const headers = req.headers as any;
+  const userId = String(headers['x-user-id']);
 
   try 
   {
-    await deleteNotification(Number(notifyId));
+    const notification = await prisma.notification.findUnique({
+      where: { id: Number(notifyId) , targetId : userId },
+    });
+
+    if (!notification)
+      throw new Error('Notification not found');
+
+    await prisma.notification.delete({
+      where: { id: Number(notifyId) , targetId : userId },
+    });
   } 
   catch (error) 
   {
@@ -102,3 +129,25 @@ export async function deleteNotificationHandler(req: FastifyRequest, res: Fastif
 
   return res.send(respond);
 }
+
+
+export async function deleteAllNotificationsHandler(req: FastifyRequest, res: FastifyReply)
+{
+  const respond: ApiResponse<null> = { success: true, message: 'All notifications deleted successfully' };
+  const headers = req.headers as any;
+  const userId = String(headers['x-user-id']);
+
+  try 
+  {
+    await prisma.notification.deleteMany({ where: { targetId : userId } });
+  } 
+  catch (error) 
+  {
+    respond.success = false;
+    if (error instanceof Error) respond.message = error.message;
+    return res.status(400).send(respond);
+  }
+
+  return res.send(respond);
+}
+

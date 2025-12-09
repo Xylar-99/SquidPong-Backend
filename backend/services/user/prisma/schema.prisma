@@ -13,14 +13,18 @@ enum UserStatus {
   OFFLINE
   IDLE
   DO_NOT_DISTURB
+  INVISIBLE
 }
 
 enum RankDivision {
+  IRON
   BRONZE
   SILVER
   GOLD
   PLATINUM
   DIAMOND
+  ASCENDANT
+  IMMORTAL
   MASTER
 }
 
@@ -69,23 +73,16 @@ enum MatchResult {
 }
 
 
-enum TournamentStatus {
-  REGISTRATION
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-
 enum PlayerCharacter {
-  Zero
-  Taizen
-  Kira
+  Tbib
+  Med
   Ryu
-  Akira
-  Sora_F2
-  Sora_M3
-  Sora_F3
+  Younajja
+  Mnachit
+  Mira
+  Zero
+  Zenitsu
+  Xylar
 }
 
 enum PlayerPaddle {
@@ -94,6 +91,15 @@ enum PlayerPaddle {
   Guard
   Army
 }
+
+enum PaddleColor {
+  Red
+  Blue
+  Yellow
+  Orange
+  Purple
+}
+
 
 
 // Main Profile model
@@ -105,29 +111,35 @@ model Profile {
   firstName String
   lastName  String
 
-  status    UserStatus   @default(ONLINE)
-  lastSeen  DateTime     @default(now())
-  avatar    String        @default("http://localhost:4000/api/user/avatars/default.png")
-  banner    String        @default("http://localhost:4000/api/user/banners/default.png")
-  bio       String        @default("Just here to have fun, level up, and make some epic memories!")
+  status       UserStatus   @default(OFFLINE)  // Actual connection state (ONLINE/OFFLINE)
+  customStatus UserStatus   @default(ONLINE)   // User's preferred display status
+  
+  lastSeen     DateTime     @default(now())
+  avatar       String        @default("/uploads/user/avatar/default.png")
+  banner       String        @default("http://localhost:4000/api/user/banners/default.png")
+  
+  bio          String        @default("Just here to have fun, level up, and make some epic memories!")
 
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   isVerified    Boolean    @default(false)
+  isDeleted     Boolean    @default(false)
+  
   walletBalance Int        @default(0)
-  level         Int        @default(1)
+  level         Float        @default(0)
+  score         Int        @default(0)
   rankDivision  RankDivision @default(BRONZE)
   rankTier      RankTier   @default(I)
 
   preferences         ProfilePreferences?
 
-  playerCharacters   Json @default("[\"Zero\"]")
-  playerSelectedCharacter PlayerCharacter @default(Zero)
+  playerCharacters   Json @default("[\"Tbib\"]")
+  playerSelectedCharacter PlayerCharacter @default(Tbib)
 
   playerPaddles Json @default("[\"Boss\"]")
   playerSelectedPaddle    PlayerPaddle @default(Boss)
-
+  paddleColor             PaddleColor   @default(Red)
 }
 
 
@@ -167,11 +179,34 @@ model NotificationSettings {
 model Friendship {
   id        String @id @default(cuid())
 
-  senderId    String
-  receiverId  String
+  senderId    Int
+  receiverId  Int
   status      FriendshipStatus @default(PENDING)
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([senderId, receiverId])
 }
+
+// Dedicated Blocked Users Table - Directional blocking system
+model BlockedUser {
+  id        String   @id @default(cuid())
+
+  blockerId Int      // User who initiated the block
+  blockedId Int      // User who is being blocked
+  isBlocked Boolean  @default(true)
+  
+  blockedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+}
+
+
+
+
+
+

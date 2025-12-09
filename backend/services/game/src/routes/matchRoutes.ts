@@ -21,25 +21,35 @@
 import { FastifyInstance } from "fastify";
 
 import {
-  createMatch,
   getMatch,
   getCurrenMatch,
+  EndMatch,
+  AiMatch,
+  getActiveMatches,
 } from "../controllers/matchController";
 import {
   matchesParamsValidators,
   matchesValidators,
 } from "../validators/matchesValidators";
+import { getPlayerStats, getPlayerLastMatches } from "../controllers/statsController";
 
 export async function matchRoutes(server: FastifyInstance) {
-  // Create a new match
+  // ai match
   server.post(
-    "/match",
+    "/api/game/ai/create",
     {
       schema: {
-        body: matchesValidators.Body,
+        body: {
+          type: "object",
+          properties: {
+            mode: { type: "string" },
+            difficulty: { type: "string" },
+          },
+          required: ["mode", "difficulty"],
+        },
       },
     },
-    createMatch
+    AiMatch
   );
   // get Match by ID
   server.get(
@@ -57,6 +67,11 @@ export async function matchRoutes(server: FastifyInstance) {
     },
     getMatch
   );
+  // get all matches
+  server.get(
+    "/api/game/match/all",
+    getActiveMatches
+  )
   // current user's pending match (limited to one)
   server.get(
     "/api/game/match/current/:userId",
@@ -72,5 +87,38 @@ export async function matchRoutes(server: FastifyInstance) {
       },
     },
     getCurrenMatch
+  );
+  
+  // Get last 5 matches for a player
+  server.get(
+    "/api/game/player/:playerId/last-matches",
+    {
+      schema: {
+        params: {
+          type: "object",
+          properties: {
+            playerId: { type: "string" },
+          },
+          required: ["playerId"],
+        },
+      },
+    },
+    getPlayerLastMatches
+  );
+
+  server.get(
+    "/api/game/player/:playerId/stats",
+    {
+      schema: {
+        params: {
+          type: "object",
+          properties: {
+            playerId: { type: "string" },
+          },
+          required: ["playerId"],
+        },
+      },
+    },
+    getPlayerStats
   );
 }

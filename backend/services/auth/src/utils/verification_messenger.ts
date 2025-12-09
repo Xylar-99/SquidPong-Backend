@@ -1,6 +1,6 @@
-import redis from "../integration/redisClient";
+import redis from "../integration/redis.integration";
 import { hashPassword } from "./hashedPassword";
-import { sendDataToQueue } from "../integration/rabbitmqClient";
+import { sendDataToQueue } from "../integration/rabbitmq.integration";
 
 
 
@@ -12,5 +12,11 @@ export async function sendVerificationEmail(data: any)
   data.password = await hashPassword(data.password);
   
   await redis.set(email, JSON.stringify(data), "EX", "300");
-  await sendDataToQueue({email, type}, "emailhub");
+  await sendDataToQueue({type : 'emailhub' , data : {email , type}}, "emailhub");
+}
+
+
+export async function sendCodeToEmail(email: string , type : string)
+{
+  await sendDataToQueue({type : 'emailhub' , data : {email , type}}, "emailhub");
 }

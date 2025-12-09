@@ -1,11 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import cookie from '@fastify/cookie';
 import auth2 from '@fastify/oauth2';
-import session from '@fastify/session';
 import jwt from '@fastify/jwt';
-import cors from '@fastify/cors' 
-import fastifyStatic from '@fastify/static';
-
 
 
 const auth2_config:any = {
@@ -13,8 +9,8 @@ const auth2_config:any = {
   scope: ['profile', 'email'],
   credentials: {
     client: {
-      id: process.env.ID,
-      secret: process.env.SECRET
+      id: process.env.GOOGLE_CLIENT_ID,
+      secret: process.env.GOOGLE_CLIENT_SECRET
     },
     auth: {
       authorizeHost: 'https://accounts.google.com',
@@ -24,23 +20,14 @@ const auth2_config:any = {
     }
   },
   startRedirectPath: '/api/auth/google',
-  callbackUri: `${process.env.URL}/api/auth/google/callback`
+  callbackUri: `${process.env.BACKEND_URL}/api/auth/google/callback`
 }
   
-
-const session_option = {
-    secret: 'this_is_a_very_long_secret_key_that_is_secure',
-    cookie: {
-    secure: true,
-    maxAge: 1000 * 60 * 10,
-    },
-    saveUninitialized: false,
-  }
 
 
   
 const jwt_config:any = {
-    secret: process.env.JWTSECRET
+    secret: process.env.JWT_SECRET_KEY
   }
 
 
@@ -49,7 +36,6 @@ const jwt_config:any = {
   export default async function registerPlugins(app: FastifyInstance) {
 
      app.register(cookie);
-     app.register(session, session_option);
      app.register(jwt, jwt_config);
      app.register(auth2, auth2_config);
   }

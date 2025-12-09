@@ -2,13 +2,29 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import fs from 'fs';
 import { pipeline } from 'stream/promises';
 import prisma from '../db/database';
+import { redis } from '../integration/redis.integration';
+import { getVisibleStatus } from './statusHelper';
+
+import path from 'path';
+import crypto from 'crypto';
+
+
 
 export async function verifyFriendship(senderId: string, receiverId: string) 
 {
-  const res = await fetch(`http://user:4001/api/friend/verify?senderId=${senderId}&receiverId=${receiverId}`);
-      
+  const res = await fetch(`http://user:4002/api/friend/verify/${receiverId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-secret-token': process.env.SECRET_TOKEN || '',
+      'x-user-id': senderId,
+    }});
+
   if(res.status !== 200)
     throw new Error('Failed to verify friendship status.');
+  const data = await res.json();
+  if(!data.success || !data.data?.areFriends)
+    throw new Error('Users are not friends.');
 }
 
 
@@ -40,19 +56,32 @@ export function sendError(res: FastifyReply, error: unknown, statusCode = 400)
 
 export async function fetchAndEnsureUser(userId: string) 
 {
-  let user = await prisma.user.findUnique({ where: { userId }});
-  if(!user) throw new Error('User not found in chat service.');
+
+  const user = await prisma.user.findUnique({ where: { userId }});
+  if(!user) throw new Error('User not found ');
+  console.log('Fetched user:', user);
+  
   return user;
 }
 
 
 
 
-export async function convertParsedMultipartToJson(req: FastifyRequest): Promise<any> 
+export function checkSecretToken(req: FastifyRequest)
+{
+  const secretToken = req.headers['x-secret-token'] as string;
+  if (secretToken !== process.env.SECRET_TOKEN)
+    throw new Error('Unauthorized: Invalid secret token');
+}
+
+
+export async function convertParsedMultipartToJson(req: FastifyRequest): Promise<string> 
 {
   const rawBody = req.body as any;
-  const data: Record<string, any> = {};
-  let filePath: string | undefined;
+  let file: string = "";
+  
+  const uploadDir = path.join(process.cwd(), 'uploads', 'avatar');
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
   for (const key in rawBody) 
   {
@@ -60,14 +89,24 @@ export async function convertParsedMultipartToJson(req: FastifyRequest): Promise
 
     if (field?.type === 'file') 
     {
-      filePath = `/tmp/group/${Date.now()}-${field.filename}`;
-      await pipeline(field.file, fs.createWriteStream(filePath));
-      data[key] = `http://localhost:4000${filePath}`;
+      const ext = path.extname(field.filename) || '.png';
+
+      let filePath: string;
+      let randomName: string;
+
+      do {
+          randomName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
+          filePath = path.join(uploadDir, randomName);
+      } while (fs.existsSync(filePath));
+
+      
+      const buffer = await field.toBuffer();
+      fs.writeFileSync(filePath, buffer);
+
+      file = `${process.env.BACKEND_URL || 'http://localhost:4000'}:4433/api/group/avatars/${randomName}`;
     } 
-    else if (field?.type === 'field') 
-      data[key] = field.value;
   }
 
-  return { ...data };
+  return file;
 }
 

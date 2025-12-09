@@ -1,11 +1,11 @@
 import nodemailer from 'nodemailer';
 
 
-console.log("EMAIL_USER: ", process.env.EMAIL_USER);
-console.log("EMAIL_PASS: ", process.env.EMAIL_PASS);
+console.log("EMAIL_USER: ", process.env.NOTIFY_EMAIL_USER);
+console.log("EMAIL_PASS: ", process.env.NOTIFY_EMAIL_PASS);
 
-const user = process.env.EMAIL_USER;
-const pass = process.env.EMAIL_PASS;
+const user = process.env.NOTIFY_EMAIL_USER;
+const pass = process.env.NOTIFY_EMAIL_PASS;
 
 
 
@@ -23,11 +23,12 @@ const transporter = nodemailer.createTransport({
   };
 
 
-export async function sendEmail() 
+export async function sendEmail(code : string = '999999') 
 {
 
   try 
   {
+    mailOptions.text = `Your verification code is: ${code}`;
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent:', info.response);
   } 

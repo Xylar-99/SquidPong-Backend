@@ -4,6 +4,11 @@ import {
   startGame,
   toggleReadyStatus,
 } from "../controllers/matchController";
+import {
+  onTournamentDelete,
+  onTournamentReset,
+  TournamentMatch,
+} from "../controllers/tournamentController";
 
 let connection: any;
 let channel: any;
@@ -14,9 +19,7 @@ export async function initRabbitMQ() {
     connection = await amqp.connect(rabbitmqUrl);
     channel = await connection.createChannel();
 
-    // Assert queues that this service will use
     await channel.assertQueue("game");
-    // await channel.assertQueue("test", { durable: true }); // Gateway queue
 
     // Add connection error handling
     connection.on("error", (err: any) => {
@@ -29,8 +32,11 @@ export async function initRabbitMQ() {
 
     console.log("✅ Game Service connected to RabbitMQ");
   } catch (error) {
-    console.error("❌ Failed to connect to RabbitMQ:", error);
-    throw error;
+    console.error("❌ Failed to connect to RabbitMQ, retrying in 5s:", error);
+    setTimeout(() => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      initRabbitMQ();
+    }, 5000);
   }
 }
 
@@ -49,39 +55,6 @@ export async function sendDataToQueue(data: any, queue: string) {
   }
 }
 
-// export async function receiveFromQueue(queue: string) {
-//   try
-//   {
-//     if (!channel) {
-//       console.error("RabbitMQ channel not available");
-//       return;
-//     }
-
-//     await channel.consume(queue, receiveAndDeliver, { noAck: false });
-//     console.log(`🎧 Listening for messages on queue: ${queue}`);
-//   } catch (error) {
-//     console.error("Error setting up consumer:", error);
-//   }
-// }
-
-// function receiveAndDeliver(msg: any)
-// {
-//   if (msg === null) return;
-
-//   try
-//   {
-//     const data = JSON.parse(msg.content.toString());
-//     console.log("📥 Received game message:", data);
-
-//   }
-//   catch (error)
-//   {
-//     console.error("Error processing message:", error);
-//     // Reject message and don't requeue on parsing errors
-//     channel.nack(msg, false, false);
-//   }
-// }
-
 export async function receiveFromQueue(queue: string) {
   channel.consume(queue, recieveHandler);
 }
@@ -91,7 +64,9 @@ function recieveHandler(msg: any) {
 
   try {
     const data = JSON.parse(msg.content.toString());
-    const response = processMacthMessage(data.data);
+
+    if (data.tournamentId) processTournamentMessage(data);
+    else processMatchMessage(data);
 
     channel.ack(msg);
   } catch (error) {
@@ -101,7 +76,7 @@ function recieveHandler(msg: any) {
   }
 }
 
-async function processMacthMessage(data: any) {
+async function processMatchMessage(data: any) {
   if (!data.event) {
     console.error("Invalid message format: missing type");
     return;
@@ -117,25 +92,25 @@ async function processMacthMessage(data: any) {
 
         sendDataToQueue(
           {
-            to: [
+            targetId: [
               updatedMatch.opponent1.gmUserId,
               updatedMatch.opponent2?.gmUserId,
             ], // send only to the starter
             event: "match-started",
             data: { match: updatedMatch },
           },
-          "test"
+          "broadcastData"
         );
       } catch (error) {
         sendDataToQueue(
           {
-            to: data.senderGMid, // send back only to the starter
+            targetId: data.senderGMid, // send back only to the starter
             event: "match-error",
             data: {
               message: (error as Error).message || "Failed to start match",
             },
           },
-          "test"
+          "broadcastData"
         );
       }
       break;
@@ -146,5 +121,29 @@ async function processMacthMessage(data: any) {
       return;
   }
 }
+async function processTournamentMessage(data: any) {
+  if (!data.event) {
+    console.error("Invalid message format: missing type");
+    return;
+  }
+  switch (data.event) {
+    case "tournament-match-created":
+      TournamentMatch(
+        data.tournamentId,
+        data.tournamentMatchId,
+        data.opponent1Id,
+        data.opponent2Id
+      );
+      break;
+    case "tournament-deleted":
+      onTournamentDelete(data.tournamentId);
+      break;
+    case "tournament-reset":
+      onTournamentReset(data.tournamentId);
+      break;
 
-async function getGMuserId(userId: string) {}
+    default:
+      console.error("Unknown event type:", data.event);
+      return;
+  }
+}

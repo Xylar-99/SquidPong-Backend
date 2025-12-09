@@ -3,14 +3,16 @@ import { fastify, gameServer } from "./colyseus";
 import { matchMaker } from "colyseus";
 import { matchRoutes } from "./routes/matchRoutes";
 import { invitationRoutes } from "./routes/invitationRoutes";
+import { leaderboardRoutes } from "./routes/leaderboardRoutes";
 import { initRabbitMQ, receiveFromQueue } from "./integration/rabbitmqClient";
 import cors from "@fastify/cors";
-import { MatchRoom } from "./rooms/PingPongRoom";
+import { MatchRoom } from "./rooms/MatchRoom";
 import { prisma } from "./lib/prisma";
+import { betsRoutes } from "./routes/betsRoutes";
 
 dotenv.config();
 
-const port = Number(process.env.PORT) || 3000;
+const port = Number(process.env.PORT);
 const host = process.env.HOST || "0.0.0.0";
 
 async function recreateActiveRooms() {
@@ -40,16 +42,13 @@ async function recreateActiveRooms() {
     );
 
     for (const match of activeMatches) {
+      console.log(match);
       try {
         const room = await matchMaker.createRoom("ping-pong-game", {
           matchId: match.id,
+          roomId: match.roomId, // Reuse the same roomId
           players: [match.opponent1.userId, match.opponent2?.userId],
           spectators: [],
-        });
-
-        await prisma.match.update({
-          where: { id: match.id },
-          data: { roomId: room.roomId },
         });
 
         console.log(`✅ Recreated room for match ${match.id}: ${room.roomId}`);
@@ -79,6 +78,8 @@ const start = async () => {
     // Register routes
     fastify.register(matchRoutes);
     fastify.register(invitationRoutes);
+    fastify.register(leaderboardRoutes);
+    fastify.register(betsRoutes);
 
     // Init RabbitMQ
     await initRabbitMQ();
@@ -94,6 +95,21 @@ const start = async () => {
     } else {
       console.log("⚠️ Skipping room recreation in production mode");
     }
+
+    // Debug rooms
+    setInterval(async () => {
+      const rooms = await matchMaker.query({});
+      console.log(
+        "📊 Active Rooms:",
+        rooms.map((r) => ({
+          id: r.roomId,
+          name: r.name,
+          clients: r.clients,
+          locked: r.locked,
+          metadata: r.metadata.players,
+        }))
+      );
+    }, 10000); // every 10s
 
     // Start Fastify + Colyseus
     await fastify.listen({ port, host });

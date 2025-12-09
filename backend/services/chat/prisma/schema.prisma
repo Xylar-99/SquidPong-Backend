@@ -7,8 +7,19 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 // ------------------- Enums -------------------
+
+enum UserStatus {
+  ONLINE
+  OFFLINE
+}
+
+enum UserStatusCustom {
+  ONLINE
+  IDLE
+  DO_NOT_DISTURB
+  INVISIBLE
+}
 
 enum GroupRole {
   OWNER
@@ -16,26 +27,20 @@ enum GroupRole {
   MEMBER
 }
 
-
 enum ReactionType {
-  LIKE      // 👍
-  LOVE      // ❤️
-  LAUGH     // 😂
-  SAD       // 😢
-  ANGRY     // 😡
-  WOW       // 😮
-  FIRE      // 🔥
-  DIAMOND   // 💎
-  MONEY     // 🤑
-  STAR      // ⭐
+  LIKE // 👍
+  LOVE // ❤️
+  LAUGH // 😂
+  SAD // 😢
+  ANGRY // 😡
+  WOW // 😮
+  FUCK // 🖕
 }
-
 
 enum MessageType {
   TEXT
-  URL
-  POLL
-  IMAGE
+  INVITE_MATCH
+  INVITE_TOURNAMENT
 }
 
 enum ChatType {
@@ -43,12 +48,10 @@ enum ChatType {
   GROUP
 }
 
-
 enum GroupType {
   PUBLIC
   PRIVATE
 }
-
 
 enum MemberStatus {
   PENDING
@@ -56,21 +59,30 @@ enum MemberStatus {
   REJECTED
 }
 
-
+enum statusMessage {
+  SENT
+  DELIVERED
+  READ
+  BLOCKED
+}
 
 model User {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  userId    String   @unique
-  username    String   
-  firstName   String
-  lastName    String?
-  isVerified Boolean  @default(false)
-  avatar      String  
+  userId     String  @unique
+  username   String
+  firstName  String
+  lastName   String
+  isVerified Boolean @default(false)
+  avatar     String
+
+  status       UserStatus       @default(OFFLINE) // Real connection state
+  customStatus UserStatusCustom @default(ONLINE) // User's preference
+
+  isDeleted Boolean @default(false)
 
   chatMembers  ChatMember[]
   messages     Message[]
-  pollVotes    PollVote[]
   reactions    Reaction[]
   groupMembers GroupMember[]
 
@@ -79,126 +91,97 @@ model User {
 
 // ------------------- Chat -------------------
 model Chat {
-  id        Int      @id @default(autoincrement())
-  type      ChatType @default(PRIVATE)
+  id   Int      @id @default(autoincrement())
+  type ChatType @default(PRIVATE)
 
-  members   ChatMember[]
-  messages  Message[]
+  members  ChatMember[]
+  messages Message[]
 
-  group     Group?
+  group Group?
 
   createdAt DateTime @default(now())
 }
 
-
 model ChatMember {
-  id      Int    @id @default(autoincrement())
-  chatId  Int
-  userId  String
+  id     Int    @id @default(autoincrement())
+  chatId Int
+  userId String
 
-  chat    Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isBlocked Boolean @default(false)
+  chat      Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@unique([chatId, userId])
 }
 
 // ------------------- Message -------------------
 model Message {
-  id         Int          @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  chatId     Int
-  senderId   String
+  chatId   Int
+  senderId String
 
-  type       MessageType  @default(TEXT)
-  content    String?
-  reactions  Reaction[]
+  type           MessageType @default(TEXT)
+  content        String?
+  invitationCode String?
+  tournamentId   String?
 
-  replyToId  Int?
-  replyTo    Message?     @relation("MessageReplies", fields: [replyToId], references: [id])
-  replies    Message[]    @relation("MessageReplies")
+  status statusMessage @default(SENT)
 
-  poll       Poll?
+  reactions Reaction[]
 
-  isEdited   Boolean      @default(false)
+  replyToId Int?
+  replyTo   Message?  @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies   Message[] @relation("MessageReplies")
 
-  chat       Chat         @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  sender     User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  timestamp  DateTime     @default(now())
-}
-
-// ------------------- Polls -------------------
-model Poll {
-  id        Int        @id @default(autoincrement())
-  messageId Int        @unique
-  question  String
-  options   PollOption[]
-
-  createdAt DateTime   @default(now())
-  message   Message    @relation(fields: [messageId], references: [id], onDelete: Cascade)
-}
-
-model PollOption {
-  id      Int        @id @default(autoincrement())
-  pollId  Int
-  text    String
-  votes   PollVote[]
-
-  poll    Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
-}
-
-model PollVote {
-  id        Int        @id @default(autoincrement())
-  optionId  Int
-  userId    String
-  votedAt   DateTime   @default(now())
-
-  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([optionId, userId])
+  isEdited  Boolean  @default(false)
+  isDeleted Boolean?
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender    User     @relation(fields: [senderId], references: [userId], onDelete: Cascade)
+  timestamp DateTime @default(now())
 }
 
 // ------------------- Group -------------------
 model Group {
-  id        Int        @id @default(autoincrement())
-  name      String
-  desc      String?
-  imageUrl  String     @default("http://localhost:4000/tmp/default_group.png")
-  chatId    Int        @unique
-  type      GroupType  @default(PRIVATE)
+  id       Int       @id @default(autoincrement())
+  name     String
+  desc     String?
+  imageUrl String    @default("http://localhost:4000/tmp/default_group.png")
+  chatId   Int       @unique
+  type     GroupType @default(PRIVATE)
 
-  members   GroupMember[]
-  chat      Chat       @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  matchId String? @unique
 
-  createdAt DateTime   @default(now())
+  members GroupMember[]
+  chat    Chat          @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }
 
-
 model GroupMember {
-  id       Int        @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  userId   String  
-  groupId  Int
-  status   MemberStatus @default(PENDING)
-  role     GroupRole    @default(MEMBER)
+  userId  String
+  groupId Int
+  status  MemberStatus @default(PENDING)
+  role    GroupRole    @default(MEMBER)
 
-  group    Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade) // reference primary key
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [userId], onDelete: Cascade) // reference primary key
 
   @@unique([userId, groupId])
 }
 
-
 // ------------------- Reactions -------------------
 model Reaction {
-  id        Int      @id @default(autoincrement())
+  id        Int          @id @default(autoincrement())
   userId    String
   messageId Int
   emoji     ReactionType
-  timestamp DateTime @default(now())
+  timestamp DateTime     @default(now())
 
-  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@unique([messageId, userId])
 }

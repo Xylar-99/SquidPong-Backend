@@ -1,10 +1,15 @@
 import dotenv from 'dotenv';
 import app from './app'
-import { initRabbitMQ , receiveFromQueue } from './integration/rabbitmqClient';
+import { initRabbitMQ , receiveFromQueue } from './integration/rabbitmq.integration';
+import { validateEnvironmentVariables } from './utils/envValidator';
+
 dotenv.config();
 
-const port = Number(process.env.PORT);
-const host = process.env.HOST;
+// Validate environment variables before starting
+validateEnvironmentVariables();
+
+const port = Number(process.env.USER_SERVICE_PORT);
+const host = process.env.USER_SERVICE_HOST;
 
 
 async function fastifyserver()
@@ -12,7 +17,7 @@ async function fastifyserver()
 
     try 
     {
-        app.listen({port : port , host : host} , () => {console.log(`user service running at http://user:${port} ...`)})
+        await app.listen({port : port , host : host} , () => {console.log(`user service running at http://user:${port} ...`)})
     } 
     catch (error) 
     {
@@ -27,7 +32,7 @@ async function start()
     
     fastifyserver();
     await initRabbitMQ();
-    await receiveFromQueue("friends");
+    // await receiveFromQueue("friends");
 }
 
 start();

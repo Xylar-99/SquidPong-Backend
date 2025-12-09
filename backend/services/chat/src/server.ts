@@ -1,12 +1,16 @@
 import app from './app'
 import dotenv from 'dotenv'
-import {initRabbitMQ , receiveFromQueue } from './integration/rabbitmqClient'
+import {initRabbitMQ , receiveFromQueue } from './integration/rabbitmq.integration'
+import { validateEnvironmentVariables } from './utils/envValidator'
 
 
 dotenv.config()
 
-const port = Number(process.env.PORT)
-const host = process.env.HOST
+// Validate environment variables before starting
+validateEnvironmentVariables()
+
+const port = Number(process.env.CHAT_SERVICE_PORT)
+const host = process.env.CHAT_SERVICE_HOST
 
 
 
@@ -14,7 +18,7 @@ async function start()
 {
 	try 
 	{
-		app.listen({port ,  host}, () => { console.log(`chat service running at http://chat:${port}`) })
+		await app.listen({port ,  host}, () => { console.log(`chat service running at http://chat:${port}`) })
 	} 
 	catch (error) 
 	{

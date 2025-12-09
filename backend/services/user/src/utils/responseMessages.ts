@@ -1,5 +1,14 @@
 // responseMessages.ts
+
+
+
 export enum ProfileMessages {
+  ITEM_NOT_OWNED = 'One or more selected items are not owned by the user.',
+  PLAYER_IS_NOT_OWNED = 'The player skin is not owned by the user.',
+  PADDLE_IS_NOT_OWNED = 'The paddle skin is not owned by the user.',
+  NOT_FOUND = 'Profile not found.',
+  READY_EXISTS = 'The username is already taken.',
+  SAME_USERNAME = 'The new username is the same as the current one.',
   FETCH_SUCCESS = 'Profile fetched successfully.',
   FETCH_NOT_FOUND = 'Profile not found in the database.',
 
@@ -58,8 +67,10 @@ export enum GeneralMessages {
 }
 
 export enum FriendMessages {
+  ADD_SELF = 'You cannot send a friend request to yourself.',
   NOT_FRIENDS = 'You can only block existing friends.',
   FETCH_SUCCESS = 'Friends list fetched successfully.',
+  BLOCK_FETCH_SUCCESS = 'Blocked users fetched successfully.',
   FETCH_NOT_FOUND = 'No friends found for the user.',
   PENDING_FETCH_SUCCESS = 'Pending friend requests fetched successfully.',
   ADD_SUCCESS = 'Friend request sent successfully.',
@@ -93,6 +104,7 @@ export enum FriendMessages {
 }
 
 export enum BlockMessages {
+  BLOCK_NO_FRIEND = 'You can only block existing friends.',
   BLOCK_SUCCESS = 'User blocked successfully.',
   BLOCK_FAILED = 'Failed to block user.',
   BLOCK_NOT_FOUND = 'No friendship found to block user.',
