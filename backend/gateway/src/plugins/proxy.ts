@@ -8,8 +8,6 @@ interface ServiceConfig {
 }
 
 
-
-
 const services : ServiceConfig[]  = 
 [
     { name: 'auth', prefix: '/api/auth', upstream: 'http://auth:4001' },

@@ -5,8 +5,6 @@ import { handleWsConnect  , handleHttpUpgrade} from './events/websocketEvents';
 import { receiveFromQueue , initRabbitMQ } from './integration/rabbitmq.integration'
 import { validateEnvironmentVariables } from './utils/envValidator'
 import registerPlugins from './plugins/plugins';
-import { authenticateUser } from './validators/middleware';
-import { errorHandler } from './utils/errorHandler';
 
 
 dotenv.config()
@@ -24,17 +22,9 @@ async function start()
 {
 	try 
 	{
-		// Register all plugins first
+		// Register all plugins before starting the server
 		await registerPlugins(app);
 		
-		// Add hooks after plugins are registered
-		app.addHook('onRequest', authenticateUser);
-		app.addHook('onError', errorHandler);
-		
-		// Wait for everything to be ready
-		await app.ready();
-		
-		// Start the server
 		app.listen({port: port, host: host}, () => { console.log(`gateway service running at http://gateway:${port}`) })
 	} 
 	catch (error) 

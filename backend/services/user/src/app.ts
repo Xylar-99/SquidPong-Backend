@@ -16,11 +16,6 @@ export default app;
 
 registerPlugins(app);
 
-
-app.get('/api/user/health', async (req:any, res:any) => {
-  return { status: 'user service is healthy' };
-})
-
 const routes = [...userRoutes , ...friendRoutes]
 
 app.register(async (instance : FastifyInstance) => {

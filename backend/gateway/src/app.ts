@@ -10,4 +10,7 @@ const app: FastifyInstance = fastify({
   }
 });
 
+app.addHook('onRequest', authenticateUser);
+app.addHook('onError', errorHandler);
+
 export default app;

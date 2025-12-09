@@ -23,7 +23,7 @@ const jwt_config:any = {
 
 export default async function registerPlugins(app: FastifyInstance) 
 {
-  app.register(cookie);
-  app.register(session, session_option);
-  app.register(jwt, jwt_config);
+  await app.register(cookie);
+  await app.register(session, session_option);
+  await app.register(jwt, jwt_config);
 }
