@@ -38,6 +38,10 @@ Thumbs.db
 
 # Prisma
 **/prisma/migrations/*_migration.sql
+**/prisma/*.db
+**/prisma/*.sqlite
+*.db
+*.sqlite
 
 # Uploads
 **/uploads/
