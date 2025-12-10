@@ -251,8 +251,8 @@ export async function postRefreshTokenHandler(req: FastifyRequest, res: FastifyR
     res.setCookie("accessToken", newAccessToken, {
       httpOnly: true,
       path: "/",
-      sameSite: "lax",
-      secure: false,
+      sameSite: "none",
+      secure: true,
     });
 
   await redis.set(newAccessToken, "valid", "EX", 60 * 24 * 7 * 60);
