@@ -26,13 +26,20 @@ export async function setJwtTokens(res: FastifyReply, userId: number)
   const accessToken = await app.jwt.sign({ userId }, { expiresIn: "7d" });
   const refreshToken = await app.jwt.sign({ userId}, { expiresIn: "30d" });
 
-  res.setCookie("accessToken", accessToken, { httpOnly: true, path: "/", sameSite: "none", secure: true });
+  res.setCookie("accessToken", accessToken, { 
+    httpOnly: true, 
+    path: "/", 
+    sameSite: "none", 
+    secure: true
+    // No domain - allows cross-domain cookies with credentials
+  });
   res.setCookie("refreshToken", refreshToken, {
     httpOnly: true,
     path: "/api/auth/refresh",
     maxAge: 30 * 24 * 60 * 60,
     sameSite: "none",
     secure: true,
+    domain: "abquaoub.me" // Share cookie across all *.abquaoub.me subdomains
   });
 
   await redis.set(accessToken, "valid", "EX", 60 * 24 * 7 * 60);

@@ -252,7 +252,8 @@ export async function postRefreshTokenHandler(req: FastifyRequest, res: FastifyR
       httpOnly: true,
       path: "/",
       sameSite: "none",
-      secure: true,
+      secure: true
+      // No domain - allows cross-domain cookies with credentials
     });
 
   await redis.set(newAccessToken, "valid", "EX", 60 * 24 * 7 * 60);
