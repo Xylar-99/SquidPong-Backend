@@ -48,12 +48,12 @@ set_urls_in_file() {
 
   # Replace BACKEND_URL if it exists
   if grep -q -E '^\s*BACKEND_URL\s*=' "$file"; then
-    sed -i "s|^\s*BACKEND_URL\s*=.*|BACKEND_URL=\"http://${IP}:4000\"|" "$file"
+    sed -i "s|^\s*BACKEND_URL\s*=.*|BACKEND_URL=\"http://${IP}\"|" "$file"
   fi
 
   # Replace FRONTEND_URL if it exists
   if grep -q -E '^\s*FRONTEND_URL\s*=' "$file"; then
-    sed -i "s|^\s*FRONTEND_URL\s*=.*|FRONTEND_URL=\"http://${IP}:4000\"|" "$file"
+    sed -i "s|^\s*FRONTEND_URL\s*=.*|FRONTEND_URL=\"http://${IP}\"|" "$file"
   fi
 
 }
